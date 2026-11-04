@@ -107,7 +107,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Runner discovers tables and fails on a table without a policy
   - Tests: runner self-test on a deliberately bad table
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T07** (T-007) Manifest schema and validator CLI per docs/architecture/module-manifest.md (M)
+- [x] **K0-T07** (T-007) Manifest schema and validator CLI per docs/architecture/module-manifest.md (M)
   - Feature: F-04 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer

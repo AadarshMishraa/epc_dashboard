@@ -5,9 +5,15 @@ import { validateManifests, type ManifestInput, type ManifestProblem } from './m
 import { parseRegister } from './register.ts';
 
 export const MANIFEST_FILE = 'manifest.json';
-/** Where manifests are found: foundation packages, and any module inside a pack. */
-const SEARCH_ROOTS = ['packages', 'packs'] as const;
-const SKIPPED = new Set(['node_modules', 'dist', '.turbo', 'docs']);
+/**
+ * Where module manifests live: `packages/<id>/manifest.json` and
+ * `packs/<pack>/modules/<module>/manifest.json`. Nothing deeper, so a web app manifest
+ * or a test fixture is never mistaken for a module.
+ */
+const MANIFEST_LOCATIONS: readonly (readonly string[])[] = [
+  ['packages', '*'],
+  ['packs', '*', 'modules', '*'],
+];
 
 export interface ManifestCheckResult {
   readonly problems: readonly ManifestProblem[];
@@ -34,7 +40,9 @@ export function checkManifests(options: { readonly root: string }): ManifestChec
   const inputs: ManifestInput[] = [];
   const found = new Set<string>();
 
-  for (const manifestPath of SEARCH_ROOTS.flatMap((dir) => findManifests(join(root, dir)))) {
+  for (const manifestPath of MANIFEST_LOCATIONS.flatMap((pattern) =>
+    findManifests(root, pattern),
+  )) {
     const file = relative(root, manifestPath).split(sep).join('/');
     const packageDir = file.slice(0, -`/${MANIFEST_FILE}`.length);
     found.add(packageDir);
@@ -71,11 +79,11 @@ export function checkManifests(options: { readonly root: string }): ManifestChec
         json,
         register: { id: entry.id, depends: entry.depends },
         packageVersion: readVersion(join(root, packageDir, 'package.json')),
-        requiredLayer: 'L0',
+        allowedLayers: ['L0'],
         fileExists,
       });
     } else {
-      inputs.push({ file, json, fileExists });
+      inputs.push({ file, json, fileExists, allowedLayers: ['L3', 'L4'] });
     }
   }
   for (const entry of parsed.register.packages.filter((p) => p.kind === 'module')) {
@@ -89,15 +97,22 @@ export function checkManifests(options: { readonly root: string }): ManifestChec
   return { problems, manifestsChecked: inputs.length };
 }
 
-function findManifests(dir: string): string[] {
-  if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
-  const results: string[] = [];
-  for (const dirent of readdirSync(dir, { withFileTypes: true })) {
-    if (dirent.isDirectory() && !SKIPPED.has(dirent.name))
-      results.push(...findManifests(join(dir, dirent.name)));
-    else if (dirent.isFile() && dirent.name === MANIFEST_FILE) results.push(join(dir, dirent.name));
+/** Expands a path pattern whose `*` segments match one directory level each. */
+function findManifests(root: string, pattern: readonly string[]): string[] {
+  let dirs = [root];
+  for (const segment of pattern) {
+    dirs = dirs.flatMap((dir) => {
+      if (segment !== '*') return existsSync(join(dir, segment)) ? [join(dir, segment)] : [];
+      if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
+      return readdirSync(dir, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && !d.name.startsWith('.') && d.name !== 'node_modules')
+        .map((d) => join(dir, d.name));
+    });
   }
-  return results.sort();
+  return dirs
+    .map((dir) => join(dir, MANIFEST_FILE))
+    .filter((path) => existsSync(path))
+    .sort();
 }
 
 function readVersion(packageJsonPath: string): string {

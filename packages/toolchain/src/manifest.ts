@@ -17,13 +17,27 @@ export type Layer = (typeof LAYERS)[number];
 const SNAKE = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
 const DOTTED = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 
-function unique<T extends z.ZodType>(item: T, what: string) {
-  return z
-    .array(item)
-    .refine((list) => new Set(list.map((x) => JSON.stringify(x))).size === list.length, {
-      message: `lists a ${what} more than once`,
-    });
+function unique<T extends z.ZodType>(
+  item: T,
+  what: string,
+  keyOf: (value: z.infer<T>) => string = (value) => JSON.stringify(value),
+) {
+  return z.array(item).refine((list) => new Set(list.map(keyOf)).size === list.length, {
+    message: `lists the same ${what} more than once`,
+  });
 }
+
+/** A path inside the package: relative, no `..` segments. */
+const packagePath = z
+  .string()
+  .min(1)
+  .refine(
+    (path) =>
+      !path.startsWith('/') && !/^[A-Za-z]:/.test(path) && !path.split(/[\\/]/).includes('..'),
+    {
+      message: 'must be a path inside the package (relative, no ..)',
+    },
+  );
 
 const moduleId = z
   .string()
@@ -58,13 +72,15 @@ export const manifestSchema = z.strictObject({
       name: eventName,
       version: z.number().int().min(1),
       /** Payload schema, relative to the package; it marks classified fields. */
-      schema: z.string().min(1),
+      schema: packagePath,
     }),
-    'event',
+    'event version',
+    (event) => `${event.name}@${String(event.version)}`,
   ),
   events_consumed: unique(
     z.strictObject({ name: eventName, version: z.number().int().min(1) }),
     'consumed event',
+    (event) => `${event.name}@${String(event.version)}`,
   ),
   permissions: unique(permissionName, 'permission'),
   custom_field_hosts: unique(entityName, 'custom field host'),
@@ -76,7 +92,8 @@ export const manifestSchema = z.strictObject({
       mode: z.enum(['read', 'draft']),
       permission: permissionName,
     }),
-    'tool',
+    'tool name',
+    (tool) => tool.name,
   ),
   extension_points: unique(
     z
@@ -84,7 +101,7 @@ export const manifestSchema = z.strictObject({
       .regex(/^[a-z][a-zA-Z0-9]*$/, 'must be camelCase, for example validateStageTransition'),
     'extension point',
   ),
-  config_schema: z.string().optional(),
+  config_schema: packagePath.optional(),
   /** Error codes this module adds to the catalogue. */
   errors: z.record(
     z.string().regex(/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/, 'must be UPPER_SNAKE_CASE'),
@@ -114,8 +131,8 @@ export interface ManifestInput {
    */
   readonly register?: { readonly id: string; readonly depends: readonly string[] };
   readonly packageVersion?: string;
-  /** Layer the manifest's location requires (L0 for foundation packages). */
-  readonly requiredLayer?: Layer;
+  /** Layers the manifest's location allows (L0 for foundation packages, L3 or L4 in a pack). */
+  readonly allowedLayers?: readonly Layer[];
   /** Checks that a path declared by the manifest exists, relative to its package. */
   readonly fileExists?: (relativePath: string) => boolean;
 }
@@ -200,8 +217,10 @@ function crossCheck(parsed: readonly Parsed[]): ManifestProblem[] {
     if (input.packageVersion !== undefined && manifest.version !== input.packageVersion) {
       add(`version ${manifest.version} differs from package.json version ${input.packageVersion}`);
     }
-    if (input.requiredLayer !== undefined && manifest.layer !== input.requiredLayer) {
-      add(`layer is ${manifest.layer}, but a module here must be ${input.requiredLayer}`);
+    if (input.allowedLayers !== undefined && !input.allowedLayers.includes(manifest.layer)) {
+      add(
+        `layer is ${manifest.layer}, but a module here must be ${input.allowedLayers.join(' or ')}`,
+      );
     }
     for (const dep of manifest.depends) {
       const target = byId.get(dep);

@@ -1087,7 +1087,7 @@
     "packages/migrate/src/migrations.ts"
    ],
    "env": [],
-   "hash": "b119a9a488f1",
+   "hash": "1e630e45437a",
    "imports": [
     "@gx/core",
     "pg",
@@ -1096,7 +1096,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 394,
+   "loc": 397,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1149,7 +1149,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "ab0cda1d92b0",
+   "hash": "701a4e6bf2b4",
    "imports": [
     "vitest",
     "./sql-scan.ts"
@@ -1157,7 +1157,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 201,
+   "loc": 260,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1171,12 +1171,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "60364336ed1a",
+   "hash": "0291c13088ac",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 287,
+   "loc": 341,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1273,7 +1273,7 @@
     "packages/toolchain/src/index.ts"
    ],
    "env": [],
-   "hash": "092dfa158271",
+   "hash": "52dcdce3eb50",
    "imports": [
     "node:util",
     "../index.ts"
@@ -1524,7 +1524,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "2b55ed09f182",
+   "hash": "dea9d7446788",
    "imports": [
     "node:fs",
     "node:path",
@@ -1535,7 +1535,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 90,
+   "loc": 123,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1556,7 +1556,7 @@
     "packages/toolchain/src/manifest.ts"
    ],
    "env": [],
-   "hash": "b846a55c739b",
+   "hash": "9cdc572c4904",
    "imports": [
     "node:child_process",
     "node:fs",
@@ -1570,7 +1570,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 308,
+   "loc": 481,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1584,7 +1584,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "83f3e99a98fc",
+   "hash": "4a7a8588d787",
    "imports": [
     "@gx/core",
     "zod"
@@ -1592,7 +1592,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 246,
+   "loc": 303,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1914,8 +1914,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 19:10",
- "head": "82cf092",
+ "generated": "2026-11-04 19:15",
+ "head": "aec5ea6",
  "root": "epc_dashboard",
  "version": 1
 }

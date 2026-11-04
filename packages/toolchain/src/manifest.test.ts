@@ -257,7 +257,7 @@ describe('validateManifests: register, layers and dependencies', () => {
     input(json, {
       register: { id: String(json['id']), depends },
       packageVersion: '1.0.0',
-      requiredLayer: 'L0',
+      allowedLayers: ['L0'],
     });
 
   it('rejects depends that differ from the register', () => {
@@ -292,6 +292,45 @@ describe('validateManifests: register, layers and dependencies', () => {
     expect(result).toContain('depends on billing in L2, a higher layer than L0');
     expect(result).toContain('depends on ghost, which has no manifest');
   });
+});
+
+describe('validateManifests: re-review findings', () => {
+  it('rejects one module declaring the same tool name twice, even with different modes', () => {
+    const tools = [
+      { name: 'tenants_due', mode: 'read', permission: 'tenant.read' },
+      { name: 'tenants_due', mode: 'draft', permission: 'tenant.read' },
+    ];
+    expect(messages(input(tenancy({ tools }))).join()).toContain(
+      'lists the same tool name more than once',
+    );
+  });
+
+  it('rejects one event version declared twice with different schemas', () => {
+    const events_emitted = [
+      { name: 'tenant.created', version: 1, schema: 'a.json' },
+      { name: 'tenant.created', version: 1, schema: 'b.json' },
+    ];
+    expect(messages(input(tenancy({ events_emitted }))).join()).toContain(
+      'lists the same event version more than once',
+    );
+  });
+
+  it('allows two versions of one event side by side', () => {
+    const events_emitted = [
+      { name: 'tenant.created', version: 1, schema: 'v1.json' },
+      { name: 'tenant.created', version: 2, schema: 'v2.json' },
+    ];
+    expect(messages(input(tenancy({ events_emitted })))).toEqual([]);
+  });
+
+  it.each(['../secrets.json', '/etc/passwd', 'events/../../x.json', 'C:/x.json'])(
+    'rejects the schema path %s, which leaves the package',
+    (schema) => {
+      expect(messages(input(tenancy({ config_schema: schema }))).join()).toContain(
+        'inside the package',
+      );
+    },
+  );
 });
 
 describe('checkManifests on a workspace', () => {
@@ -372,6 +411,34 @@ describe('checkManifests on a workspace', () => {
     const result = checkManifests({ root });
     expect(result.problems).toEqual([]);
     expect(result.manifestsChecked).toBe(2);
+  });
+
+  it('requires a pack module to be L3 or L4', () => {
+    const root = workspace({
+      ...base,
+      'packages/k1-tenancy/manifest.json': tenancy(),
+      'packs/demo/modules/visits/manifest.json': tenancy({
+        id: 'visits',
+        layer: 'L0',
+        table_prefix: 'visits_',
+        entities: ['visit'],
+        permissions: [],
+        events_emitted: [],
+      }),
+    });
+    expect(checkManifests({ root }).problems.map((p) => p.message)).toEqual([
+      'layer is L0, but a module here must be L3 or L4',
+    ]);
+  });
+
+  it('ignores manifest.json files outside module locations (web app manifests, fixtures)', () => {
+    const root = workspace({
+      ...base,
+      'packages/k1-tenancy/manifest.json': tenancy(),
+      'packages/k1-tenancy/public/manifest.json': { name: 'a web app' },
+      'packs/demo/fixtures/manifest.json': { nope: true },
+    });
+    expect(checkManifests({ root }).problems).toEqual([]);
   });
 
   it('checks a pack manifest too, so it cannot be silently skipped', () => {

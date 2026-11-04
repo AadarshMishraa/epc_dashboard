@@ -44,3 +44,9 @@ Root configs, README.md, pnpm-lock.yaml, packages/**, docs/architecture/system-d
 - Verified: verify → 321 unit tests; test:db → 23 of 23 on Postgres 16.15; mutations turn tests red, except one equivalent mutation, covered by a fault-injection test.
 - Not verified: Postgres 17 (CI, K0-T10), transaction-pooler refusal (no pooler locally), and the K0-T05 re-review and K0-T07 review (in progress).
 - Next: close both reviews; K0-T09 API diff; K0-T14 and K0-T04 (S3, threat model first); K0-T06 test kit.
+
+## Closed: K0-T05 and K0-T07 done
+- K0-T05 approved after 3 review passes (views, functions, materialized views, blocking indexes and upserts added to the scanner). K0-T07 approved after 2 passes (tool names and event versions unique by key, pack layer L3 or L4, discovery limited to module locations, schema paths kept inside the package).
+- Verified: verify → 352 tests; test:db 23 of 23; every new rule mutation-proven.
+- Debt: docs/maintenance/technical-debt.md TD-1 (pack version and depends) and TD-2 (cross-package migration ordering).
+- Next session: K0-T09, then the S3 tasks K0-T14 and K0-T04 (threat model first).
