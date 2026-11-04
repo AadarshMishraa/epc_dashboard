@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { countStatements, findRiskyStatements, type StatementKind } from './sql-scan.ts';
+import { countStatements, findRiskyStatements } from './sql-scan.ts';
 
 /** Where one package keeps its migrations, and which packages' migrations must run first. */
 export interface MigrationSource {
@@ -27,6 +27,8 @@ export interface Migration {
   readonly phase: Phase;
   readonly transactional: boolean;
   readonly reason?: string;
+  /** Why the security-sensitive statements in this migration are acceptable, and who reviewed them. */
+  readonly securityReview?: string;
 }
 
 export type ProblemRule =
@@ -34,6 +36,7 @@ export type ProblemRule =
   | 'numbering'
   | 'directive'
   | 'destructive-without-contract'
+  | 'security-review-required'
   | 'transaction-control'
   | 'no-transaction-multi-statement'
   | 'dependency'
@@ -42,6 +45,8 @@ export type ProblemRule =
 
 export interface MigrationProblem {
   readonly rule: ProblemRule;
+  /** `package/name` of the migration, when the problem is in one; the runner skips applied ones. */
+  readonly migration?: string;
   readonly file?: string;
   readonly line?: number;
   readonly message: string;
@@ -49,19 +54,6 @@ export interface MigrationProblem {
 
 const FILE_NAME = /^(\d{4})_[a-z0-9]+(?:_[a-z0-9]+)*\.sql$/;
 const DIRECTIVE = /^--\s*gx:([a-z-]+)(?:\s+(.*))?$/;
-const DESCRIPTIONS: Readonly<Record<StatementKind, string>> = {
-  drop: 'DROP removes something the previous release may still use',
-  rename: 'RENAME breaks the previous release; add the new name, copy, then drop later',
-  'type-change': 'a column type change can break the previous release',
-  'set-not-null': 'SET NOT NULL breaks writers of the previous release',
-  'add-not-null-without-default':
-    'a NOT NULL column without a default breaks writers of the previous release',
-  delete: 'DELETE destroys data; backfills and clean-ups run as tenant-aware jobs',
-  truncate: 'TRUNCATE destroys data',
-  update: 'UPDATE rewrites data; backfills run as tenant-aware jobs',
-  'transaction-control':
-    'the runner owns transactions; remove BEGIN, COMMIT, ROLLBACK or SAVEPOINT',
-};
 
 export interface LoadedMigrations {
   readonly migrations: readonly Migration[];
@@ -101,14 +93,10 @@ function loadPackage(source: MigrationSource, problems: MigrationProblem[]): Mig
       continue;
     }
     const sql = readFileSync(join(source.dir, fileName), 'utf8');
-    const migration = parseMigration(
-      source.packageId,
-      fileName,
-      Number(match[1]),
-      sql,
-      file,
-      problems,
-    );
+    const own: MigrationProblem[] = [];
+    const migration = parseMigration(source.packageId, fileName, Number(match[1]), sql, file, own);
+    const tag = `${source.packageId}/${fileName.replace(/\.sql$/, '')}`;
+    problems.push(...own.map((problem) => ({ ...problem, migration: tag })));
     if (migration !== undefined) loaded.push(migration);
   }
   // Forward-only and gap-free: 0001, 0002, 0003 ... so a merged branch cannot slip in behind.
@@ -135,6 +123,7 @@ function parseMigration(
   let phase: Phase = 'expand';
   let transactional = true;
   let reason: string | undefined;
+  let securityReview: string | undefined;
   const lines = sql.split('\n');
   for (const [index, raw] of lines.entries()) {
     const directive = DIRECTIVE.exec(raw.trim());
@@ -144,12 +133,13 @@ function parseMigration(
     if (key === 'phase' && (value === 'expand' || value === 'contract')) phase = value;
     else if (key === 'no-transaction' && value === '') transactional = false;
     else if (key === 'reason' && value.trim() !== '') reason = value.trim();
+    else if (key === 'security-reviewed' && value.trim() !== '') securityReview = value.trim();
     else {
       problems.push({
         rule: 'directive',
         file,
         line,
-        message: `unknown or malformed directive '${raw.trim()}'; use gx:phase expand|contract, gx:reason <text>, gx:no-transaction`,
+        message: `unknown or malformed directive '${raw.trim()}'; use gx:phase expand|contract, gx:reason <text>, gx:security-reviewed <reason and reviewer>, gx:no-transaction`,
       });
     }
   }
@@ -174,19 +164,20 @@ function parseMigration(
     });
   }
   for (const finding of findRiskyStatements(sql)) {
-    if (finding.kind === 'transaction-control') {
+    const at = { file, line: finding.line };
+    if (finding.severity === 'forbidden') {
+      problems.push({ rule: 'transaction-control', ...at, message: finding.reason });
+    } else if (finding.severity === 'security' && securityReview === undefined) {
       problems.push({
-        rule: 'transaction-control',
-        file,
-        line: finding.line,
-        message: DESCRIPTIONS[finding.kind],
+        rule: 'security-review-required',
+        ...at,
+        message: `${finding.reason} ('${finding.text}'). It needs a security review: add -- gx:security-reviewed <reason and reviewer>`,
       });
-    } else if (phase !== 'contract') {
+    } else if (finding.severity === 'contract' && phase !== 'contract') {
       problems.push({
         rule: 'destructive-without-contract',
-        file,
-        line: finding.line,
-        message: `${DESCRIPTIONS[finding.kind]} ('${finding.text}'). Expand first; do this in a later migration marked -- gx:phase contract with a gx:reason`,
+        ...at,
+        message: `${finding.reason} ('${finding.text}'). Expand first; do this in a later migration marked -- gx:phase contract with a gx:reason`,
       });
     }
   }
@@ -201,6 +192,7 @@ function parseMigration(
     phase,
     transactional,
     ...(reason === undefined ? {} : { reason }),
+    ...(securityReview === undefined ? {} : { securityReview }),
   };
 }
 

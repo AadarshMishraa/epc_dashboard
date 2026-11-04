@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { MigrationSource } from './migrations.ts';
-import { LEDGER_TABLE, MIGRATION_LOCK_KEY, migrate } from './runner.ts';
+import { LEDGER_TABLE, MIGRATION_LOCK_KEY, forgetStarted, migrate } from './runner.ts';
 
 // Each test gets its own empty database on the server named by GX_TEST_DATABASE_URL.
 const adminUrl = process.env['GX_TEST_DATABASE_URL'];
@@ -155,7 +155,7 @@ describe('refusals', () => {
     const result = await migrate({
       connectionString: db.url,
       sources: db.sources({
-        a: { files: { '0001_a.sql': 'CREATE TABLE a_t (c int);\nALTER TABLE a_t DROP COLUMN c;' } },
+        a: { files: { '0001_a.sql': 'CREATE TABLE a_u (c int);\nALTER TABLE a_t DROP COLUMN c;' } },
       }),
     });
     expect(!result.ok && result.error.kind).toBe('invalid');
@@ -278,7 +278,7 @@ describe('failure handling', () => {
       const result = await migrate({
         connectionString: db.url,
         sources: db.sources(TWO_PACKAGES),
-        lockTimeoutMs: 200,
+        runLockTimeoutMs: 200,
       });
       expect(!result.ok && result.error.kind).toBe('lock-timeout');
     } finally {
@@ -344,5 +344,151 @@ describe('gx-migrate command', () => {
     const root = workspace(db, 'DROP TABLE a_t;');
     expect(run(['check', '--root', root], {}).status).toBe(1);
     expect(run(['up', '--root', root], { DATABASE_MIGRATION_URL: '' }).status).toBe(2);
+  });
+});
+
+describe('review fixes', () => {
+  it('does not re-judge applied migrations: a file that breaks a newer rule is grandfathered', async () => {
+    const db = await fixture();
+    const sources = db.sources({ a: { files: { '0001_old.sql': 'CREATE TABLE a_t (id int);' } } });
+    await migrate({ connectionString: db.url, sources });
+    // Pretend 0002 was applied under older rules: same checksum, but UPDATE is now contract-only.
+    const sql = 'UPDATE a_t SET id = 1;';
+    writeFileSync(join(db.root, 'packages/a/migrations/0002_backfill.sql'), sql);
+    const { createHash } = await import('node:crypto');
+    await db.query(
+      `INSERT INTO ${LEDGER_TABLE} (package_id, name, checksum, phase, status, applied_at) VALUES ('a', '0002_backfill', '${createHash('sha256').update(sql).digest('hex')}', 'expand', 'applied', now())`,
+    );
+    const result = await migrate({ connectionString: db.url, sources });
+    expect(result.ok && result.value.alreadyApplied).toBe(2);
+  });
+
+  it('fails fast on a busy table instead of queueing app traffic behind DDL', async () => {
+    const db = await fixture();
+    const sources = db.sources({ a: { files: { '0001_t.sql': 'CREATE TABLE a_t (id int);' } } });
+    await migrate({ connectionString: db.url, sources });
+    writeFileSync(
+      join(db.root, 'packages/a/migrations/0002_col.sql'),
+      'ALTER TABLE a_t ADD COLUMN c int;',
+    );
+    const holder = new pg.Client({ connectionString: db.url });
+    await holder.connect();
+    try {
+      await holder.query('BEGIN');
+      await holder.query('LOCK TABLE a_t IN ACCESS SHARE MODE');
+      const result = await migrate({
+        connectionString: db.url,
+        sources,
+        migrationLockTimeoutMs: 300,
+      });
+      expect(!result.ok && result.error).toMatchObject({
+        kind: 'migration-failed',
+        sqlState: '55P03',
+      });
+      expect(
+        !result.ok && result.error.kind === 'migration-failed' && result.error.message,
+      ).toContain('busy');
+    } finally {
+      await holder.end();
+    }
+  });
+
+  it('resets session settings between migrations', async () => {
+    const db = await fixture();
+    const result = await migrate({
+      connectionString: db.url,
+      sources: db.sources({
+        a: {
+          files: {
+            '0001_schema.sql': 'CREATE SCHEMA a_side;',
+            '0002_path.sql':
+              "-- gx:phase contract\n-- gx:reason test of session reset\nSELECT set_config('search_path', 'a_side', false);",
+            '0003_table.sql': 'CREATE TABLE a_t (id int);',
+          },
+        },
+      }),
+    });
+    expect(result.ok).toBe(true);
+    const where = await db.query<{ table_schema: string }>(
+      "SELECT table_schema FROM information_schema.tables WHERE table_name = 'a_t'",
+    );
+    expect(where.map((r) => r.table_schema)).toEqual(['public']);
+  });
+
+  it('stops as dirty after a no-transaction migration fails, until an operator clears it', async () => {
+    const db = await fixture();
+    const sources = db.sources({
+      a: {
+        files: {
+          '0001_index.sql':
+            '-- gx:no-transaction\nCREATE INDEX CONCURRENTLY IF NOT EXISTS a_idx ON a_missing (c);',
+        },
+      },
+    });
+    const first = await migrate({ connectionString: db.url, sources });
+    expect(!first.ok && first.error.kind).toBe('migration-failed');
+    const second = await migrate({ connectionString: db.url, sources });
+    expect(!second.ok && second.error).toMatchObject({
+      kind: 'dirty',
+      migrations: ['a/0001_index'],
+    });
+    expect(await forgetStarted(db.url, 'a/0001_index')).toEqual({ ok: true, value: undefined });
+    expect((await forgetStarted(db.url, 'a/0001_index')).ok).toBe(false);
+  });
+
+  it('records the release and who applied each migration', async () => {
+    const db = await fixture();
+    await migrate({
+      connectionString: db.url,
+      sources: db.sources(TWO_PACKAGES),
+      release: 'abc1234',
+    });
+    const rows = await db.query<{ release: string; applied_by: string; status: string }>(
+      `SELECT release, applied_by, status FROM ${LEDGER_TABLE}`,
+    );
+    expect(
+      rows.every(
+        (r) => r.release === 'abc1234' && r.applied_by === 'gx_test' && r.status === 'applied',
+      ),
+    ).toBe(true);
+  });
+
+  it('plan creates nothing, not even the ledger schema', async () => {
+    const db = await fixture();
+    await migrate({ connectionString: db.url, sources: db.sources(TWO_PACKAGES), dryRun: true });
+    expect(
+      await db.query(
+        "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'gx_migrations'",
+      ),
+    ).toEqual([]);
+  });
+
+  it('refuses a ledger written by a newer runner', async () => {
+    const db = await fixture();
+    const sources = db.sources(TWO_PACKAGES);
+    await migrate({ connectionString: db.url, sources });
+    await db.query("UPDATE gx_migrations.meta SET value = '99' WHERE key = 'ledger_version'");
+    const result = await migrate({ connectionString: db.url, sources });
+    expect(!result.ok && result.error.kind).toBe('ledger-too-new');
+  });
+
+  it('blocks a security-sensitive statement unless it is reviewed', async () => {
+    const db = await fixture();
+    const unreviewed = db.sources({
+      a: {
+        files: {
+          '0001_t.sql': 'CREATE TABLE a_t (id int);\nALTER TABLE a_t DISABLE ROW LEVEL SECURITY;',
+        },
+      },
+    });
+    const blocked = await migrate({ connectionString: db.url, sources: unreviewed });
+    expect(!blocked.ok && blocked.error.kind === 'invalid' && blocked.error.problems[0]?.rule).toBe(
+      'security-review-required',
+    );
+    writeFileSync(
+      join(db.root, 'packages/a/migrations/0001_t.sql'),
+      '-- gx:security-reviewed test fixture, reviewed by the suite\nCREATE TABLE a_t (id int);\nALTER TABLE a_t DISABLE ROW LEVEL SECURITY;',
+    );
+    expect((await migrate({ connectionString: db.url, sources: unreviewed })).ok).toBe(true);
   });
 });

@@ -54,7 +54,7 @@ describe('loadMigrations order', () => {
   });
 
   it('gives each file a stable SHA-256 checksum', () => {
-    const list = sources({ a: { files: { '0001_x.sql': 'SELECT 1;' } } });
+    const list = sources({ a: { files: { '0001_x.sql': 'CREATE TABLE a_x (id int);' } } });
     const [first] = loadMigrations(list).migrations;
     expect(first?.checksum).toMatch(/^[0-9a-f]{64}$/);
     expect(loadMigrations(list).migrations[0]?.checksum).toBe(first?.checksum);
@@ -73,16 +73,36 @@ describe('loadMigrations file rules', () => {
   it.each(['1_short.sql', '0001-dash.sql', '0001_Upper.sql', '0001_x.SQL', 'notes.txt'])(
     'rejects the file name %s',
     (name) => {
-      expect(rules(sources({ a: { files: { [name]: 'SELECT 1;' } } }))).toEqual(['file-name']);
+      expect(rules(sources({ a: { files: { [name]: 'CREATE TABLE a_x (id int);' } } }))).toEqual([
+        'file-name',
+      ]);
     },
   );
 
   it('rejects a gap and a duplicate number', () => {
     expect(
-      rules(sources({ a: { files: { '0001_a.sql': 'SELECT 1;', '0003_c.sql': 'SELECT 1;' } } })),
+      rules(
+        sources({
+          a: {
+            files: {
+              '0001_a.sql': 'CREATE TABLE a_x (id int);',
+              '0003_c.sql': 'CREATE TABLE a_x (id int);',
+            },
+          },
+        }),
+      ),
     ).toEqual(['numbering']);
     expect(
-      rules(sources({ a: { files: { '0001_a.sql': 'SELECT 1;', '0001_b.sql': 'SELECT 1;' } } })),
+      rules(
+        sources({
+          a: {
+            files: {
+              '0001_a.sql': 'CREATE TABLE a_x (id int);',
+              '0001_b.sql': 'CREATE TABLE a_x (id int);',
+            },
+          },
+        }),
+      ),
     ).toEqual(['numbering']);
   });
 
@@ -98,7 +118,7 @@ describe('expand then contract', () => {
     const { problems } = loadMigrations(
       sources({
         'k1-tenancy': {
-          files: { '0001_a.sql': 'CREATE TABLE k1_t (a int);\nALTER TABLE k1_t DROP COLUMN a;\n' },
+          files: { '0001_a.sql': 'CREATE TABLE k1_u (a int);\nALTER TABLE k1_t DROP COLUMN a;\n' },
         },
       }),
     );
@@ -141,10 +161,35 @@ describe('expand then contract', () => {
     'rejects the malformed directive %s',
     (directive) => {
       expect(
-        rules(sources({ a: { files: { '0001_a.sql': `${directive}\nSELECT 1;\n` } } })),
+        rules(
+          sources({ a: { files: { '0001_a.sql': `${directive}\nCREATE TABLE a_x (id int);\n` } } }),
+        ),
       ).toContain('directive');
     },
   );
+});
+
+describe('security review', () => {
+  const sql = 'CREATE TABLE a_t (id int);\nALTER TABLE a_t DISABLE ROW LEVEL SECURITY;\n';
+
+  it('blocks a security-sensitive statement without a review, even in a contract migration', () => {
+    const contract = `-- gx:phase contract\n-- gx:reason test\n${sql}`;
+    for (const body of [sql, contract]) {
+      const { problems } = loadMigrations(sources({ a: { files: { '0001_a.sql': body } } }));
+      expect(problems.map((p) => [p.rule, p.migration])).toEqual([
+        ['security-review-required', 'a/0001_a'],
+      ]);
+    }
+  });
+
+  it('accepts it with gx:security-reviewed and records the review', () => {
+    const reviewed = `-- gx:security-reviewed needed for the fixture, reviewed by the suite\n${sql}`;
+    const { migrations, problems } = loadMigrations(
+      sources({ a: { files: { '0001_a.sql': reviewed } } }),
+    );
+    expect(problems).toEqual([]);
+    expect(migrations[0]?.securityReview).toBe('needed for the fixture, reviewed by the suite');
+  });
 });
 
 describe('gx:no-transaction', () => {

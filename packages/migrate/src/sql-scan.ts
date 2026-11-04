@@ -1,23 +1,23 @@
 /**
- * Static analysis of migration SQL. Comments and string literals (including dollar-quoted
- * bodies) are blanked out first, keeping every newline, so keywords inside them are not
- * matched and reported line numbers still point at the original file.
+ * Static analysis of migration SQL by allow-list. The file is split into statements
+ * (comments and literals blanked first, newlines kept, so lines stay true), and each
+ * statement is classified by its head:
+ *
+ * - safe: additive DDL the previous release keeps working with;
+ * - contract: removes, rewrites or tightens something, or is not on the allow-list;
+ *   allowed only in a `gx:phase contract` migration;
+ * - security: can weaken tenant isolation or privileges; allowed only with
+ *   `gx:security-reviewed <reason>`, whatever the phase;
+ * - forbidden: transaction control, which the runner owns.
  */
 
-export type StatementKind =
-  | 'drop'
-  | 'rename'
-  | 'type-change'
-  | 'set-not-null'
-  | 'add-not-null-without-default'
-  | 'delete'
-  | 'truncate'
-  | 'update'
-  | 'transaction-control';
+export type Severity = 'contract' | 'security' | 'forbidden';
 
 export interface Finding {
-  readonly kind: StatementKind;
+  readonly severity: Severity;
   readonly line: number;
+  /** Why this statement is not plain additive DDL. */
+  readonly reason: string;
   readonly text: string;
 }
 
@@ -25,18 +25,18 @@ export interface Finding {
 export function blankCommentsAndStrings(sql: string): string {
   const out = sql.split('');
   const blank = (from: number, to: number): void => {
-    for (let i = from; i < to && i < out.length; i += 1) if (out[i] !== '\n') out[i] = ' ';
+    for (let k = from; k < to && k < out.length; k += 1) if (out[k] !== '\n') out[k] = ' ';
   };
   let i = 0;
   while (i < sql.length) {
-    const rest = sql.slice(i);
-    if (rest.startsWith('--')) {
+    const ch = sql[i];
+    const prev = i > 0 ? sql[i - 1] : '';
+    if (sql.startsWith('--', i)) {
       const end = sql.indexOf('\n', i);
       const stop = end === -1 ? sql.length : end;
       blank(i, stop);
       i = stop;
-    } else if (rest.startsWith('/*')) {
-      // Postgres block comments nest.
+    } else if (sql.startsWith('/*', i)) {
       let depth = 0;
       let j = i;
       while (j < sql.length) {
@@ -51,105 +51,236 @@ export function blankCommentsAndStrings(sql: string): string {
       }
       blank(i, j);
       i = j;
-    } else if (sql[i] === "'") {
+    } else if (ch === "'") {
+      // E'...' strings use backslash escapes; standard strings double the quote.
+      const escapes =
+        /[eE]/.test(prev ?? '') && !/[A-Za-z0-9_]/.test(i > 1 ? (sql[i - 2] ?? '') : '');
       let j = i + 1;
       while (j < sql.length) {
-        if (sql[j] === "'" && sql[j + 1] === "'") j += 2;
+        if (escapes && sql[j] === '\\') j += 2;
+        else if (sql[j] === "'" && sql[j + 1] === "'") j += 2;
         else if (sql[j] === "'") break;
         else j += 1;
       }
-      blank(i, j + 1);
+      blank(escapes ? i - 1 : i, j + 1);
       i = j + 1;
-    } else if (sql[i] === '"') {
-      // Quoted identifiers are names, not keywords: blank them too.
-      const end = sql.indexOf('"', i + 1);
-      const stop = end === -1 ? sql.length : end + 1;
+    } else if (ch === '"') {
+      let j = i + 1;
+      while (j < sql.length) {
+        if (sql[j] === '"' && sql[j + 1] === '"') j += 2;
+        else if (sql[j] === '"') break;
+        else j += 1;
+      }
+      // Quoted identifiers are names, not keywords. Keep their letters, wrapped as q...q and
+      // with other characters as _, so names stay distinct but can never match a keyword.
+      for (let k = i; k <= j && k < out.length; k += 1) {
+        const c = sql[k] ?? '';
+        out[k] = k === i || k === j ? 'q' : c === '\n' ? '\n' : /[A-Za-z0-9_]/.test(c) ? c : '_';
+      }
+      i = j + 1;
+    } else if (ch === '$' && !/[A-Za-z0-9_$]/.test(prev ?? '')) {
+      const tag = /^\$([A-Za-z_][A-Za-z0-9_]*)?\$/.exec(sql.slice(i));
+      if (tag === null) {
+        i += 1;
+        continue;
+      }
+      const end = sql.indexOf(tag[0], i + tag[0].length);
+      const stop = end === -1 ? sql.length : end + tag[0].length;
       blank(i, stop);
       i = stop;
-    } else {
-      const dollar = /^\$([A-Za-z_][A-Za-z0-9_]*)?\$/.exec(rest);
-      if (dollar !== null) {
-        const tag = dollar[0];
-        const end = sql.indexOf(tag, i + tag.length);
-        const stop = end === -1 ? sql.length : end + tag.length;
-        blank(i, stop);
-        i = stop;
-      } else i += 1;
-    }
+    } else i += 1;
   }
   return out.join('');
 }
 
-const RULES: readonly { readonly kind: StatementKind; readonly pattern: RegExp }[] = [
-  // Relaxing NOT NULL is safe for the previous release; every other DROP is not.
-  { kind: 'drop', pattern: /\bDROP\b(?!\s+NOT\s+NULL\b)/gi },
-  { kind: 'rename', pattern: /\bRENAME\b/gi },
-  { kind: 'type-change', pattern: /\bALTER\s+(?:COLUMN\s+)?\S+\s+(?:SET\s+DATA\s+)?TYPE\b/gi },
-  { kind: 'set-not-null', pattern: /\bALTER\s+(?:COLUMN\s+)?\S+\s+SET\s+NOT\s+NULL\b/gi },
-  { kind: 'delete', pattern: /\bDELETE\s+FROM\b/gi },
-  { kind: 'truncate', pattern: /\bTRUNCATE\b/gi },
-  { kind: 'update', pattern: /\bUPDATE\s+\S+\s+SET\b/gi },
-  {
-    kind: 'transaction-control',
-    pattern: /(?:^|;)\s*(?:BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION|SAVEPOINT)\b/gi,
-  },
+export interface Statement {
+  /** The statement with comments and literals blanked, whitespace collapsed, upper-cased. */
+  readonly code: string;
+  readonly line: number;
+}
+
+/** Statements at top-level semicolons; empty statements are dropped. */
+export function splitStatements(sql: string): Statement[] {
+  const code = blankCommentsAndStrings(sql);
+  const statements: Statement[] = [];
+  let start = 0;
+  for (let i = 0; i <= code.length; i += 1) {
+    if (i === code.length || code[i] === ';') {
+      const raw = code.slice(start, i);
+      const offset = raw.search(/\S/);
+      if (offset !== -1) {
+        statements.push({
+          code: raw.replace(/\s+/g, ' ').trim().toUpperCase(),
+          line: code.slice(0, start + offset).split('\n').length,
+        });
+      }
+      start = i + 1;
+    }
+  }
+  return statements;
+}
+
+export function countStatements(sql: string): number {
+  return splitStatements(sql).length;
+}
+
+/** Roles a migration may grant to without a security review. */
+export const KNOWN_ROLES: readonly string[] = ['GX_APP'];
+
+const TRANSACTION_CONTROL =
+  /^(?:BEGIN|START|COMMIT|END|ROLLBACK|ABORT|SAVEPOINT|RELEASE|PREPARE TRANSACTION|COMMIT PREPARED|ROLLBACK PREPARED)\b/;
+const SECURITY_ANYWHERE: readonly [RegExp, string][] = [
+  [/\bSECURITY DEFINER\b/, 'SECURITY DEFINER runs with the owner’s privileges'],
+  [/\bBYPASSRLS\b/, 'BYPASSRLS lets a role ignore row-level security'],
+  [/\b(?:DISABLE|NO FORCE) ROW LEVEL SECURITY\b/, 'this switches off row-level security'],
+  [/\bOWNER TO\b/, 'changing an owner changes who bypasses row-level security'],
+];
+const SECURITY_HEADS: readonly [RegExp, string][] = [
+  [/^DO\b/, 'a DO block can run any statement, so it is not checked'],
+  [/^(?:CREATE|ALTER|DROP) POLICY\b/, 'row-level security policies decide tenant isolation'],
+  [/^(?:CREATE|ALTER|DROP) (?:ROLE|USER|GROUP)\b/, 'role changes affect every privilege'],
+  [/^ALTER DEFAULT PRIVILEGES\b/, 'default privileges apply to future tables'],
+  [
+    /^SET (?:SESSION )?(?:ROLE|SESSION AUTHORIZATION)\b/,
+    'switching role changes who owns what this creates',
+  ],
+  [/^(?:CREATE|ALTER|DROP) EXTENSION\b/, 'extensions run privileged code'],
+  [/^(?:REVOKE|GRANT)\b.*\bON (?:SCHEMA|DATABASE|ALL)\b/, 'schema- and database-wide privileges'],
+  [/^SECURITY LABEL\b/, 'security labels'],
+];
+const SAFE_HEADS: readonly RegExp[] = [
+  /^CREATE (?:UNLOGGED )?TABLE\b/,
+  /^CREATE (?:UNIQUE )?INDEX\b/,
+  /^CREATE (?:TYPE|SEQUENCE|SCHEMA|DOMAIN)\b/,
+  /^CREATE (?:OR REPLACE )?(?:FUNCTION|PROCEDURE|VIEW|TRIGGER)\b/,
+  /^CREATE CONSTRAINT TRIGGER\b/,
+  /^COMMENT ON\b/,
+  /^INSERT INTO\b/,
+  /^ALTER TYPE \S+ ADD VALUE\b/,
 ];
 
-const ADD_KEYWORD = /\bADD\b/gi;
-/** `ADD` followed by one of these adds a constraint, not a column. */
-const NOT_A_COLUMN = /^\s*(?:CONSTRAINT|PRIMARY|FOREIGN|UNIQUE|CHECK|EXCLUDE|VALUE)\b/i;
+/** One ALTER TABLE action, judged on its own. */
+function judgeAlterTableAction(action: string, tableIsNew: boolean): string | undefined {
+  const a = action.trim();
+  if (
+    /^ADD (?:COLUMN )?(?:IF NOT EXISTS )?(?!CONSTRAINT|PRIMARY|FOREIGN|UNIQUE|CHECK|EXCLUDE)\S+/.test(
+      a,
+    )
+  ) {
+    if (/\bNOT NULL\b/.test(a) && !/\b(?:DEFAULT|GENERATED)\b/.test(a) && !tableIsNew) {
+      return 'a NOT NULL column without a default breaks writers of the previous release';
+    }
+    return undefined;
+  }
+  if (/^ADD (?:CONSTRAINT \S+ )?(?:PRIMARY|FOREIGN|UNIQUE|CHECK|EXCLUDE)\b/.test(a)) {
+    if (tableIsNew || /\bNOT VALID\b/.test(a)) return undefined;
+    return 'a new constraint on an existing table checks old rows and old writers; add it NOT VALID, then VALIDATE';
+  }
+  if (/^VALIDATE CONSTRAINT\b/.test(a)) return undefined;
+  if (/^(?:ENABLE|FORCE) ROW LEVEL SECURITY\b/.test(a)) return undefined;
+  if (/^ALTER (?:COLUMN )?\S+ (?:DROP NOT NULL|SET DEFAULT\b|SET STATISTICS\b)/.test(a))
+    return undefined;
+  if (tableIsNew) return undefined;
+  if (/^(?:ALTER (?:COLUMN )?\S+ )?(?:SET DATA )?TYPE\b/.test(a))
+    return 'a column type change can break the previous release';
+  if (/\bSET NOT NULL\b/.test(a)) return 'SET NOT NULL breaks writers of the previous release';
+  if (/^DROP\b/.test(a) || /\bDROP\b/.test(a))
+    return 'DROP removes something the previous release may still use';
+  if (/^RENAME\b/.test(a))
+    return 'RENAME breaks the previous release; add the new name, copy, then drop later';
+  return 'this ALTER TABLE action is not on the expand allow-list';
+}
 
-/** The clause from `start` to the next top-level comma or semicolon. */
-function clauseFrom(code: string, start: number): string {
+/** Top-level comma-separated parts of an ALTER TABLE action list. */
+function splitActions(text: string): string[] {
+  const parts: string[] = [];
   let depth = 0;
-  for (let i = start; i < code.length; i += 1) {
-    const ch = code[i];
+  let start = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
     if (ch === '(') depth += 1;
-    else if (ch === ')') {
-      if (depth === 0) return code.slice(start, i);
-      depth -= 1;
-    } else if ((ch === ',' || ch === ';') && depth === 0) return code.slice(start, i);
+    else if (ch === ')') depth -= 1;
+    else if (ch === ',' && depth === 0) {
+      parts.push(text.slice(start, i));
+      start = i + 1;
+    }
   }
-  return code.slice(start);
+  parts.push(text.slice(start));
+  return parts;
 }
 
-/**
- * Finds the statements that break the previous release or destroy data. Each one is
- * allowed only in a migration marked `-- gx:phase contract` (transaction control never).
- */
+const tableNameOf = (name: string): string =>
+  name
+    .replace(/^ONLY /, '')
+    .replace(/^IF (?:NOT )?EXISTS /, '')
+    .split(' ')[0] ?? '';
+
+/** Every statement that is not plain additive DDL, with its line and why. */
 export function findRiskyStatements(sql: string): Finding[] {
-  const code = blankCommentsAndStrings(sql);
   const findings: Finding[] = [];
-  const lineOf = (index: number): number => code.slice(0, index).split('\n').length;
-  for (const { kind, pattern } of RULES) {
-    for (const match of code.matchAll(pattern)) {
-      const offset = kind === 'transaction-control' ? match[0].search(/[A-Za-z]/) : 0;
-      const index = match.index + offset;
-      findings.push({ kind, line: lineOf(index), text: oneLine(code.slice(index, index + 60)) });
+  const createdTables = new Set<string>();
+  const add = (severity: Severity, statement: Statement, reason: string): void => {
+    findings.push({ severity, line: statement.line, reason, text: statement.code.slice(0, 80) });
+  };
+
+  for (const statement of splitStatements(sql)) {
+    const { code } = statement;
+    const created = /^CREATE (?:UNLOGGED )?TABLE (?:IF NOT EXISTS )?(\S+)/.exec(code);
+    if (created?.[1] !== undefined) createdTables.add(created[1]);
+
+    if (TRANSACTION_CONTROL.test(code)) {
+      add(
+        'forbidden',
+        statement,
+        'the runner owns transactions; remove BEGIN, COMMIT, END, ROLLBACK, ABORT, SAVEPOINT or RELEASE',
+      );
+      continue;
     }
-  }
-  for (const match of code.matchAll(ADD_KEYWORD)) {
-    const clause = clauseFrom(code, match.index + match[0].length);
-    if (NOT_A_COLUMN.test(clause)) continue;
-    // A column that gets a value on its own (default, generated, identity) is safe.
-    if (/\bNOT\s+NULL\b/i.test(clause) && !/\b(?:DEFAULT|GENERATED)\b/i.test(clause)) {
-      findings.push({
-        kind: 'add-not-null-without-default',
-        line: lineOf(match.index),
-        text: oneLine(`ADD${clause}`),
-      });
+    const security =
+      SECURITY_HEADS.find(([pattern]) => pattern.test(code)) ??
+      SECURITY_ANYWHERE.find(([pattern]) => pattern.test(code));
+    if (security !== undefined) {
+      add('security', statement, security[1]);
+      continue;
     }
+    if (/^GRANT\b/.test(code) && !/\bON\b/.test(code)) {
+      add('security', statement, 'granting a role to a role is privilege escalation');
+      continue;
+    }
+    const grant = /^GRANT\b.*\bTO (.+)$/.exec(code);
+    if (grant?.[1] !== undefined) {
+      const roles = grant[1]
+        .replace(/\bWITH GRANT OPTION\b/, '')
+        .split(',')
+        .map((r) => r.trim());
+      if (/\bWITH GRANT OPTION\b/.test(code) || roles.some((role) => !KNOWN_ROLES.includes(role))) {
+        add('security', statement, `GRANT to a role other than ${KNOWN_ROLES.join(', ')}`);
+      }
+      continue;
+    }
+    const alterTable =
+      /^ALTER TABLE (.+?) ((?:ADD|ALTER|DROP|RENAME|VALIDATE|ENABLE|FORCE|DISABLE|NO|SET|RESET|ATTACH|DETACH|OWNER|INHERIT|CLUSTER|REPLICA|OF|NOT)\b.*)$/.exec(
+        code,
+      );
+    if (alterTable?.[1] !== undefined && alterTable[2] !== undefined) {
+      const tableIsNew = createdTables.has(tableNameOf(alterTable[1]));
+      for (const action of splitActions(alterTable[2])) {
+        const reason = judgeAlterTableAction(action, tableIsNew);
+        if (reason !== undefined) add('contract', statement, reason);
+      }
+      continue;
+    }
+    if (SAFE_HEADS.some((pattern) => pattern.test(code))) continue;
+    add('contract', statement, describeUnlisted(code));
   }
-  return findings.sort((a, b) => a.line - b.line || a.kind.localeCompare(b.kind));
+  return findings;
 }
 
-/** Number of statements, counted by semicolons outside comments and literals. */
-export function countStatements(sql: string): number {
-  return blankCommentsAndStrings(sql)
-    .split(';')
-    .filter((part) => part.trim() !== '').length;
-}
-
-function oneLine(text: string): string {
-  return text.replace(/\s+/g, ' ').trim();
+function describeUnlisted(code: string): string {
+  if (/^(?:WITH\b.*\b)?(?:UPDATE|DELETE|MERGE)\b/.test(code) || /^(?:TRUNCATE|COPY)\b/.test(code)) {
+    return 'this rewrites or removes data; backfills and clean-ups run as tenant-aware jobs';
+  }
+  if (/^DROP\b/.test(code)) return 'DROP removes something the previous release may still use';
+  if (/\bRENAME\b/.test(code)) return 'RENAME breaks the previous release';
+  return 'this statement is not on the expand allow-list';
 }

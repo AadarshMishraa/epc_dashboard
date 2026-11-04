@@ -15,7 +15,9 @@ export {
 } from './migrations.ts';
 export {
   LEDGER_TABLE,
+  LEDGER_VERSION,
   MIGRATION_LOCK_KEY,
+  forgetStarted,
   migrate,
   type AppliedMigration,
   type MigrateFailure,
@@ -23,11 +25,14 @@ export {
   type MigrateReport,
 } from './runner.ts';
 export {
+  KNOWN_ROLES,
   blankCommentsAndStrings,
   countStatements,
   findRiskyStatements,
+  splitStatements,
   type Finding,
-  type StatementKind,
+  type Severity,
+  type Statement,
 } from './sql-scan.ts';
 export { sourcesFromRegister } from './sources.ts';
 
