@@ -39,7 +39,7 @@ Each package has: a single public-API file, a manifest, `README.md`, `CHANGELOG.
 - Declare everything in the manifest (`docs/architecture/module-manifest.md`): permissions, events, entities, tools, extension points, data classification of every field.
 - Depend downward only (layer L0 on L0 per the dependency table in the wave plan). Cycles fail the lint.
 - Use core ports (`EventPublisher`, `AuditSink`, `Authorizer`, `EntitlementGate`, `QuotaProvider`, `ClassificationLookup`, `SecretsProvider`, `MessageSender`, `EraserRegistry`) instead of importing another module. Every port has an in-memory fake and a contract suite that runs against the fake and every real adapter.
-- Public API changes follow semver. The API diff gate fails a removal or a break without a major bump. Deprecate for one minor version first.
+- Public API changes follow semver. The API diff gate fails a removal or a break without a major bump. Deprecate for one minor version first. After changing a package's exports, run `pnpm api:update`, bump the package version (removal or break: major, or minor before 1.0.0; addition: minor, or patch before 1.0.0) and add a changelog entry; CI runs `pnpm api:check --base <base branch>`.
 - The rule of two: do not generalise until a second vertical needs it. Record the second user in the pull request.
 
 ## 4. Workflow

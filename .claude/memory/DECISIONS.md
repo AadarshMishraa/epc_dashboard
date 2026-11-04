@@ -119,3 +119,8 @@ Format per entry:
 - Chosen: `@gx/migrate` (support, depends on core and pg 8.23.1). Database tests are `*.db.test.ts`, run with `pnpm test:db` against GX_TEST_DATABASE_URL; they fail loudly without it and never skip. CI provides a postgres:17 service (K0-T10).
 - Rejected: the embedded-postgres npm binaries (postinstall script, single maintainer, newest 17.x build inside the 7-day window). Downloaded Postgres 17 binaries could not be run in this sandbox (permission policy), so local verification uses the container's system Postgres 16; the SQL used (DDL, advisory locks, transactions) behaves the same in 16 and 17.
 - Evidence: OBSERVED. 15 of 15 db tests on Postgres 16.15; 7 mutations turned tests red (one was equivalent, and a fault-injection test was added for it).
+
+## 2026-11-04 — Public-API gate is a committed report plus a base-branch semver check (K0-T09)
+- Chosen: each package commits public-api.json (exports, kinds, signatures and members, from the TypeScript 6 compiler API). `pnpm api:check` requires it to match the source; with `--base <ref>` a break needs major (minor before 1.0.0), an addition needs minor (patch). No new dependency: API Extractor was rejected because it bundles its own TypeScript and adds weight for the same check.
+- Consequence: every task that changes a package's exports bumps that package's version in the same change. All packages are at 0.0.0 until the first base exists on main.
+- Revisit if: signature strings prove unstable across TypeScript upgrades (then pin the report format to declaration text).

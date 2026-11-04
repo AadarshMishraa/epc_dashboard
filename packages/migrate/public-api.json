@@ -1,0 +1,194 @@
+{
+  "package": "@gx/migrate",
+  "version": "0.0.0",
+  "exports": [
+    {
+      "name": "AppliedMigration",
+      "kind": "interface",
+      "signature": "AppliedMigration",
+      "members": [
+        "durationMs: number",
+        "name: string",
+        "packageId: string"
+      ]
+    },
+    {
+      "name": "blankCommentsAndStrings",
+      "kind": "function",
+      "signature": "(sql: string) => string"
+    },
+    {
+      "name": "countStatements",
+      "kind": "function",
+      "signature": "(sql: string) => number"
+    },
+    {
+      "name": "Finding",
+      "kind": "interface",
+      "signature": "Finding",
+      "members": [
+        "line: number",
+        "reason: string",
+        "severity: Severity",
+        "text: string"
+      ]
+    },
+    {
+      "name": "findRiskyStatements",
+      "kind": "function",
+      "signature": "(sql: string) => Finding[]"
+    },
+    {
+      "name": "forgetStarted",
+      "kind": "function",
+      "signature": "(connectionString: string, migration: string) => Promise<Result<undefined, { readonly message: string; }>>"
+    },
+    {
+      "name": "KNOWN_ROLES",
+      "kind": "value",
+      "signature": "readonly string[]"
+    },
+    {
+      "name": "LEDGER_TABLE",
+      "kind": "value",
+      "signature": "\"gx_migrations.ledger\""
+    },
+    {
+      "name": "LEDGER_VERSION",
+      "kind": "value",
+      "signature": "1"
+    },
+    {
+      "name": "LoadedMigrations",
+      "kind": "interface",
+      "signature": "LoadedMigrations",
+      "members": [
+        "migrations: readonly Migration[]",
+        "problems: readonly MigrationProblem[]"
+      ]
+    },
+    {
+      "name": "loadMigrations",
+      "kind": "function",
+      "signature": "(sources: readonly MigrationSource[]) => LoadedMigrations"
+    },
+    {
+      "name": "migrate",
+      "kind": "function",
+      "signature": "(options: MigrateOptions) => Promise<Result<MigrateReport, MigrateFailure>>"
+    },
+    {
+      "name": "MigrateFailure",
+      "kind": "type",
+      "signature": "{ readonly kind: \"invalid\"; readonly problems: readonly MigrationProblem[]; } | { readonly kind: \"lock-timeout\"; readonly message: string; } | { readonly kind: \"ledger-mismatch\"; readonly problems: readonly MigrationProblem[]; } | { readonly kind: \"ledger-too-new\"; readonly message: string; } | { readonly kind: \"session-not-pinned\"; readonly message: string; } | { readonly kind: \"dirty\"; readonly migrations: readonly string[]; readonly message: string; } | { readonly kind: \"migration-failed\"; readonly packageId: string; readonly name: string; readonly sqlState: string | undefined; readonly message: string; readonly applied: readonly AppliedMigration[]; }"
+    },
+    {
+      "name": "MigrateOptions",
+      "kind": "interface",
+      "signature": "MigrateOptions",
+      "members": [
+        "connectionString: string",
+        "dryRun?: boolean | undefined",
+        "migrationLockTimeoutMs?: number | undefined",
+        "release?: string | undefined",
+        "runLockTimeoutMs?: number | undefined",
+        "sources: readonly MigrationSource[]",
+        "statementTimeoutMs?: number | undefined"
+      ]
+    },
+    {
+      "name": "MigrateReport",
+      "kind": "interface",
+      "signature": "MigrateReport",
+      "members": [
+        "alreadyApplied: number",
+        "applied: readonly AppliedMigration[]",
+        "pending: readonly Pick<Migration, \"packageId\" | \"name\">[]"
+      ]
+    },
+    {
+      "name": "Migration",
+      "kind": "interface",
+      "signature": "Migration",
+      "members": [
+        "checksum: string",
+        "file: string",
+        "name: string",
+        "number: number",
+        "packageId: string",
+        "phase: Phase",
+        "reason?: string | undefined",
+        "securityReview?: string | undefined",
+        "sql: string",
+        "transactional: boolean"
+      ]
+    },
+    {
+      "name": "MIGRATION_LOCK_KEY",
+      "kind": "value",
+      "signature": "4712003005"
+    },
+    {
+      "name": "MigrationProblem",
+      "kind": "interface",
+      "signature": "MigrationProblem",
+      "members": [
+        "file?: string | undefined",
+        "line?: number | undefined",
+        "message: string",
+        "migration?: string | undefined",
+        "rule: ProblemRule"
+      ]
+    },
+    {
+      "name": "MigrationSource",
+      "kind": "interface",
+      "signature": "MigrationSource",
+      "members": [
+        "depends: readonly string[]",
+        "dir: string",
+        "displayDir: string",
+        "packageId: string"
+      ]
+    },
+    {
+      "name": "MODULE_ID",
+      "kind": "value",
+      "signature": "ModuleId"
+    },
+    {
+      "name": "Phase",
+      "kind": "type",
+      "signature": "\"expand\" | \"contract\""
+    },
+    {
+      "name": "ProblemRule",
+      "kind": "type",
+      "signature": "\"file-name\" | \"numbering\" | \"directive\" | \"destructive-without-contract\" | \"security-review-required\" | \"transaction-control\" | \"no-transaction-multi-statement\" | \"dependency\" | \"ledger\" | \"empty\""
+    },
+    {
+      "name": "Severity",
+      "kind": "type",
+      "signature": "\"contract\" | \"security\" | \"forbidden\""
+    },
+    {
+      "name": "sourcesFromRegister",
+      "kind": "function",
+      "signature": "(root: string) => MigrationSource[]"
+    },
+    {
+      "name": "splitStatements",
+      "kind": "function",
+      "signature": "(sql: string) => Statement[]"
+    },
+    {
+      "name": "Statement",
+      "kind": "interface",
+      "signature": "Statement",
+      "members": [
+        "code: string",
+        "line: number"
+      ]
+    }
+  ]
+}

@@ -25,7 +25,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 2 of 3 pass (AC2 local, AC3; AC1 needs K0-T11) | toolchain import-graph suite, `pnpm verify` | - |
 | F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 0 of 3 pass | core unit and property tests | - |
 | F-03 | Migration framework and test kit | Must | M-01 | In progress | 1 of 4 pass (AC1 on local Postgres 16; Postgres 17 in CI pending K0-T10) | migrate unit and db suites | - |
-| F-04 | Manifest, boundary and API gates | Must | M-01 | In progress | 1 of 4 pass (AC1) | toolchain manifest suite | - |
+| F-04 | Manifest, boundary and API gates | Must | M-01 | In progress | 2 of 4 pass (AC1, AC4) | toolchain manifest and API suites | - |
 | F-05 | CI pipeline with security gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-06 | Sandbox host and observability baseline | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-07 | Tenant lifecycle and typed settings | Must | M-02 | Not started | 0 of 4 pass | - | - |
@@ -101,7 +101,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
 | T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | Done | - |
 | T-008 | F-04 | K0-T08 Boundary lint | Not started | T-002, T-007 |
-| T-009 | F-04 | K0-T09 Public-API diff and semver gate | Not started | T-002 |
+| T-009 | F-04 | K0-T09 Public-API diff and semver gate | In review | - |
 | T-010 | F-05 | K0-T10 CI pipeline | Not started | T-006, T-008, T-009 |
 | T-011 | F-01 | K0-T11 One-command local environment | Not started | - |
 | T-012 | F-06 | K0-T12 Sandbox host app | Not started | T-002, T-014 |

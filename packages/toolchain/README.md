@@ -4,7 +4,7 @@ Checks that keep the foundation honest and extractable: import graph, manifest v
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Support package in the core lane (not a module).
 - Register id: `toolchain` in [packages/register.json](../register.json).
-- Status: import-graph check (K0-T02) and manifest validator (K0-T07). The boundary lint (K0-T08) and public-API diff (K0-T09) join them.
+- Status: import-graph check (K0-T02), manifest validator (K0-T07) and public-API gate (K0-T09). The boundary lint (K0-T08) joins them.
 
 ## Import-graph check
 
@@ -47,6 +47,23 @@ Finds every `manifest.json` under `packages/` and `packs/`. Every `kind: module`
 
 Cross-checks are skipped (with one note) while any manifest fails to parse. Output is `file: message`; exit codes are 0, 1 and 2.
 
+## Public-API gate
+
+```
+pnpm api:update                 # rewrite every package's public-api.json from its source
+pnpm api:check                  # the committed reports match the source and package.json
+pnpm api:check --base main      # also require a version bump that covers each change (CI)
+```
+
+Each package commits `public-api.json`: every export of `src/index.ts`, with its kind and type signature, and interface and class members listed one per line. Any API change therefore shows up in review. Against the base branch:
+
+| Change | From 1.0.0 | Before 1.0.0 |
+|---|---|---|
+| Export removed, signature changed, or required member added or removed | major | minor |
+| Export added, or only optional interface members added | minor | patch |
+
+A version going back fails, a package that is new on the base branch is not compared, and a base ref that does not exist exits 2. Signatures name the types they use; a change inside an exported type shows on that type's own entry.
+
 ## Public API
 
 One file, `src/index.ts`, exported as `@gx/toolchain`. Other packages import only that name.
@@ -57,6 +74,7 @@ One file, `src/index.ts`, exported as `@gx/toolchain`. Other packages import onl
 | `ImportGraphOptions`, `ImportGraphResult`, `Violation`, `RuleId` | Types of the check's input and output |
 | `findImports`, `ImportReference` | List the module specifiers in a source file, with lines |
 | `parseRegister`, `Register`, `RegisterEntry`, `RegisterParse` | Validate `packages/register.json` |
+| `checkApi`, `extractApi`, `diffApi`, `requiredBump`, `bumpBetween`, `bumpSatisfies`, `parseVersion`, `API_REPORT_FILE` and their types | Public-API reports and the semver gate |
 | `checkManifests`, `validateManifests`, `manifestSchema`, `MANIFEST_FILE`, `Manifest`, `ManifestInput`, `ManifestProblem`, `ManifestCheckResult`, `Layer` | Validate module manifests |
 | `MODULE_ID` | This package's register id, `toolchain` |
 

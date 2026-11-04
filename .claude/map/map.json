@@ -1242,6 +1242,133 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/toolchain/src/api-check.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/api-report.ts",
+    "packages/toolchain/src/import-graph.ts",
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "5ef0a75d27aa",
+   "imports": [
+    "node:fs",
+    "node:path",
+    "./api-report.ts",
+    "./import-graph.ts",
+    "./register.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 127,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "API_REPORT_FILE",
+    "ApiProblem",
+    "ApiCheckOptions",
+    "ApiCheckResult",
+    "checkApi"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/api-report.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/api-check.ts",
+    "packages/toolchain/src/api-report.ts"
+   ],
+   "env": [],
+   "hash": "b7942343e6ad",
+   "imports": [
+    "node:child_process",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url",
+    "vitest",
+    "./api-check.ts",
+    "./api-report.ts",
+    "./greet.ts",
+    "./greet.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 364,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/api-report.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "fd918ad987c1",
+   "imports": [
+    "typescript"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 205,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ExportKind",
+    "ApiExport",
+    "ApiReport",
+    "extractApi",
+    "Bump",
+    "ChangeKind",
+    "ApiChange",
+    "diffApi",
+    "parseVersion",
+    "bumpBetween",
+    "requiredBump",
+    "bumpSatisfies"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/bin/check-api.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/index.ts"
+   ],
+   "env": [],
+   "hash": "f39776d6f15e",
+   "imports": [
+    "node:child_process",
+    "node:util",
+    "../index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 71,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/toolchain/src/bin/check-imports.ts": {
    "calls": [],
    "defines_tables": [],
@@ -1485,6 +1612,8 @@
    "calls": [],
    "defines_tables": [],
    "deps": [
+    "packages/toolchain/src/api-check.ts",
+    "packages/toolchain/src/api-report.ts",
     "packages/toolchain/src/import-graph.ts",
     "packages/toolchain/src/imports.ts",
     "packages/toolchain/src/manifest-check.ts",
@@ -1492,19 +1621,21 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "0de08f630638",
+   "hash": "e4674764c494",
    "imports": [
     "@gx/core",
     "./import-graph.ts",
     "./imports.ts",
     "./manifest.ts",
     "./manifest-check.ts",
+    "./api-report.ts",
+    "./api-check.ts",
     "./register.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 36,
+   "loc": 57,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1914,8 +2045,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 19:15",
- "head": "aec5ea6",
+ "generated": "2026-11-04 19:26",
+ "head": "bfbaab3",
  "root": "epc_dashboard",
  "version": 1
 }

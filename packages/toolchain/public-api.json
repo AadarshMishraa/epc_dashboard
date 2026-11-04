@@ -1,0 +1,275 @@
+{
+  "package": "@gx/toolchain",
+  "version": "0.0.0",
+  "exports": [
+    {
+      "name": "API_REPORT_FILE",
+      "kind": "value",
+      "signature": "\"public-api.json\""
+    },
+    {
+      "name": "ApiChange",
+      "kind": "interface",
+      "signature": "ApiChange",
+      "members": [
+        "breaking: boolean",
+        "detail: string",
+        "kind: ChangeKind",
+        "name: string"
+      ]
+    },
+    {
+      "name": "ApiCheckOptions",
+      "kind": "interface",
+      "signature": "ApiCheckOptions",
+      "members": [
+        "readBase?: ((reportPath: string) => string | undefined) | undefined",
+        "root: string",
+        "update?: boolean | undefined"
+      ]
+    },
+    {
+      "name": "ApiCheckResult",
+      "kind": "interface",
+      "signature": "ApiCheckResult",
+      "members": [
+        "changes: readonly { readonly package: string; readonly changes: readonly ApiChange[]; }[]",
+        "packagesChecked: number",
+        "problems: readonly ApiProblem[]"
+      ]
+    },
+    {
+      "name": "ApiExport",
+      "kind": "interface",
+      "signature": "ApiExport",
+      "members": [
+        "kind: ExportKind",
+        "members?: readonly string[] | undefined",
+        "name: string",
+        "signature: string"
+      ]
+    },
+    {
+      "name": "ApiProblem",
+      "kind": "interface",
+      "signature": "ApiProblem",
+      "members": [
+        "file: string",
+        "message: string"
+      ]
+    },
+    {
+      "name": "ApiReport",
+      "kind": "interface",
+      "signature": "ApiReport",
+      "members": [
+        "exports: readonly ApiExport[]",
+        "package: string",
+        "version: string"
+      ]
+    },
+    {
+      "name": "Bump",
+      "kind": "type",
+      "signature": "\"none\" | \"patch\" | \"minor\" | \"major\""
+    },
+    {
+      "name": "bumpBetween",
+      "kind": "function",
+      "signature": "(base: Version, current: Version) => Bump | \"downgrade\""
+    },
+    {
+      "name": "bumpSatisfies",
+      "kind": "function",
+      "signature": "(actual: Bump, required: Bump) => boolean"
+    },
+    {
+      "name": "ChangeKind",
+      "kind": "type",
+      "signature": "\"added\" | \"removed\" | \"changed\" | \"widened\""
+    },
+    {
+      "name": "checkApi",
+      "kind": "function",
+      "signature": "(options: ApiCheckOptions) => ApiCheckResult"
+    },
+    {
+      "name": "checkImportGraph",
+      "kind": "function",
+      "signature": "(options: ImportGraphOptions) => ImportGraphResult"
+    },
+    {
+      "name": "checkManifests",
+      "kind": "function",
+      "signature": "(options: { readonly root: string; }) => ManifestCheckResult"
+    },
+    {
+      "name": "diffApi",
+      "kind": "function",
+      "signature": "(base: readonly ApiExport[], current: readonly ApiExport[]) => ApiChange[]"
+    },
+    {
+      "name": "ExportKind",
+      "kind": "type",
+      "signature": "\"function\" | \"type\" | \"value\" | \"interface\" | \"class\""
+    },
+    {
+      "name": "extractApi",
+      "kind": "function",
+      "signature": "(options: { readonly tsconfigPath: string; readonly entry: string; }) => ApiExport[]"
+    },
+    {
+      "name": "findImports",
+      "kind": "function",
+      "signature": "(sourceText: string, fileName?: string) => ImportReference[]"
+    },
+    {
+      "name": "formatViolation",
+      "kind": "function",
+      "signature": "(violation: Violation) => string"
+    },
+    {
+      "name": "ImportGraphOptions",
+      "kind": "interface",
+      "signature": "ImportGraphOptions",
+      "members": [
+        "root: string"
+      ]
+    },
+    {
+      "name": "ImportGraphResult",
+      "kind": "interface",
+      "signature": "ImportGraphResult",
+      "members": [
+        "filesChecked: number",
+        "packagesChecked: number",
+        "violations: readonly Violation[]"
+      ]
+    },
+    {
+      "name": "ImportReference",
+      "kind": "interface",
+      "signature": "ImportReference",
+      "members": [
+        "computed?: true | undefined",
+        "line: number",
+        "specifier: string"
+      ]
+    },
+    {
+      "name": "Layer",
+      "kind": "type",
+      "signature": "\"L0\" | \"L1\" | \"L2\" | \"L3\" | \"L4\""
+    },
+    {
+      "name": "Manifest",
+      "kind": "type",
+      "signature": "{ id: string & { readonly [moduleIdBrand]: true; }; layer: \"L0\" | \"L1\" | \"L2\" | \"L3\" | \"L4\"; version: string; depends: (string & { readonly [moduleIdBrand]: true; })[]; entities: string[]; events_emitted: { name: string; version: number; schema: string; }[]; events_consumed: { name: string; version: number; }[]; permissions: string[]; custom_field_hosts: string[]; workflow_hooks: string[]; tools: { name: string; mode: \"read\" | \"draft\"; permission: string; }[]; extension_points: string[]; errors: Record<string, { status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503; message: string; retryable: boolean; }>; tests_planned: (\"permission\" | \"tenant_isolation\" | \"idempotency\" | \"immutability\" | \"pack_conformance\")[]; table_prefix?: string | undefined; config_schema?: string | undefined; }"
+    },
+    {
+      "name": "MANIFEST_FILE",
+      "kind": "value",
+      "signature": "\"manifest.json\""
+    },
+    {
+      "name": "ManifestCheckResult",
+      "kind": "interface",
+      "signature": "ManifestCheckResult",
+      "members": [
+        "manifestsChecked: number",
+        "problems: readonly ManifestProblem[]"
+      ]
+    },
+    {
+      "name": "ManifestInput",
+      "kind": "interface",
+      "signature": "ManifestInput",
+      "members": [
+        "allowedLayers?: readonly (\"L0\" | \"L1\" | \"L2\" | \"L3\" | \"L4\")[] | undefined",
+        "file: string",
+        "fileExists?: ((relativePath: string) => boolean) | undefined",
+        "json: unknown",
+        "packageVersion?: string | undefined",
+        "register?: { readonly id: string; readonly depends: readonly string[]; } | undefined"
+      ]
+    },
+    {
+      "name": "ManifestProblem",
+      "kind": "interface",
+      "signature": "ManifestProblem",
+      "members": [
+        "file: string",
+        "message: string"
+      ]
+    },
+    {
+      "name": "manifestSchema",
+      "kind": "value",
+      "signature": "ZodObject<{ id: ZodString & ZodType<ModuleId, string, $ZodTypeInternals<ModuleId, string>>; layer: ZodEnum<{ L0: \"L0\"; L1: \"L1\"; L2: \"L2\"; L3: \"L3\"; L4: \"L4\"; }>; version: ZodString; depends: ZodArray<ZodString & ZodType<ModuleId, string, $ZodTypeInternals<ModuleId, string>>>; table_prefix: ZodOptional<ZodString>; entities: ZodArray<ZodString>; events_emitted: ZodArray<ZodObject<{ name: ZodString; version: ZodNumber; schema: ZodString; }, $strict>>; events_consumed: ZodArray<ZodObject<{ name: ZodString; version: ZodNumber; }, $strict>>; permissions: ZodArray<ZodString>; custom_field_hosts: ZodArray<ZodString>; workflow_hooks: ZodArray<ZodString>; tools: ZodArray<ZodObject<{ name: ZodString; mode: ZodEnum<{ read: \"read\"; draft: \"draft\"; }>; permission: ZodString; }, $strict>>; extension_points: ZodArray<ZodString>; config_schema: ZodOptional<ZodString>; errors: ZodRecord<ZodString, ZodObject<{ status: ZodLiteral<400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503>; message: ZodString; retryable: ZodBoolean; }, $strict>>; tests_planned: ZodArray<ZodEnum<{ permission: \"permission\"; tenant_isolation: \"tenant_isolation\"; idempotency: \"idempotency\"; immutability: \"immutability\"; pack_conformance: \"pack_conformance\"; }>>; }, $strict>"
+    },
+    {
+      "name": "MODULE_ID",
+      "kind": "value",
+      "signature": "ModuleId"
+    },
+    {
+      "name": "parseRegister",
+      "kind": "function",
+      "signature": "(input: unknown) => RegisterParse"
+    },
+    {
+      "name": "parseVersion",
+      "kind": "function",
+      "signature": "(text: string) => Version | undefined"
+    },
+    {
+      "name": "Register",
+      "kind": "interface",
+      "signature": "Register",
+      "members": [
+        "packages: readonly { id: string & { readonly [moduleIdBrand]: true; }; package: string; path: string; kind: \"module\" | \"support\"; plan: string; purpose: string; depends: (string & { readonly [moduleIdBrand]: true; })[]; devDepends?: (string & { readonly [moduleIdBrand]: true; })[] | undefined; isolated?: true | undefined; }[]"
+      ]
+    },
+    {
+      "name": "REGISTER_PATH",
+      "kind": "value",
+      "signature": "\"packages/register.json\""
+    },
+    {
+      "name": "RegisterEntry",
+      "kind": "type",
+      "signature": "{ id: string & { readonly [moduleIdBrand]: true; }; package: string; path: string; kind: \"module\" | \"support\"; plan: string; purpose: string; depends: (string & { readonly [moduleIdBrand]: true; })[]; devDepends?: (string & { readonly [moduleIdBrand]: true; })[] | undefined; isolated?: true | undefined; }"
+    },
+    {
+      "name": "RegisterParse",
+      "kind": "type",
+      "signature": "{ readonly ok: true; readonly register: Register; } | { readonly ok: false; readonly problems: readonly string[]; }"
+    },
+    {
+      "name": "requiredBump",
+      "kind": "function",
+      "signature": "(changes: readonly ApiChange[], base: Version) => Bump"
+    },
+    {
+      "name": "RuleId",
+      "kind": "type",
+      "signature": "\"register-invalid\" | \"register-mismatch\" | \"public-api\" | \"workspace-dependency\" | \"import-not-allowed\" | \"deep-import\" | \"self-import\" | \"relative-escape\" | \"undeclared-import\" | \"isolation\""
+    },
+    {
+      "name": "validateManifests",
+      "kind": "function",
+      "signature": "(inputs: readonly ManifestInput[]) => ManifestProblem[]"
+    },
+    {
+      "name": "Violation",
+      "kind": "interface",
+      "signature": "Violation",
+      "members": [
+        "file?: string | undefined",
+        "line?: number | undefined",
+        "message: string",
+        "rule: RuleId"
+      ]
+    }
+  ]
+}

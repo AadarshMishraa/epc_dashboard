@@ -1,0 +1,11 @@
+{
+  "package": "@gx/k8-files",
+  "version": "0.0.0",
+  "exports": [
+    {
+      "name": "MODULE_ID",
+      "kind": "value",
+      "signature": "ModuleId"
+    }
+  ]
+}

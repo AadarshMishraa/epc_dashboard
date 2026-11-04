@@ -14,7 +14,8 @@
   },
   "bin": {
     "gx-check-imports": "./dist/bin/check-imports.js",
-    "gx-check-manifests": "./dist/bin/check-manifests.js"
+    "gx-check-manifests": "./dist/bin/check-manifests.js",
+    "gx-check-api": "./dist/bin/check-api.js"
   },
   "files": [
     "dist"

@@ -25,6 +25,27 @@ export {
 } from './manifest.ts';
 export { MANIFEST_FILE, checkManifests, type ManifestCheckResult } from './manifest-check.ts';
 export {
+  bumpBetween,
+  bumpSatisfies,
+  diffApi,
+  extractApi,
+  parseVersion,
+  requiredBump,
+  type ApiChange,
+  type ApiExport,
+  type ApiReport,
+  type Bump,
+  type ChangeKind,
+  type ExportKind,
+} from './api-report.ts';
+export {
+  API_REPORT_FILE,
+  checkApi,
+  type ApiCheckOptions,
+  type ApiCheckResult,
+  type ApiProblem,
+} from './api-check.ts';
+export {
   parseRegister,
   type Register,
   type RegisterEntry,
