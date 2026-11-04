@@ -111,3 +111,4 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 - 2026-11-04: stack from ADR-0006; workspace and packages section for the K0-T02 skeleton
 - 2026-11-04: Supabase (Postgres 17, Mumbai) and Vercel (bom1) configured with placeholders
 - 2026-11-04: @gx/migrate added (K0-T05): per-package SQL migrations, ledger gx_migrations.ledger, advisory lock
+- 2026-11-04: core ports (K0-T14): nine port interfaces in @gx/core; fakes and contract suites in @gx/testkit (test-only). Public-API reports per package (K0-T09)

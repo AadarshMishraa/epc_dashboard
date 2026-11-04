@@ -11,3 +11,5 @@ One bullet each, newest last. Format: `- YYYY-MM-DD [area] what is true — why 
 - 2026-11-04 [migrations] A keyword deny-list misses security changes (DISABLE RLS, ALTER POLICY, DO blocks, END). Judge statements by an allow-list of heads, and gate security statements separately from destructive ones.
 - 2026-11-04 [env] The sandbox refuses to run downloaded database binaries; use the system Postgres 16 locally and pin 17 in CI.
 - 2026-11-04 [postgres] COMMIT on a failed transaction performs a rollback, so 'replace ROLLBACK with COMMIT' is an equivalent mutation; prove atomicity with fault injection instead.
+- 2026-11-04 [api] Checker type strings miss most breaking changes (constructors, modifiers, readonly, enums, namespaces, merged declarations); build API reports from normalised declaration emit and walk the emitted .d.ts, where inferred types are written out.
+- 2026-11-04 [testing] Prettier reflows code after a script writes it, so string-anchored mutation scripts silently miss; always print MISSING and rerun those by line.

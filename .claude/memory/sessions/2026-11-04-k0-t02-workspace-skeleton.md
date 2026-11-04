@@ -50,3 +50,9 @@ Root configs, README.md, pnpm-lock.yaml, packages/**, docs/architecture/system-d
 - Verified: verify → 352 tests; test:db 23 of 23; every new rule mutation-proven.
 - Debt: docs/maintenance/technical-debt.md TD-1 (pack version and depends) and TD-2 (cross-package migration ordering).
 - Next session: K0-T09, then the S3 tasks K0-T14 and K0-T04 (threat model first).
+
+## Continued: K0-T09 done, K0-T14 in review
+- Done: K0-T09 public-API gate, rebuilt twice after review into normalised .d.ts reports, with forgotten-export and `any` checks, merge-base comparison and a format stamp; approved on pass 3. CR-001 (AC4 wording before 1.0.0) proposed to Aadarsh. Threat models for K0-T14 and K0-T04 saved. K0-T14: 9 port interfaces in core; fakes, contract suites, frozenClock and fixtures in testkit.
+- Verified: verify → 481 tests; 9 of 9 contract suites pass on the fakes; 17 fail-closed mutations each turn a test red; the API gate caught 2 real forgotten exports in our own code (Version, ContractFactory).
+- Not verified: K0-T14 security review (in progress); Postgres 17 (CI).
+- Next: close the K0-T14 review; then K0-T04 logging (threat model ready), K0-T06, K0-T08, K0-T10.
