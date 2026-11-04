@@ -75,7 +75,7 @@ Each module owns its tables (prefix = module id) and exposes an interface and ev
 Pooled by default: shared schema, `tenant_id` on every table, RLS, tenant set per transaction (ADR-0002). Silo option: same codebase on a dedicated database or region. Compliance rules: `docs/compliance/register.md`. API security: `gx-architecture` security reference.
 
 ## 6. Deployment
-Indian region (CMP-12): Supabase and Vercel Functions pinned to Mumbai (ADR-0006). One deployable plus workers; pooled production, silo per tenant on demand as a separate Supabase and Vercel project from the same code. The Supabase and Vercel projects and the Postgres major version are not created or recorded yet (gate before K0-T05 and K0-T11).
+Indian region (CMP-12): Supabase and Vercel Functions pinned to Mumbai (ADR-0006). One deployable plus workers; pooled production, silo per tenant on demand as a separate Supabase and Vercel project from the same code. Postgres 17 is pinned (ADR-0006 amendment). The Supabase and Vercel projects are configured with placeholders but not created yet; the owner steps are in docs/operations/environments.md.
 
 ## 7. Workspace and packages
 One monorepo (ADR-0006). `packages/register.json` is the module register: every workspace package, its plan brief and the workspace packages it may depend on. `pnpm check:imports` fails when the register, the `package.json` files and the source imports disagree.
@@ -108,3 +108,4 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 ## 8. Change log
 - 2026-11-04: initial design from ADR-0001 to ADR-0005
 - 2026-11-04: stack from ADR-0006; workspace and packages section for the K0-T02 skeleton
+- 2026-11-04: Supabase (Postgres 17, Mumbai) and Vercel (bom1) configured with placeholders

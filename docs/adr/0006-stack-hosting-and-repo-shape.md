@@ -64,3 +64,7 @@ Extraction happens through the drill at the end of waves 1, 3 and 5. After the s
 
 ## Revisit if
 Supabase Auth fails the checks above; Vercel limits block the dispatcher; the pooled connection budget cannot meet NF-08; or a client requires a host outside these vendors (use the silo path).
+
+## Amendment 2026-11-04: versions recorded
+- PostgreSQL major version: **17**, Supabase's platform default for new projects on 2026-11-04 and the Supabase CLI's local default. Pinned in `supabase/config.toml`, and to be pinned the same way in CI (K0-T10). The owner confirms that each hosted project shows 17 when it is created (docs/operations/environments.md).
+- Supabase and Vercel are configured with placeholders. The projects, keys and first migrations are owner steps in the runbook. No code path needs them before K0-T05 (local) and the first hosted deploy.

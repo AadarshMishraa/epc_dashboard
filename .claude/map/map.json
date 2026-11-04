@@ -695,6 +695,28 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/toolchain/src/environment-config.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "8a1e0bf90c31",
+   "imports": [
+    "node:fs",
+    "vitest"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 110,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/toolchain/src/import-graph.test.ts": {
    "calls": [],
    "defines_tables": [],
@@ -1200,8 +1222,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 18:11",
- "head": "cc265fa",
+ "generated": "2026-11-04 18:19",
+ "head": "2a341e4",
  "root": "epc_dashboard",
  "version": 1
 }

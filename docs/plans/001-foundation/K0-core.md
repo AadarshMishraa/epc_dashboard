@@ -61,7 +61,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: ADR accepted by Aadarsh: language, framework, Postgres version, queue approach, package manager, monorepo layout
   - Tests: review only
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-  - Human gate: Done: ADR-0006 accepted 2026-11-04. Before K0-T02, create the Supabase and Vercel projects in Mumbai and record the Postgres major version in the K0 brief.
+  - Human gate: Done: ADR-0006 accepted 2026-11-04. Postgres major version pinned to 17 (Supabase platform default, 2026-11-04) in supabase/config.toml, CI and local. Supabase and Vercel are configured with placeholders (docs/operations/environments.md); Aadarsh creates both projects in Mumbai, confirms the project shows Postgres 17, and adds the keys before the first deploy or hosted migration.
 - [x] **K0-T02** (T-002) Workspace skeleton: one package per module with public-API file, register entry, README, changelog (M)
   - Feature: F-01 | Milestone: M-01 | Level: 1 | Lane: core
   - Needs: K0-T01 (T-001)

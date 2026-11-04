@@ -16,3 +16,4 @@
 - 2026-11-04: Phase 0 validation (8 to 10 owner conversations, 5 real sheets, definitions of stuck, cash blocked, forecast margin, material due and overdue) has not started; gate G0 needs 3 paid-pilot commitments.
 
 - 2026-11-04: ADR-0006 gate still open: create the Supabase and Vercel projects in Mumbai and record the Postgres major version in the K0 brief (docs/plans/001-foundation/K0-core.md). K0-T02 went ahead (no database dependency); the gate now blocks K0-T05, K0-T10 and K0-T11. Container has Postgres 16 locally, which only matches if Supabase gives 16. Owner: Aadarsh.
+- 2026-11-04 RESOLVED in part: Postgres 17 pinned, and the Supabase and Vercel configs are placeholders. Still owner: create the staging and production Supabase projects and the Vercel project, add the keys (docs/operations/environments.md checklist).

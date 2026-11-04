@@ -9,3 +9,13 @@ dist/
 .turbo/
 coverage/
 *.tsbuildinfo
+
+# Environment files: only the example is committed
+.env
+.env.*
+!.env.example
+
+# Vercel and Supabase CLI local state
+.vercel/
+supabase/.temp/
+supabase/.branches/
