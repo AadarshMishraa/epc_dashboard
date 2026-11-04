@@ -1,7 +1,8 @@
 /**
  * Public API of @gx/core. This is the only file other packages may import.
  * Core has no I/O and no dependencies: time and randomness are passed in.
- * Ports with in-memory fakes (K0-T14) and logging (K0-T04) join these types.
+ * The core ports are interfaces only; their in-memory fakes and contract suites are in
+ * @gx/testkit (K0-T14). Logging (K0-T04) is next.
  */
 import { moduleId, type ModuleId } from './module-id.ts';
 
@@ -52,6 +53,50 @@ export {
   type TenantContext,
   type TenantId,
 } from './context.ts';
+
+export { Secret } from './secret.ts';
+export {
+  ALLOW,
+  actorCeiling,
+  authorize,
+  deny,
+  isAllowed,
+  type Authorizer,
+  type Decision,
+  type DenyReason,
+  type PermissionMode,
+  type ResourceRef,
+} from './ports/authorizer.ts';
+export {
+  checkEntitlement,
+  type EntitlementDecision,
+  type EntitlementGate,
+} from './ports/entitlements.ts';
+export { isValidQuotaAmount, type QuotaDecision, type QuotaProvider } from './ports/quota.ts';
+export {
+  DATA_CLASSES,
+  atLeast,
+  type ClassificationLookup,
+  type DataClass,
+} from './ports/classification.ts';
+export type { SecretsProvider } from './ports/secrets.ts';
+export type { AuditEntry, AuditRecord, AuditSink } from './ports/audit.ts';
+export type { EventEnvelope, EventInput, EventPublisher, JsonValue } from './ports/events.ts';
+export {
+  maskAddress,
+  validateOutgoing,
+  type MessageChannel,
+  type MessageSender,
+  type OutgoingMessage,
+} from './ports/messages.ts';
+export type {
+  DataSubject,
+  EraseOutcome,
+  EraserHandler,
+  EraserRegistry,
+  HandlerOutcome,
+  SubjectReport,
+} from './ports/erasure.ts';
 
 /** This package's id in packages/register.json. */
 export const MODULE_ID: ModuleId = moduleId('core');

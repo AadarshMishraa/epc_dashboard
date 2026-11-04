@@ -106,7 +106,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-011 | F-01 | K0-T11 One-command local environment | Not started | - |
 | T-012 | F-06 | K0-T12 Sandbox host app | Not started | T-002, T-014 |
 | T-013 | F-06 | K0-T13 Observability baseline | Not started | T-004, T-012 |
-| T-014 | F-02 | K0-T14 Core ports with in-memory fakes | Not started | T-003 |
+| T-014 | F-02 | K0-T14 Core ports with in-memory fakes | In review | security review (blocking) |
 
 ## Decisions needed from the client
 | ID | Decision | Needed by | Impact if late |

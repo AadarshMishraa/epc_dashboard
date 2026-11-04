@@ -4,12 +4,372 @@
   "version": "0.0.0",
   "exports": [
     {
+      "name": "AuditHarness",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuditHarness {\n    readonly sink: AuditSink;\n    readonly records: (tenantId: TenantId) => Promise<readonly AuditRecord[]>;\n}"
+      ]
+    },
+    {
+      "name": "AuthorizerSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuthorizerSeed {\n    readonly permissions?: Readonly<Record<string, PermissionMode>>;\n    readonly grants?: readonly {\n        readonly tenantId: TenantId;\n        readonly subject: string;\n        readonly permission: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "ClassificationSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ClassificationSeed {\n    readonly fields?: readonly {\n        readonly entity: string;\n        readonly field: string;\n        readonly class: DataClass;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "ContractFactory",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type ContractFactory<S, T> = (seed: S) => T | Promise<T>;"
+      ]
+    },
+    {
+      "name": "EntitlementSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EntitlementSeed {\n    readonly keys?: readonly string[];\n    readonly enabled?: readonly {\n        readonly tenantId: TenantId;\n        readonly key: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "EventHarness",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EventHarness {\n    readonly publisher: EventPublisher;\n    readonly published: (tenantId: TenantId) => Promise<readonly EventEnvelope[]>;\n}"
+      ]
+    },
+    {
+      "name": "FailureInjection",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FailureInjection {\n    failNext(error: AppError): void;\n}"
+      ]
+    },
+    {
+      "name": "FakeAuditSink",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FakeAuditSink extends AuditSink, FailureInjection {\n    records(tenantId: TenantId): Promise<readonly AuditRecord[]>;\n}"
+      ]
+    },
+    {
+      "name": "FakeEventPublisher",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FakeEventPublisher extends EventPublisher, FailureInjection {\n    published(tenantId: TenantId): Promise<readonly EventEnvelope[]>;\n}"
+      ]
+    },
+    {
+      "name": "FakeMessageSender",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FakeMessageSender extends MessageSender, FailureInjection {\n    sent(tenantId: TenantId): Promise<readonly SentMessage[]>;\n}"
+      ]
+    },
+    {
+      "name": "FrozenClock",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FrozenClock extends Clock {\n    advance(ms: number): void;\n    setWall(epochMillis: number): void;\n}"
+      ]
+    },
+    {
       "name": "MODULE_ID",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MessageHarness",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MessageHarness {\n    readonly sender: MessageSender;\n    readonly sent: (tenantId: TenantId) => Promise<readonly {\n        readonly to: string;\n        readonly messageId: string;\n    }[]>;\n}"
+      ]
+    },
+    {
+      "name": "QuotaSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface QuotaSeed {\n    readonly limits?: readonly {\n        readonly tenantId: TenantId;\n        readonly quota: string;\n        readonly limit: number;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "SecretsSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SecretsSeed {\n    readonly platform?: Readonly<Record<string, string>>;\n    readonly tenant?: readonly {\n        readonly tenantId: TenantId;\n        readonly name: string;\n        readonly value: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "SentMessage",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SentMessage extends Omit<OutgoingMessage, 'to'> {\n    readonly messageId: Id;\n    readonly to: string;\n}"
+      ]
+    },
+    {
+      "name": "TEST_CORRELATION",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const TEST_CORRELATION: CorrelationId;"
+      ]
+    },
+    {
+      "name": "TenantContextOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface TenantContextOptions {\n    readonly tenantId?: TenantId;\n    readonly actor?: Actor;\n    readonly initiatedBy?: Actor;\n    readonly causationId?: Id;\n    readonly clock?: Clock;\n}"
+      ]
+    },
+    {
+      "name": "auditSinkContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function auditSinkContract(name: string, make: (clock: Clock) => AuditHarness | Promise<AuditHarness>): void;"
+      ]
+    },
+    {
+      "name": "authorizerContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function authorizerContract(name: string, make: ContractFactory<AuthorizerSeed, Authorizer>): void;"
+      ]
+    },
+    {
+      "name": "classificationLookupContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function classificationLookupContract(name: string, make: ContractFactory<ClassificationSeed, ClassificationLookup>): void;"
+      ]
+    },
+    {
+      "name": "entitlementGateContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function entitlementGateContract(name: string, make: ContractFactory<EntitlementSeed, EntitlementGate>): void;"
+      ]
+    },
+    {
+      "name": "eraserRegistryContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function eraserRegistryContract(name: string, make: () => EraserRegistry | Promise<EraserRegistry>): void;"
+      ]
+    },
+    {
+      "name": "eventPublisherContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function eventPublisherContract(name: string, make: (clock: Clock) => EventHarness | Promise<EventHarness>): void;"
+      ]
+    },
+    {
+      "name": "fakeAuditSink",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeAuditSink(options: {\n    readonly clock: Clock;\n}): FakeAuditSink;"
+      ]
+    },
+    {
+      "name": "fakeAuthorizer",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeAuthorizer(seed?: AuthorizerSeed): Authorizer;"
+      ]
+    },
+    {
+      "name": "fakeClassificationLookup",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeClassificationLookup(seed?: ClassificationSeed): ClassificationLookup;"
+      ]
+    },
+    {
+      "name": "fakeEntitlementGate",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeEntitlementGate(seed?: EntitlementSeed): EntitlementGate;"
+      ]
+    },
+    {
+      "name": "fakeEventPublisher",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeEventPublisher(options: {\n    readonly clock: Clock;\n}): FakeEventPublisher;"
+      ]
+    },
+    {
+      "name": "fakeMessageSender",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeMessageSender(options: {\n    readonly clock: Clock;\n}): FakeMessageSender;"
+      ]
+    },
+    {
+      "name": "fakeQuotaProvider",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeQuotaProvider(seed?: QuotaSeed): QuotaProvider;"
+      ]
+    },
+    {
+      "name": "fakeSecretsProvider",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function fakeSecretsProvider(seed?: SecretsSeed): SecretsProvider;"
+      ]
+    },
+    {
+      "name": "frozenClock",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function frozenClock(startEpochMillis?: number): FrozenClock;"
+      ]
+    },
+    {
+      "name": "inMemoryEraserRegistry",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function inMemoryEraserRegistry(): EraserRegistry;"
+      ]
+    },
+    {
+      "name": "messageSenderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function messageSenderContract(name: string, make: (clock: Clock) => MessageHarness | Promise<MessageHarness>): void;"
+      ]
+    },
+    {
+      "name": "quotaProviderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function quotaProviderContract(name: string, make: ContractFactory<QuotaSeed, QuotaProvider>): void;"
+      ]
+    },
+    {
+      "name": "secretsProviderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function secretsProviderContract(name: string, make: ContractFactory<SecretsSeed, SecretsProvider>): void;"
+      ]
+    },
+    {
+      "name": "subjectOf",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function subjectOf(actor: Actor): string | undefined;"
+      ]
+    },
+    {
+      "name": "tenantContext",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function tenantContext(options?: TenantContextOptions): TenantContext;"
+      ]
+    },
+    {
+      "name": "testId",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function testId(n: number): Id;"
+      ]
+    },
+    {
+      "name": "testTenant",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function testTenant(n: number): TenantId;"
       ]
     }
   ]

@@ -113,6 +113,9 @@ importers:
       '@gx/core':
         specifier: workspace:*
         version: link:../core
+      vitest:
+        specifier: 5.0.5
+        version: 5.0.5(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2))
 
   packages/toolchain:
     dependencies:

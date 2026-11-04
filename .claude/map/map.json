@@ -319,7 +319,7 @@
     "packages/core/src/index.ts"
    ],
    "env": [],
-   "hash": "08c9c85d67b6",
+   "hash": "dc6fb283d599",
    "imports": [
     "node:fs",
     "vitest",
@@ -328,7 +328,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 57,
+   "loc": 69,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -346,10 +346,20 @@
     "packages/core/src/errors.ts",
     "packages/core/src/ids.ts",
     "packages/core/src/module-id.ts",
-    "packages/core/src/result.ts"
+    "packages/core/src/ports/audit.ts",
+    "packages/core/src/ports/authorizer.ts",
+    "packages/core/src/ports/classification.ts",
+    "packages/core/src/ports/entitlements.ts",
+    "packages/core/src/ports/erasure.ts",
+    "packages/core/src/ports/events.ts",
+    "packages/core/src/ports/messages.ts",
+    "packages/core/src/ports/quota.ts",
+    "packages/core/src/ports/secrets.ts",
+    "packages/core/src/result.ts",
+    "packages/core/src/secret.ts"
    ],
    "env": [],
-   "hash": "793ed4977ed2",
+   "hash": "65e67045181d",
    "imports": [
     "./module-id.ts",
     "./module-id.ts",
@@ -357,12 +367,22 @@
     "./errors.ts",
     "./clock.ts",
     "./ids.ts",
-    "./context.ts"
+    "./context.ts",
+    "./secret.ts",
+    "./ports/authorizer.ts",
+    "./ports/entitlements.ts",
+    "./ports/quota.ts",
+    "./ports/classification.ts",
+    "./ports/secrets.ts",
+    "./ports/audit.ts",
+    "./ports/events.ts",
+    "./ports/messages.ts",
+    "./ports/erasure.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 58,
+   "loc": 103,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -421,6 +441,332 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/core/src/ports.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/ports/authorizer.ts",
+    "packages/core/src/ports/classification.ts",
+    "packages/core/src/ports/entitlements.ts",
+    "packages/core/src/ports/messages.ts",
+    "packages/core/src/ports/quota.ts",
+    "packages/core/src/secret.ts"
+   ],
+   "env": [],
+   "hash": "6f108e1ecb42",
+   "imports": [
+    "node:util",
+    "vitest",
+    "./context.ts",
+    "./ids.ts",
+    "./ports/authorizer.ts",
+    "./ports/classification.ts",
+    "./ports/entitlements.ts",
+    "./ports/messages.ts",
+    "./ports/quota.ts",
+    "./secret.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 180,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/audit.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/ports/authorizer.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "aedd8df5d463",
+   "imports": [
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../result.ts",
+    "./authorizer.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 36,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "AuditEntry",
+    "AuditRecord",
+    "AuditSink"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/authorizer.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/ids.ts"
+   ],
+   "env": [],
+   "hash": "cc6b6028d2b3",
+   "imports": [
+    "../context.ts",
+    "../ids.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 84,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "PermissionMode",
+    "ResourceRef",
+    "DenyReason",
+    "Decision",
+    "ALLOW",
+    "deny",
+    "Authorizer",
+    "isAllowed",
+    "authorize",
+    "actorCeiling"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/classification.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "faacda12dc11",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 24,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "DATA_CLASSES",
+    "DataClass",
+    "ClassificationLookup",
+    "atLeast"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/entitlements.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts"
+   ],
+   "env": [],
+   "hash": "e92de1fdacb4",
+   "imports": [
+    "../context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 35,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "EntitlementDecision",
+    "EntitlementGate",
+    "checkEntitlement"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/erasure.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/ports/events.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "b744c98b91c1",
+   "imports": [
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../result.ts",
+    "./events.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 59,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "DataSubject",
+    "EraseOutcome",
+    "EraserHandler",
+    "HandlerOutcome",
+    "SubjectReport",
+    "EraserRegistry"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/events.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "0df4dac9e8c0",
+   "imports": [
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../result.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 31,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "JsonValue",
+    "EventInput",
+    "EventEnvelope",
+    "EventPublisher"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/messages.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "a33c9093dcde",
+   "imports": [
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../result.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 49,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MessageChannel",
+    "OutgoingMessage",
+    "MessageSender",
+    "validateOutgoing",
+    "maskAddress"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/quota.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts"
+   ],
+   "env": [],
+   "hash": "2568df725c10",
+   "imports": [
+    "../context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 24,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "QuotaDecision",
+    "QuotaProvider",
+    "isValidQuotaAmount"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ports/secrets.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/result.ts",
+    "packages/core/src/secret.ts"
+   ],
+   "env": [],
+   "hash": "3d4a1a54ac08",
+   "imports": [
+    "../context.ts",
+    "../errors.ts",
+    "../result.ts",
+    "../secret.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 16,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "SecretsProvider"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/core/src/result.test.ts": {
    "calls": [],
    "defines_tables": [],
@@ -467,6 +813,27 @@
     "Err",
     "ok",
     "err"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/secret.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "20877e0987b3",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 38,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "Secret"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -1194,6 +1561,270 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/testkit/src/clock.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "c2266b27946f",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 28,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "FrozenClock",
+    "frozenClock"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/context.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/clock.ts"
+   ],
+   "env": [],
+   "hash": "e05c2e259a95",
+   "imports": [
+    "@gx/core",
+    "./clock.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 57,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "testId",
+    "testTenant",
+    "TEST_CORRELATION",
+    "TenantContextOptions",
+    "tenantContext"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/contracts/access.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/context.ts",
+    "packages/testkit/src/fakes/access.ts",
+    "packages/testkit/src/fakes/secrets.ts"
+   ],
+   "env": [],
+   "hash": "9e93576c7be7",
+   "imports": [
+    "@gx/core",
+    "node:util",
+    "vitest",
+    "../context.ts",
+    "../fakes/access.ts",
+    "../fakes/secrets.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 281,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ContractFactory",
+    "authorizerContract",
+    "entitlementGateContract",
+    "quotaProviderContract",
+    "classificationLookupContract",
+    "secretsProviderContract"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/contracts/records.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/clock.ts",
+    "packages/testkit/src/context.ts"
+   ],
+   "env": [],
+   "hash": "f85b956cc349",
+   "imports": [
+    "@gx/core",
+    "vitest",
+    "../clock.ts",
+    "../context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 228,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "AuditHarness",
+    "auditSinkContract",
+    "EventHarness",
+    "eventPublisherContract",
+    "MessageHarness",
+    "messageSenderContract",
+    "eraserRegistryContract"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/clock.ts",
+    "packages/testkit/src/context.ts",
+    "packages/testkit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "2b6c86382a28",
+   "imports": [
+    "@gx/core",
+    "fast-check",
+    "vitest",
+    "./context.ts",
+    "./clock.ts",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 133,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes/access.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "23714c1037ad",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 127,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "AuthorizerSeed",
+    "subjectOf",
+    "fakeAuthorizer",
+    "EntitlementSeed",
+    "fakeEntitlementGate",
+    "QuotaSeed",
+    "fakeQuotaProvider",
+    "ClassificationSeed",
+    "fakeClassificationLookup"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes/erasure.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "ed4dd62a4656",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 56,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "inMemoryEraserRegistry"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes/records.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "ca19683a5445",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 155,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "FailureInjection",
+    "FakeAuditSink",
+    "fakeAuditSink",
+    "FakeEventPublisher",
+    "fakeEventPublisher",
+    "SentMessage",
+    "FakeMessageSender",
+    "fakeMessageSender"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes/secrets.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "a0bd9adb2ba9",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 28,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "SecretsSeed",
+    "fakeSecretsProvider"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/testkit/src/index.test.ts": {
    "calls": [],
    "defines_tables": [],
@@ -1222,16 +1853,33 @@
   "packages/testkit/src/index.ts": {
    "calls": [],
    "defines_tables": [],
-   "deps": [],
+   "deps": [
+    "packages/testkit/src/clock.ts",
+    "packages/testkit/src/context.ts",
+    "packages/testkit/src/contracts/access.ts",
+    "packages/testkit/src/contracts/records.ts",
+    "packages/testkit/src/fakes/access.ts",
+    "packages/testkit/src/fakes/erasure.ts",
+    "packages/testkit/src/fakes/records.ts",
+    "packages/testkit/src/fakes/secrets.ts"
+   ],
    "env": [],
-   "hash": "8093ca79df34",
+   "hash": "3cba8ad42f2b",
    "imports": [
-    "@gx/core"
+    "@gx/core",
+    "./clock.ts",
+    "./context.ts",
+    "./fakes/access.ts",
+    "./fakes/records.ts",
+    "./fakes/secrets.ts",
+    "./fakes/erasure.ts",
+    "./contracts/access.ts",
+    "./contracts/records.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 9,
+   "loc": 58,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1251,7 +1899,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "9ba4f7d9c18f",
+   "hash": "d6c5cefcac77",
    "imports": [
     "node:fs",
     "node:path",
@@ -1262,7 +1910,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 152,
+   "loc": 156,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1285,7 +1933,7 @@
     "packages/toolchain/src/api-report.ts"
    ],
    "env": [],
-   "hash": "911b560866ca",
+   "hash": "220294a9d4e8",
    "imports": [
     "node:child_process",
     "node:fs",
@@ -1303,12 +1951,15 @@
     "./hidden.ts",
     "./hidden.ts",
     "./hidden.ts",
+    "./h.ts",
+    "./h.ts",
+    "./h.ts",
     "./h.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 354,
+   "loc": 578,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1322,7 +1973,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "26cb8b39ac9c",
+   "hash": "024b7d1077e8",
    "imports": [
     "node:path",
     "typescript",
@@ -1331,7 +1982,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 379,
+   "loc": 491,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1346,6 +1997,7 @@
     "ChangeKind",
     "ApiChange",
     "diffApi",
+    "Version",
     "parseVersion",
     "bumpBetween",
     "requiredBump",
@@ -1362,7 +2014,7 @@
     "packages/toolchain/src/index.ts"
    ],
    "env": [],
-   "hash": "f39776d6f15e",
+   "hash": "3c80eea5b0d5",
    "imports": [
     "node:child_process",
     "node:util",
@@ -1371,7 +2023,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 71,
+   "loc": 89,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1632,7 +2284,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "e4674764c494",
+   "hash": "dff16e2d0cbf",
    "imports": [
     "@gx/core",
     "./import-graph.ts",
@@ -1646,7 +2298,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 57,
+   "loc": 60,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -2056,8 +2708,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 19:35",
- "head": "1b26875",
+ "generated": "2026-11-04 20:05",
+ "head": "bb1be6b",
  "root": "epc_dashboard",
  "version": 1
 }

@@ -4,6 +4,15 @@
   "version": "0.0.0",
   "exports": [
     {
+      "name": "ALLOW",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const ALLOW: Decision;"
+      ]
+    },
+    {
       "name": "Actor",
       "meanings": [
         "type"
@@ -58,12 +67,57 @@
       ]
     },
     {
+      "name": "AuditEntry",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuditEntry {\n    readonly action: string;\n    readonly resource: ResourceRef;\n    readonly outcome: 'success' | 'denied' | 'failure';\n    readonly changes?: Readonly<Record<string, {\n        readonly from: string | null;\n        readonly to: string | null;\n    }>>;\n}"
+      ]
+    },
+    {
+      "name": "AuditRecord",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuditRecord extends AuditEntry {\n    readonly id: Id;\n    readonly tenantId: TenantId;\n    readonly actor: Actor;\n    readonly initiatedBy?: Actor;\n    readonly correlationId: CorrelationId;\n    readonly at: number;\n}"
+      ]
+    },
+    {
+      "name": "AuditSink",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuditSink {\n    append(context: TenantContext, entry: AuditEntry): Promise<Result<{\n        readonly id: Id;\n    }, AppError>>;\n}"
+      ]
+    },
+    {
+      "name": "Authorizer",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Authorizer {\n    can(context: TenantContext, permission: string, resource: ResourceRef): Promise<Decision>;\n}"
+      ]
+    },
+    {
       "name": "CORE_ERRORS",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare const CORE_ERRORS: Readonly<{\n    readonly VALIDATION_FAILED: {\n        readonly status: 400;\n        readonly message: \"Some details are missing or not valid.\";\n        readonly retryable: false;\n    };\n    readonly UNAUTHENTICATED: {\n        readonly status: 401;\n        readonly message: \"Sign in to continue.\";\n        readonly retryable: false;\n    };\n    readonly FORBIDDEN: {\n        readonly status: 403;\n        readonly message: \"You do not have permission to do this.\";\n        readonly retryable: false;\n    };\n    readonly TENANT_REQUIRED: {\n        readonly status: 403;\n        readonly message: \"You do not have access to this workspace.\";\n        readonly retryable: false;\n    };\n    readonly ENTITLEMENT_REQUIRED: {\n        readonly status: 403;\n        readonly message: \"Your plan does not include this.\";\n        readonly retryable: false;\n    };\n    readonly NOT_FOUND: {\n        readonly status: 404;\n        readonly message: \"This item was not found.\";\n        readonly retryable: false;\n    };\n    readonly CONFLICT: {\n        readonly status: 409;\n        readonly message: \"Someone else changed this. Reload to see the latest version, then try again.\";\n        readonly retryable: false;\n    };\n    readonly UNPROCESSABLE: {\n        readonly status: 422;\n        readonly message: \"This cannot be done in the current state.\";\n        readonly retryable: false;\n    };\n    readonly IDEMPOTENCY_KEY_REUSED: {\n        readonly status: 422;\n        readonly message: \"This request key was already used for a different request.\";\n        readonly retryable: false;\n    };\n    readonly RATE_LIMITED: {\n        readonly status: 429;\n        readonly message: \"Too many requests. Try again shortly.\";\n        readonly retryable: true;\n    };\n    readonly INTERNAL: {\n        readonly status: 500;\n        readonly message: \"Something went wrong on our side. Quote the reference if you contact support.\";\n        readonly retryable: false;\n    };\n    readonly DEPENDENCY_UNAVAILABLE: {\n        readonly status: 503;\n        readonly message: \"A service we depend on is not responding. Try again shortly.\";\n        readonly retryable: true;\n    };\n}>;"
+      ]
+    },
+    {
+      "name": "ClassificationLookup",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ClassificationLookup {\n    classify(entity: string, field: string): DataClass;\n}"
       ]
     },
     {
@@ -112,12 +166,102 @@
       ]
     },
     {
+      "name": "DATA_CLASSES",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const DATA_CLASSES: readonly [\n    \"public\",\n    \"internal\",\n    \"personal\",\n    \"sensitive_personal\",\n    \"secret\"\n];"
+      ]
+    },
+    {
+      "name": "DataClass",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type DataClass = (typeof DATA_CLASSES)[number];"
+      ]
+    },
+    {
+      "name": "DataSubject",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface DataSubject {\n    readonly kind: 'person';\n    readonly id: Id;\n}"
+      ]
+    },
+    {
+      "name": "Decision",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Decision = {\n    readonly allow: true;\n} | {\n    readonly allow: false;\n    readonly reason: DenyReason;\n};"
+      ]
+    },
+    {
+      "name": "DenyReason",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type DenyReason = 'NO_GRANT' | 'UNKNOWN_PERMISSION' | 'SCOPE_EXCEEDED' | 'SUPPORT_READ_ONLY' | 'AUTHORIZER_FAILED';"
+      ]
+    },
+    {
       "name": "ERROR_STATUSES",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare const ERROR_STATUSES: readonly [\n    400,\n    401,\n    403,\n    404,\n    409,\n    413,\n    422,\n    429,\n    500,\n    503\n];"
+      ]
+    },
+    {
+      "name": "EntitlementDecision",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type EntitlementDecision = {\n    readonly enabled: true;\n} | {\n    readonly enabled: false;\n    readonly reason: 'UNKNOWN_KEY' | 'NOT_ENABLED' | 'GATE_FAILED';\n};"
+      ]
+    },
+    {
+      "name": "EntitlementGate",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EntitlementGate {\n    check(context: TenantContext, key: string): Promise<EntitlementDecision>;\n}"
+      ]
+    },
+    {
+      "name": "EraseOutcome",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EraseOutcome {\n    readonly erased: number;\n    readonly retained: number;\n    readonly retainedReason?: string;\n}"
+      ]
+    },
+    {
+      "name": "EraserHandler",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EraserHandler {\n    readonly module: string;\n    readonly entity: string;\n    erase(context: TenantContext, subject: DataSubject): Promise<Result<EraseOutcome, AppError>>;\n    export(context: TenantContext, subject: DataSubject): Promise<Result<readonly JsonValue[], AppError>>;\n}"
+      ]
+    },
+    {
+      "name": "EraserRegistry",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EraserRegistry {\n    register(handler: EraserHandler): Result<undefined, AppError<'CONFLICT'>>;\n    erase(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<EraseOutcome>, AppError<'UNPROCESSABLE'>>>;\n    export(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<readonly JsonValue[]>, AppError<'UNPROCESSABLE'>>>;\n}"
       ]
     },
     {
@@ -157,12 +301,48 @@
       ]
     },
     {
+      "name": "EventEnvelope",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EventEnvelope extends EventInput {\n    readonly id: Id;\n    readonly tenantId: TenantId;\n    readonly actor: Actor;\n    readonly initiatedBy?: Actor;\n    readonly correlationId: CorrelationId;\n    readonly causationId?: Id;\n    readonly occurredAt: number;\n}"
+      ]
+    },
+    {
+      "name": "EventInput",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EventInput {\n    readonly type: string;\n    readonly version: number;\n    readonly payload: {\n        readonly [key: string]: JsonValue;\n    };\n}"
+      ]
+    },
+    {
+      "name": "EventPublisher",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EventPublisher {\n    publish(context: TenantContext, event: EventInput): Promise<Result<EventEnvelope, AppError>>;\n}"
+      ]
+    },
+    {
       "name": "FieldError",
       "meanings": [
         "type"
       ],
       "declarations": [
         "interface FieldError {\n    readonly path: string;\n    readonly code: string;\n}"
+      ]
+    },
+    {
+      "name": "HandlerOutcome",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface HandlerOutcome<T> {\n    readonly module: string;\n    readonly entity: string;\n    readonly result: Result<T, AppError>;\n}"
       ]
     },
     {
@@ -193,6 +373,15 @@
       ]
     },
     {
+      "name": "JsonValue",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type JsonValue = string | number | boolean | null | readonly JsonValue[] | {\n    readonly [key: string]: JsonValue;\n};"
+      ]
+    },
+    {
       "name": "MODULE_ID",
       "meanings": [
         "value"
@@ -208,6 +397,24 @@
       ],
       "declarations": [
         "declare const MODULE_ID_MAX_LENGTH = 64;"
+      ]
+    },
+    {
+      "name": "MessageChannel",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type MessageChannel = 'email' | 'sms' | 'whatsapp' | 'push';"
+      ]
+    },
+    {
+      "name": "MessageSender",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MessageSender {\n    send(context: TenantContext, message: OutgoingMessage): Promise<Result<{\n        readonly messageId: Id;\n    }, AppError>>;\n}"
       ]
     },
     {
@@ -229,6 +436,42 @@
       ]
     },
     {
+      "name": "OutgoingMessage",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface OutgoingMessage {\n    readonly channel: MessageChannel;\n    readonly to: string;\n    readonly template: string;\n    readonly params: Readonly<Record<string, string>>;\n    readonly purpose: string;\n    readonly consentRef: string;\n}"
+      ]
+    },
+    {
+      "name": "PermissionMode",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type PermissionMode = 'read' | 'write';"
+      ]
+    },
+    {
+      "name": "QuotaDecision",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type QuotaDecision = {\n    readonly granted: true;\n    readonly remaining: number;\n} | {\n    readonly granted: false;\n    readonly reason: 'UNKNOWN_QUOTA' | 'EXHAUSTED' | 'INVALID_AMOUNT' | 'QUOTA_FAILED';\n    readonly retryAfterSeconds?: number;\n};"
+      ]
+    },
+    {
+      "name": "QuotaProvider",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface QuotaProvider {\n    consume(context: TenantContext, quota: string, amount: number): Promise<QuotaDecision>;\n}"
+      ]
+    },
+    {
       "name": "RandomBytes",
       "meanings": [
         "type"
@@ -238,12 +481,49 @@
       ]
     },
     {
+      "name": "ResourceRef",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ResourceRef {\n    readonly type: string;\n    readonly id?: Id;\n}"
+      ]
+    },
+    {
       "name": "Result",
       "meanings": [
         "type"
       ],
       "declarations": [
         "type Result<T, E> = Ok<T> | Err<E>;"
+      ]
+    },
+    {
+      "name": "Secret",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class Secret {\n    #private;\n    private constructor();\n    static of(value: string): Secret;\n    reveal(): string;\n    toString(): string;\n    toJSON(): string;\n    [inspectCustom](): string;\n}"
+      ]
+    },
+    {
+      "name": "SecretsProvider",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SecretsProvider {\n    platform(name: string): Promise<Result<Secret, AppError<'NOT_FOUND'>>>;\n    forTenant(context: TenantContext, name: string): Promise<Result<Secret, AppError<'NOT_FOUND'>>>;\n}"
+      ]
+    },
+    {
+      "name": "SubjectReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SubjectReport<T> {\n    readonly complete: boolean;\n    readonly outcomes: readonly HandlerOutcome<T>[];\n}"
       ]
     },
     {
@@ -265,12 +545,48 @@
       ]
     },
     {
+      "name": "actorCeiling",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function actorCeiling(actor: Actor, mode: PermissionMode): DenyReason | undefined;"
+      ]
+    },
+    {
       "name": "appError",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare function appError<const C extends string>(catalogue: Readonly<Record<C, ErrorDefinition>>, code: C, options?: AppErrorOptions): AppError<C>;"
+      ]
+    },
+    {
+      "name": "atLeast",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function atLeast(a: DataClass, b: DataClass): boolean;"
+      ]
+    },
+    {
+      "name": "authorize",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function authorize(authorizer: Authorizer, context: TenantContext, permission: string, resource: ResourceRef): Promise<Decision>;"
+      ]
+    },
+    {
+      "name": "checkEntitlement",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function checkEntitlement(gate: EntitlementGate, context: TenantContext, key: string): Promise<EntitlementDecision>;"
       ]
     },
     {
@@ -319,6 +635,15 @@
       ]
     },
     {
+      "name": "deny",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function deny(reason: DenyReason): Decision;"
+      ]
+    },
+    {
       "name": "deriveContext",
       "meanings": [
         "value"
@@ -346,6 +671,15 @@
       ]
     },
     {
+      "name": "isAllowed",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isAllowed(decision: unknown): boolean;"
+      ]
+    },
+    {
       "name": "isId",
       "meanings": [
         "value"
@@ -361,6 +695,24 @@
       ],
       "declarations": [
         "declare function isModuleId(value: unknown): value is ModuleId;"
+      ]
+    },
+    {
+      "name": "isValidQuotaAmount",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isValidQuotaAmount(amount: number): boolean;"
+      ]
+    },
+    {
+      "name": "maskAddress",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function maskAddress(address: string): string;"
       ]
     },
     {
@@ -451,6 +803,15 @@
       ],
       "declarations": [
         "declare function toErrorResponse(error: AppError, correlationId: CorrelationId): ErrorResponseBody;"
+      ]
+    },
+    {
+      "name": "validateOutgoing",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function validateOutgoing(message: OutgoingMessage): AppError<'VALIDATION_FAILED'> | undefined;"
       ]
     },
     {

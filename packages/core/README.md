@@ -4,7 +4,7 @@ Shared contracts: context, ids, errors, Result, Clock and the core ports with in
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Layer L0 module.
 - Register id: `core` in [packages/register.json](../register.json).
-- Status: core types from K0-T03. Ports with in-memory fakes (K0-T14) and redacted logging (K0-T04) are next.
+- Status: core types (K0-T03) and port interfaces (K0-T14). Redacted logging (K0-T04) is next. Threat model: [docs/security/threat-models/K0-T14-core-ports.md](../../docs/security/threat-models/K0-T14-core-ports.md).
 
 ## Public API
 
@@ -21,6 +21,14 @@ One file, `src/index.ts`, exported as `@gx/core`. Other packages import only tha
 | `Result`, `Ok`, `Err`, `ok`, `err` | Expected failures as values; unexpected faults are thrown |
 | `CORE_ERRORS`, `defineErrorCatalogue`, `appError`, `coreError`, `AppError`, `FieldError`, `ErrorDefinition`, `ErrorStatus`, `ERROR_STATUSES`, `CoreErrorCode`, `AppErrorOptions` | The error catalogue: stable code, HTTP status, plain public message, retryable flag. `detail` and `cause` are for logs only |
 | `toErrorResponse`, `ErrorResponseBody` | The API error body `{ error: { code, message, fields, correlation_id, retry_after_seconds?, current_version? } }`; nothing else leaves the server |
+| `Secret` | A secret value that prints as `[secret]` through String, JSON and inspect; `reveal()` is the only way out |
+| Ports: `Authorizer`, `EntitlementGate`, `QuotaProvider`, `ClassificationLookup`, `SecretsProvider`, `AuditSink`, `EventPublisher`, `MessageSender`, `EraserRegistry` | Interfaces only (K0-T14). Fakes and contract suites are in `@gx/testkit`; real adapters come with K1 to K8 and P1 |
+| `authorize`, `isAllowed`, `ALLOW`, `deny`, `actorCeiling`, `Decision`, `DenyReason`, `PermissionMode`, `ResourceRef` | Decisions are tagged unions with reasons. `authorize` turns a throw or a malformed answer into a deny; `actorCeiling` stops AI clients without the write scope, and support operators, from writing |
+| `checkEntitlement`, `EntitlementDecision` | Fails closed in the same way; unknown keys are never enabled |
+| `isValidQuotaAmount`, `QuotaDecision` | Amounts are whole numbers of at least 1; unknown quotas are exhausted, never unlimited |
+| `DATA_CLASSES`, `DataClass`, `atLeast` | Public to secret; an unknown field classifies as `secret` |
+| `validateOutgoing`, `maskAddress`, `OutgoingMessage`, `MessageChannel` | Every message needs a purpose, a consent reference and an approved template id; recipients are stored masked |
+| `AuditEntry`, `AuditRecord`, `EventInput`, `EventEnvelope`, `JsonValue`, `DataSubject`, `EraserHandler`, `EraseOutcome`, `HandlerOutcome`, `SubjectReport` | Port data types; tenant, actor and correlation always come from the context |
 | `moduleId`, `isModuleId`, `ModuleId`, `MODULE_ID_MAX_LENGTH` | Validated, branded register and manifest ids |
 | `MODULE_ID` | This package's register id, `core` |
 
