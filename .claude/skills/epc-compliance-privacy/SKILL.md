@@ -37,7 +37,7 @@ Universal background: `gx-compliance` (references/india.md, sectors.md). This sk
 1. Classify the change with the table. If no row applies, say so in the plan and move on.
 2. Put the rule IDs in the plan (`docs/plans/`) and the PR description.
 3. Implement; add the test the register names (the "Implementation and test" column). A rule is done only with that test or evidence; update its Status in the register (Not built, Built, Verified).
-4. Run `python3 .claude/gx/bin/privacycheck.py` (CI runs it with `--strict`). Add `privacycheck:ignore` on a line only with a reason in the PR.
+4. Run `python3 .claude/gx/bin/privacycheck.py` (CI runs it with `--strict`). For prose that names a never-store field (a rule, not a field) in docs or `tools/plangen/`, add `privacycheck: allow CMP-03 <reason>` on that line; it never covers an identifier such as `aadhaar_no`, and CI prints every ALLOW line. `privacycheck:ignore` (any rule) needs a reason in the PR. Tests: `python3 .claude/gx/bin/test_privacycheck.py`.
 5. A new compliance fact or a changed law goes into the register with the date checked and its source; a decision goes into `.claude/memory/DECISIONS.md`.
 
 ## Stop and ask Aadarsh first

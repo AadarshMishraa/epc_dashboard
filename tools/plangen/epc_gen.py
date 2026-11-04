@@ -579,8 +579,10 @@ Won deal, baseline, buy material, receive and inspect, readiness check, install 
 6. Since 1 June 2026 net-metering and open-access projects must use domestic ALMM List-II cells (about 3,000 rupees per kW more, industry estimates). Flags are data; the rule will change (verify).
 7. MNRE deactivated vendors for hoarding applications and advises no application pending over 60 days: the backlog widget warns before day 60.
 8. Utility and subsidy portals have no public API and the pack never stores the owner's portal passwords: people record stage, reference number and evidence.
-9. Do not store Aadhaar numbers, card numbers or a consumer's bank account (CMP-03).
-
+""" + (
+    # The marker sits in Python source, outside the emitted text, so domain-notes.md stays clean.
+    "9. Do not store Aadhaar numbers, card numbers or a consumer's bank account (CMP-03).\n"  # privacycheck: allow CMP-03 rule text that forbids the field
+) + """
 ## What is evidence and what is hypothesis
 
 - Evidence (vendor-run survey, sample size not stated): utility delays are the top pain at 71% of installers; price pressure 66%; follow-up 63%; subsidy paperwork 56%; working capital 52%. 64 to 70% of solo and small EPCs run the pipeline in Excel or Sheets and 96 to 98% talk to customers on WhatsApp.

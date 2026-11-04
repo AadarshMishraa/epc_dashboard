@@ -71,3 +71,11 @@ Format per entry:
 - Revisit if: pilots reject the owner-first scope, or an owner needs invoices issued in-app (Q-03).
 - Evidence: OBSERVED. prdtool lint and check on packs/epc: 0 errors; sources are the three earlier EPC documents and docs/compliance/register.md.
 
+
+## 2026-11-04 — privacycheck: narrow inline allow for CMP-03 prose, not a rule weakening
+- Context: privacycheck flagged generator prose "Do not store Aadhaar numbers (CMP-03)" in tools/plangen/epc_gen.py; K0-T10 (F-05) makes privacycheck a blocking CI stage.
+- Options considered: A) inline `privacycheck: allow CMP-03 <reason>` marker, B) limit CMP-03 to code contexts, C) reword the prose to avoid the word.
+- Chosen: A, honoured only in `tools/plangen/` or .md/.txt, only for CMP-03, only with a reason, and only when every match is the bare word "Aadhaar"; identifiers (aadhaar_no, aadhaarNumber) always flag. ALLOW lines print in CI. The generator line was split so the marker sits in Python source, not in domain-notes.md (output byte-identical).
+- Consequences / what we gave up: B rejected because SQL inside Python strings is a real field; C rejected because future Aadhaar/KYC prose (PM Surya Ghar) would trip it again and hiding the word hurts readers.
+- Revisit if: another rule needs prose suppression, or the legacy blanket `privacycheck:ignore` gets used on a field.
+- Evidence: OBSERVED — .claude/gx/bin/test_privacycheck.py (12 tests; mutation that ignores path/identifier checks fails 6).
