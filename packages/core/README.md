@@ -4,7 +4,7 @@ Shared contracts: context, ids, errors, Result, Clock and the core ports with in
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Layer L0 module.
 - Register id: `core` in [packages/register.json](../register.json).
-- Status: skeleton from K0-T02. Capabilities, ports, events and extension points arrive with the tasks in the brief and are listed here as they ship.
+- Status: core types from K0-T03. Ports with in-memory fakes (K0-T14) and redacted logging (K0-T04) are next.
 
 ## Public API
 
@@ -12,8 +12,37 @@ One file, `src/index.ts`, exported as `@gx/core`. Other packages import only tha
 
 | Export | What it is |
 |---|---|
+| `Context`, `createContext`, `deriveContext`, `requireTenant` | Tenant, actor, correlation id, causation id and clock, passed explicitly through requests, jobs and events. `requireTenant` fails closed with `TENANT_REQUIRED`; there is no default tenant |
+| `Actor`, `AiClient` | User (optionally via an AI client, ADR-0005), service account, support operator, system process, anonymous. Ids only, so actors are safe to log |
+| `CorrelationId`, `parseCorrelationId` | Accepts 1 to 128 characters of `[A-Za-z0-9._:-]` from untrusted input, so an id cannot inject log lines |
+| `Id`, `TenantId`, `isId`, `parseId` | Canonical lowercase UUIDs (Postgres `uuid`) |
+| `createIdGenerator`, `idTimestamp`, `RandomBytes`, `webCryptoRandomBytes` | UUIDv7 (RFC 9562, counter method): strictly ordered per generator, even within a millisecond or when the clock steps back |
+| `Clock`, `systemClock`, `nowDate` | The only source of time (epoch milliseconds); tests use the frozen clock from `@gx/testkit` |
+| `Result`, `Ok`, `Err`, `ok`, `err` | Expected failures as values; unexpected faults are thrown |
+| `CORE_ERRORS`, `defineErrorCatalogue`, `appError`, `coreError`, `AppError`, `FieldError`, `ErrorDefinition`, `ErrorStatus`, `ERROR_STATUSES`, `CoreErrorCode`, `AppErrorOptions` | The error catalogue: stable code, HTTP status, plain public message, retryable flag. `detail` and `cause` are for logs only |
+| `toErrorResponse`, `ErrorResponseBody` | The API error body `{ error: { code, message, fields, correlation_id } }`; nothing else leaves the server |
 | `moduleId`, `isModuleId`, `ModuleId`, `MODULE_ID_MAX_LENGTH` | Validated, branded register and manifest ids |
 | `MODULE_ID` | This package's register id, `core` |
+
+### Core error codes
+
+| Code | Status | Retryable |
+|---|---|---|
+| `VALIDATION_FAILED` | 400 | no |
+| `UNAUTHENTICATED` | 401 | no |
+| `FORBIDDEN`, `TENANT_REQUIRED`, `ENTITLEMENT_REQUIRED` | 403 | no |
+| `NOT_FOUND` | 404 (also for other tenants' records) | no |
+| `CONFLICT` | 409 | no |
+| `UNPROCESSABLE`, `IDEMPOTENCY_KEY_REUSED` | 422 | no |
+| `RATE_LIMITED` | 429 | yes |
+| `INTERNAL` | 500 | no |
+| `DEPENDENCY_UNAVAILABLE` | 503 | yes |
+
+Modules define their own codes with `defineErrorCatalogue`, and their manifests declare them (K0-T07).
+
+### No I/O
+
+Core builds without Node.js type definitions, and the register marks it `isolated`, so a dependency or a `node:` import outside tests fails `pnpm check:imports`. Time and randomness are passed in.
 
 ## Depends on
 

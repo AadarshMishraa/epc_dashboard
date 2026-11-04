@@ -13,8 +13,9 @@ Scope and progress: docs/prd/STATUS.md; work queue docs/plans/TASKS.md; current 
 | Architecture ADR-0001 to 0006 | done | Accepted 2026-11-04 |
 | K0-T01 stack decision | done | ADR-0006 |
 | K0-T02 workspace skeleton | done | 12 packages, register, import-graph check; staff review approved after fixes; K0-T08 owes deferred findings (DECISIONS) |
-| K0-T03 to K0-T14 | todo | Level 2 ready now: T03 core types, T07 manifest validator, T09 API diff. T05 waits on the Postgres gate |
-| Supabase and Vercel projects in Mumbai | blocked | Owner Aadarsh; Postgres major not recorded; blocks K0-T05, K0-T10, K0-T11 |
+| K0-T03 core types | in review | gx-staff-reviewer running |
+| K0-T04 to K0-T14 | todo | Level 2 ready: T05 migrations (Postgres 17 pinned), T07 manifest validator, T09 API diff |
+| Supabase and Vercel | configured, not created | Postgres 17 pinned; owner creates the projects and adds keys (docs/operations/environments.md) |
 | EPC pack | todo | Phase 0 validation not started |
 
 ## In progress right now
@@ -40,6 +41,6 @@ Nothing. K0-T02 is committed on `claude/nice-allen-uihlqb`.
 - Local Postgres 16 exists in the container but is not wired; the version must match the Supabase project.
 
 ## Baseline: what was green last time
-- tests: 102 of 102 pass, 15 files (2026-11-04, Node 24.22.2).
+- tests: 175 of 175 pass (2026-11-04, Node 24.22.2).
 - typecheck/lint: typecheck 12 of 12 packages, ESLint 0 warnings, Prettier clean, build 12 of 12, check:imports 0 violations.
 - privacycheck: 1 pre-existing error (false positive above). prdtool check: 0 errors, 8 warnings (TBD dates).

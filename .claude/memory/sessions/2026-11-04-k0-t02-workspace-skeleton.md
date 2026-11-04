@@ -32,3 +32,9 @@ K0-T03 core types, then K0-T07 and K0-T09; S3 tasks K0-T14 and K0-T04 need a thr
 
 ## Files touched
 Root configs, README.md, pnpm-lock.yaml, packages/**, docs/architecture/system-design.md, docs/plans/001-foundation/K0-core.md (box), docs/prd/STATUS.md, .claude/memory/*, .claude/map/* (regenerated).
+
+## Continued: Supabase and Vercel setup, K0-T03, research
+- Done: Supabase config (Postgres 17, only safe surfaces on), vercel.json (bom1, headers, git deploys off), .env.example, runbook docs/operations/environments.md, guard test, ADR-0006 amendment (commit 8c0a4bc). K0-T03 core types: Context, Actor, CorrelationId, UUIDv7 Id generator, Clock, Result, error catalogue, toErrorResponse.
+- Verified: `pnpm verify` → 175 tests, 0 import violations; 9 core mutations each turn a test red; a config mutation (Data API back on) turns a test red.
+- Not verified: hosted Supabase and Vercel (not created); local `supabase start` (no Docker daemon in the container); research sources (network policy blocks the hosts).
+- Next: close the K0-T03 review; then K0-T07 manifest validator and K0-T09 API diff; then S3 tasks K0-T14 and K0-T04 with threat models.

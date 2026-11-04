@@ -25,10 +25,29 @@ describe('@gx/core public API', () => {
   it('exports exactly the documented runtime names', () => {
     // A change here is a public-API change: update the README and the changelog with it.
     expect(Object.keys(core).sort()).toEqual([
+      'CORE_ERRORS',
+      'ERROR_STATUSES',
       'MODULE_ID',
       'MODULE_ID_MAX_LENGTH',
+      'appError',
+      'coreError',
+      'createContext',
+      'createIdGenerator',
+      'defineErrorCatalogue',
+      'deriveContext',
+      'err',
+      'idTimestamp',
+      'isId',
       'isModuleId',
       'moduleId',
+      'nowDate',
+      'ok',
+      'parseCorrelationId',
+      'parseId',
+      'requireTenant',
+      'systemClock',
+      'toErrorResponse',
+      'webCryptoRandomBytes',
     ]);
   });
 });
