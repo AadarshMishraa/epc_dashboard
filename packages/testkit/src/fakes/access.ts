@@ -1,10 +1,10 @@
 import {
   ALLOW,
   actorCeiling,
+  grantSubject,
   checkEntitlement,
   deny,
   isValidQuotaAmount,
-  type Actor,
   type Authorizer,
   type ClassificationLookup,
   type DataClass,
@@ -21,27 +21,12 @@ import {
 export interface AuthorizerSeed {
   /** Every known permission and whether it reads or writes. Unknown permissions are denied. */
   readonly permissions?: Readonly<Record<string, PermissionMode>>;
+  /** `subject` is `grantSubject(actor)`: `user:<id>`, `operator:<id>`, `system:<process>` and so on. */
   readonly grants?: readonly {
     readonly tenantId: TenantId;
     readonly subject: string;
     readonly permission: string;
   }[];
-}
-
-/** Grants are keyed by the actor's id (user, service account, operator) or a system process name. */
-export function subjectOf(actor: Actor): string | undefined {
-  switch (actor.kind) {
-    case 'user':
-      return actor.userId;
-    case 'service_account':
-      return actor.serviceAccountId;
-    case 'operator':
-      return actor.operatorId;
-    case 'system':
-      return `system:${actor.process}`;
-    case 'anonymous':
-      return undefined;
-  }
 }
 
 /** Deny by default: an empty seed allows nothing. */
@@ -56,7 +41,7 @@ export function fakeAuthorizer(seed: AuthorizerSeed = {}): Authorizer {
       if (mode === undefined) return Promise.resolve(deny('UNKNOWN_PERMISSION'));
       const ceiling = actorCeiling(context.actor, mode);
       if (ceiling !== undefined) return Promise.resolve(deny(ceiling));
-      const subject = subjectOf(context.actor);
+      const subject = grantSubject(context.actor);
       const granted =
         subject !== undefined && grants.has(`${context.tenantId}|${subject}|${permission}`);
       return Promise.resolve(granted ? ALLOW : deny('NO_GRANT'));
@@ -96,6 +81,11 @@ export interface QuotaSeed {
 
 /** Unknown quotas are exhausted; consumption is atomic (all or nothing). */
 export function fakeQuotaProvider(seed: QuotaSeed = {}): QuotaProvider {
+  for (const l of seed.limits ?? []) {
+    if (!Number.isSafeInteger(l.limit) || l.limit < 0) {
+      throw new RangeError(`quota limit for ${l.quota} must be a whole number of at least 0`);
+    }
+  }
   const remaining = new Map((seed.limits ?? []).map((l) => [`${l.tenantId}|${l.quota}`, l.limit]));
   return {
     consume(context, quota, amount): Promise<QuotaDecision> {

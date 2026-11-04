@@ -17,14 +17,13 @@ export async function checkEntitlement(
 ): Promise<EntitlementDecision> {
   try {
     const decision: unknown = await gate.check(context, key);
-    if (
-      typeof decision === 'object' &&
-      decision !== null &&
-      (decision as { enabled?: unknown }).enabled === true
-    ) {
-      return { enabled: true };
-    }
-    const reason = (decision as { reason?: unknown } | null)?.reason;
+    // Own properties only, so a polluted Object.prototype cannot enable anything.
+    const own = (name: string): unknown =>
+      typeof decision === 'object' && decision !== null && Object.hasOwn(decision, name)
+        ? (decision as Record<string, unknown>)[name]
+        : undefined;
+    if (own('enabled') === true) return { enabled: true };
+    const reason = own('reason');
     return reason === 'UNKNOWN_KEY' || reason === 'NOT_ENABLED'
       ? { enabled: false, reason }
       : { enabled: false, reason: 'GATE_FAILED' };

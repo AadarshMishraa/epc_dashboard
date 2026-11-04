@@ -17,7 +17,6 @@ export {
   fakeClassificationLookup,
   fakeEntitlementGate,
   fakeQuotaProvider,
-  subjectOf,
   type AuthorizerSeed,
   type ClassificationSeed,
   type EntitlementSeed,
@@ -42,6 +41,7 @@ export {
   quotaProviderContract,
   secretsProviderContract,
   type ContractFactory,
+  type QuotaHarness,
 } from './contracts/access.ts';
 export {
   auditSinkContract,

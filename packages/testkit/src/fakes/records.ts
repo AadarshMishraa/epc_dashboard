@@ -1,4 +1,5 @@
 import {
+  coreError,
   createIdGenerator,
   err,
   maskAddress,
@@ -12,8 +13,9 @@ import {
   type EventPublisher,
   type Id,
   type IdGenerator,
+  type MessageChannel,
   type MessageSender,
-  type OutgoingMessage,
+  type Result,
   type TenantId,
 } from '@gx/core';
 
@@ -25,6 +27,20 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
+/** A deep copy, or a validation error when the value cannot be stored (functions, symbols). */
+function copy<T>(value: T): Result<T, AppError<'VALIDATION_FAILED'>> {
+  try {
+    return ok(structuredClone(value));
+  } catch (error) {
+    return err(
+      coreError('VALIDATION_FAILED', {
+        detail: 'the value cannot be stored as data',
+        cause: error,
+      }),
+    );
+  }
+}
+
 const ids = (clock: Clock): IdGenerator => createIdGenerator({ clock });
 
 /** One injected failure, for tests of the caller's fail-closed handling. */
@@ -32,24 +48,44 @@ export interface FailureInjection {
   failNext(error: AppError): void;
 }
 
+function injector(): { take(): AppError | undefined; failNext(error: AppError): void } {
+  let failure: AppError | undefined;
+  return {
+    take() {
+      const error = failure;
+      failure = undefined;
+      return error;
+    },
+    failNext(error) {
+      failure = error;
+    },
+  };
+}
+
 export interface FakeAuditSink extends AuditSink, FailureInjection {
   records(tenantId: TenantId): Promise<readonly AuditRecord[]>;
 }
 
+/** Builds each record from named fields only, so an entry cannot smuggle in who or where. */
 export function fakeAuditSink(options: { readonly clock: Clock }): FakeAuditSink {
   const nextId = ids(options.clock);
   const stored: AuditRecord[] = [];
-  let failure: AppError | undefined;
+  const failures = injector();
   return {
     append(context, entry) {
-      if (failure !== undefined) {
-        const error = failure;
-        failure = undefined;
-        return Promise.resolve(err(error));
-      }
+      const injected = failures.take();
+      if (injected !== undefined) return Promise.resolve(err(injected));
+      const changes = entry.changes === undefined ? ok(undefined) : copy(entry.changes);
+      if (!changes.ok) return Promise.resolve(changes);
       const record: AuditRecord = deepFreeze({
-        ...structuredClone(entry),
         id: nextId(),
+        action: entry.action,
+        resource: {
+          type: entry.resource.type,
+          ...(entry.resource.id === undefined ? {} : { id: entry.resource.id }),
+        },
+        outcome: entry.outcome,
+        ...(changes.value === undefined ? {} : { changes: changes.value }),
         tenantId: context.tenantId,
         actor: structuredClone(context.actor),
         ...(context.initiatedBy === undefined
@@ -63,8 +99,8 @@ export function fakeAuditSink(options: { readonly clock: Clock }): FakeAuditSink
     },
     records: (tenantId) =>
       Promise.resolve(stored.filter((r) => r.tenantId === tenantId).map((r) => structuredClone(r))),
-    failNext(error) {
-      failure = error;
+    failNext: (error) => {
+      failures.failNext(error);
     },
   };
 }
@@ -76,19 +112,18 @@ export interface FakeEventPublisher extends EventPublisher, FailureInjection {
 export function fakeEventPublisher(options: { readonly clock: Clock }): FakeEventPublisher {
   const nextId = ids(options.clock);
   const stored: EventEnvelope[] = [];
-  let failure: AppError | undefined;
+  const failures = injector();
   return {
     publish(context, event) {
-      if (failure !== undefined) {
-        const error = failure;
-        failure = undefined;
-        return Promise.resolve(err(error));
-      }
+      const injected = failures.take();
+      if (injected !== undefined) return Promise.resolve(err(injected));
+      const payload = copy(event.payload);
+      if (!payload.ok) return Promise.resolve(payload);
       const envelope: EventEnvelope = deepFreeze({
+        id: nextId(),
         type: event.type,
         version: event.version,
-        payload: structuredClone(event.payload),
-        id: nextId(),
+        payload: payload.value,
         tenantId: context.tenantId,
         actor: structuredClone(context.actor),
         ...(context.initiatedBy === undefined
@@ -103,16 +138,22 @@ export function fakeEventPublisher(options: { readonly clock: Clock }): FakeEven
     },
     published: (tenantId) =>
       Promise.resolve(stored.filter((e) => e.tenantId === tenantId).map((e) => structuredClone(e))),
-    failNext(error) {
-      failure = error;
+    failNext: (error) => {
+      failures.failNext(error);
     },
   };
 }
 
-export interface SentMessage extends Omit<OutgoingMessage, 'to'> {
+/** What a sender keeps: no recipient in clear, no parameter values (they can be personal data). */
+export interface SentMessage {
   readonly messageId: Id;
+  readonly channel: MessageChannel;
   /** Masked: only the last 2 characters are kept. */
   readonly to: string;
+  readonly template: string;
+  readonly paramNames: readonly string[];
+  readonly purpose: string;
+  readonly consentRef: string;
 }
 
 export interface FakeMessageSender extends MessageSender, FailureInjection {
@@ -122,23 +163,24 @@ export interface FakeMessageSender extends MessageSender, FailureInjection {
 export function fakeMessageSender(options: { readonly clock: Clock }): FakeMessageSender {
   const nextId = ids(options.clock);
   const stored: { tenantId: TenantId; message: SentMessage }[] = [];
-  let failure: AppError | undefined;
+  const failures = injector();
   return {
     send(context, message) {
       const invalid = validateOutgoing(message);
       if (invalid !== undefined) return Promise.resolve(err(invalid));
-      if (failure !== undefined) {
-        const error = failure;
-        failure = undefined;
-        return Promise.resolve(err(error));
-      }
+      const injected = failures.take();
+      if (injected !== undefined) return Promise.resolve(err(injected));
       const messageId = nextId();
       stored.push({
         tenantId: context.tenantId,
         message: deepFreeze({
-          ...structuredClone(message),
-          to: maskAddress(message.to),
           messageId,
+          channel: message.channel,
+          to: maskAddress(message.to),
+          template: message.template,
+          paramNames: Object.keys(message.params).sort(),
+          purpose: message.purpose,
+          consentRef: message.consentRef,
         }),
       });
       return Promise.resolve(ok({ messageId }));
@@ -147,8 +189,8 @@ export function fakeMessageSender(options: { readonly clock: Clock }): FakeMessa
       Promise.resolve(
         stored.filter((s) => s.tenantId === tenantId).map((s) => structuredClone(s.message)),
       ),
-    failNext(error) {
-      failure = error;
+    failNext: (error) => {
+      failures.failNext(error);
     },
   };
 }

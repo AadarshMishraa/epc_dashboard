@@ -60,6 +60,7 @@ export {
   actorCeiling,
   authorize,
   deny,
+  grantSubject,
   isAllowed,
   type Authorizer,
   type Decision,
@@ -95,6 +96,7 @@ export type {
   EraserHandler,
   EraserRegistry,
   HandlerOutcome,
+  IncompleteSubjectReport,
   SubjectReport,
 } from './ports/erasure.ts';
 

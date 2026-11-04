@@ -41,8 +41,12 @@ export function validateOutgoing(
   return fields.length === 0 ? undefined : coreError('VALIDATION_FAILED', { fields });
 }
 
-/** Keeps only the last 2 characters of an address, for stores and logs. */
+/** Shorter than this, an address is masked completely. */
+const MIN_PARTLY_VISIBLE = 5;
+
+/** Keeps only the last 2 characters (by code point) of an address, for stores and logs. */
 export function maskAddress(address: string): string {
-  const visible = address.slice(-2);
-  return `${'*'.repeat(Math.max(0, Math.min(address.length - 2, 8)))}${visible}`;
+  const chars = Array.from(address);
+  if (chars.length < MIN_PARTLY_VISIBLE) return '*'.repeat(chars.length);
+  return `${'*'.repeat(Math.min(chars.length - 2, 8))}${chars.slice(-2).join('')}`;
 }

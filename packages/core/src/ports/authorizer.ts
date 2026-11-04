@@ -23,19 +23,34 @@ export function deny(reason: DenyReason): Decision {
   return Object.freeze({ allow: false, reason });
 }
 
-/** Decides whether the context's actor may use `permission` on `resource`. Implemented by K2. */
+/**
+ * Decides whether the context's actor may use `permission` on `resource`. Implemented by
+ * K2. Every Authorizer must apply `actorCeiling` before looking at grants; `authorize`
+ * does not, and the Authorizer contract suite checks it.
+ */
 export interface Authorizer {
   can(context: TenantContext, permission: string, resource: ResourceRef): Promise<Decision>;
 }
 
-/** True only for exactly `{ allow: true }`; undefined, booleans and malformed answers are denies. */
-export function isAllowed(decision: unknown): boolean {
-  return (
-    typeof decision === 'object' &&
-    decision !== null &&
-    (decision as { allow?: unknown }).allow === true
-  );
+/** An own property only, so a polluted Object.prototype can never turn a deny into an allow. */
+function own(value: unknown, key: string): unknown {
+  return typeof value === 'object' && value !== null && Object.hasOwn(value, key)
+    ? (value as Record<string, unknown>)[key]
+    : undefined;
 }
+
+/** True only for an own `allow: true`; undefined, booleans and malformed answers are denies. */
+export function isAllowed(decision: unknown): boolean {
+  return own(decision, 'allow') === true;
+}
+
+const DENY_REASONS: ReadonlySet<string> = new Set<DenyReason>([
+  'NO_GRANT',
+  'UNKNOWN_PERMISSION',
+  'SCOPE_EXCEEDED',
+  'SUPPORT_READ_ONLY',
+  'AUTHORIZER_FAILED',
+]);
 
 /**
  * Asks an Authorizer and fails closed: a thrown error or a malformed answer becomes
@@ -50,7 +65,7 @@ export async function authorize(
   try {
     const decision: unknown = await authorizer.can(context, permission, resource);
     if (isAllowed(decision)) return ALLOW;
-    const reason = (decision as { reason?: unknown } | null)?.reason;
+    const reason = own(decision, 'reason');
     return typeof reason === 'string' && DENY_REASONS.has(reason)
       ? deny(reason as DenyReason)
       : deny('AUTHORIZER_FAILED');
@@ -60,18 +75,10 @@ export async function authorize(
   }
 }
 
-const DENY_REASONS: ReadonlySet<string> = new Set<DenyReason>([
-  'NO_GRANT',
-  'UNKNOWN_PERMISSION',
-  'SCOPE_EXCEEDED',
-  'SUPPORT_READ_ONLY',
-  'AUTHORIZER_FAILED',
-]);
-
 /**
  * The ceiling on what an actor can do, before any grant is considered: an AI client acts
  * for a user and needs the `write` scope to write (ADR-0005); a support operator is
- * read-only by default (security guidelines 4.1). Every Authorizer applies this first.
+ * read-only by default (security guidelines 4.1).
  */
 export function actorCeiling(actor: Actor, mode: PermissionMode): DenyReason | undefined {
   if (mode === 'read') return undefined;
@@ -80,4 +87,23 @@ export function actorCeiling(actor: Actor, mode: PermissionMode): DenyReason | u
   }
   if (actor.kind === 'operator') return 'SUPPORT_READ_ONLY';
   return undefined;
+}
+
+/**
+ * The key a grant is stored under: actor kind and id, so an operator's grant can never
+ * apply to a user or service account that happens to share the id.
+ */
+export function grantSubject(actor: Actor): string | undefined {
+  switch (actor.kind) {
+    case 'user':
+      return `user:${actor.userId}`;
+    case 'service_account':
+      return `service_account:${actor.serviceAccountId}`;
+    case 'operator':
+      return `operator:${actor.operatorId}`;
+    case 'system':
+      return `system:${actor.process}`;
+    case 'anonymous':
+      return undefined;
+  }
 }

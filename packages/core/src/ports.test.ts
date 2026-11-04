@@ -97,6 +97,31 @@ describe('authorize and isAllowed fail closed', () => {
   });
 });
 
+describe('prototype pollution (security review M1)', () => {
+  it('never turns a deny into an allow through Object.prototype', async () => {
+    const proto = Object.prototype as Record<string, unknown>;
+    proto['allow'] = true;
+    proto['enabled'] = true;
+    try {
+      expect(isAllowed({ reason: 'x' })).toBe(false);
+      expect(
+        await authorize(
+          { can: () => Promise.resolve({ reason: 'x' } as never) },
+          context(),
+          'x.read',
+          { type: 'x' },
+        ),
+      ).toEqual({ allow: false, reason: 'AUTHORIZER_FAILED' });
+      expect(
+        await checkEntitlement({ check: () => Promise.resolve({} as never) }, context(), 'k'),
+      ).toEqual({ enabled: false, reason: 'GATE_FAILED' });
+    } finally {
+      delete proto['allow'];
+      delete proto['enabled'];
+    }
+  });
+});
+
 describe('actorCeiling', () => {
   it('lets anyone reach the grant check for a read', () => {
     expect(
@@ -157,9 +182,11 @@ describe('small rules', () => {
     expect(atLeast('internal', 'personal')).toBe(false);
   });
 
-  it('masks an address down to its last 2 characters', () => {
+  it('masks an address down to its last 2 characters, and short ones completely', () => {
     expect(maskAddress('+919876543210')).toBe('********10');
-    expect(maskAddress('ab')).toBe('ab');
+    expect(maskAddress('ab')).toBe('**');
+    expect(maskAddress('abcd')).toBe('****');
+    expect(maskAddress('a😀bc😀d')).toBe('****😀d');
   });
 
   it('requires purpose, consent and a template id before sending', () => {

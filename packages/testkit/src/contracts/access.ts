@@ -1,13 +1,14 @@
-import type {
-  Authorizer,
-  ClassificationLookup,
-  EntitlementGate,
-  QuotaProvider,
-  SecretsProvider,
+import {
+  grantSubject,
+  type Authorizer,
+  type ClassificationLookup,
+  type EntitlementGate,
+  type QuotaProvider,
+  type SecretsProvider,
 } from '@gx/core';
-import { inspect } from 'node:util';
+import { format, inspect } from 'node:util';
 import { describe, expect, it } from 'vitest';
-import { tenantContext, testId, testTenant } from '../context.ts';
+import { tenantContext, testId, testTenant, viaAiClient } from '../context.ts';
 import type {
   AuthorizerSeed,
   ClassificationSeed,
@@ -18,10 +19,14 @@ import type { SecretsSeed } from '../fakes/secrets.ts';
 
 /** Builds the port under test from a seed; real adapters translate the seed into their store. */
 export type ContractFactory<S, T> = (seed: S) => T | Promise<T>;
+
 const A = testTenant(1);
 const B = testTenant(2);
 const USER = testId(1);
+const OPERATOR = testId(9);
+const SERVICE = testId(11);
 const resource = { type: 'invoice' } as const;
+const user = (id = USER) => grantSubject({ kind: 'user', userId: id }) ?? '';
 
 /** Every Authorizer (fake or K2's) must deny by default and respect actor ceilings. */
 export function authorizerContract(
@@ -29,18 +34,34 @@ export function authorizerContract(
   make: ContractFactory<AuthorizerSeed, Authorizer>,
 ): void {
   describe(`${name}: Authorizer contract`, () => {
+    const operator = {
+      kind: 'operator',
+      operatorId: OPERATOR,
+      supportSessionId: testId(10),
+    } as const;
     const seed: AuthorizerSeed = {
       permissions: { 'invoice.read': 'read', 'invoice.issue': 'write' },
       grants: [
-        { tenantId: A, subject: USER, permission: 'invoice.read' },
-        { tenantId: A, subject: USER, permission: 'invoice.issue' },
-        { tenantId: A, subject: testId(9), permission: 'invoice.read' },
+        { tenantId: A, subject: user(), permission: 'invoice.read' },
+        { tenantId: A, subject: user(), permission: 'invoice.issue' },
+        { tenantId: A, subject: grantSubject(operator) ?? '', permission: 'invoice.read' },
+        {
+          tenantId: A,
+          subject: grantSubject({ kind: 'service_account', serviceAccountId: SERVICE }) ?? '',
+          permission: 'invoice.read',
+        },
+        {
+          tenantId: A,
+          subject: grantSubject({ kind: 'system', process: 'jobs' }) ?? '',
+          permission: 'invoice.read',
+        },
       ],
     };
+    const can = async (actor: Parameters<typeof tenantContext>[0], permission = 'invoice.read') =>
+      (await make(seed)).can(tenantContext(actor), permission, resource);
 
     it('denies everything with an empty seed', async () => {
-      const authorizer = await make({});
-      expect(await authorizer.can(tenantContext(), 'invoice.read', resource)).toEqual({
+      expect(await (await make({})).can(tenantContext(), 'invoice.read', resource)).toEqual({
         allow: false,
         reason: 'UNKNOWN_PERMISSION',
       });
@@ -48,7 +69,7 @@ export function authorizerContract(
 
     it('denies an unknown permission even when a grant names it', async () => {
       const authorizer = await make({
-        grants: [{ tenantId: A, subject: USER, permission: 'invoice.read' }],
+        grants: [{ tenantId: A, subject: user(), permission: 'invoice.read' }],
       });
       expect(await authorizer.can(tenantContext(), 'invoice.read', resource)).toEqual({
         allow: false,
@@ -57,61 +78,69 @@ export function authorizerContract(
     });
 
     it('allows a granted permission and denies one without a grant', async () => {
-      const authorizer = await make(seed);
-      expect(await authorizer.can(tenantContext(), 'invoice.read', resource)).toEqual({
-        allow: true,
-      });
-      const other = tenantContext({ actor: { kind: 'user', userId: testId(2) } });
-      expect(await authorizer.can(other, 'invoice.read', resource)).toEqual({
+      expect(await can({})).toEqual({ allow: true });
+      expect(await can({ actor: { kind: 'user', userId: testId(2) } })).toEqual({
         allow: false,
         reason: 'NO_GRANT',
       });
     });
 
     it('never carries a grant into another tenant', async () => {
-      const authorizer = await make(seed);
-      expect(
-        await authorizer.can(tenantContext({ tenantId: B }), 'invoice.read', resource),
-      ).toEqual({ allow: false, reason: 'NO_GRANT' });
+      expect(await can({ tenantId: B })).toEqual({ allow: false, reason: 'NO_GRANT' });
     });
 
     it('denies an AI client a write without the write scope, even when the user may write', async () => {
-      const authorizer = await make(seed);
-      const viaRead = tenantContext({
-        actor: {
-          kind: 'user',
-          userId: USER,
-          via: { kind: 'ai_client', clientId: 'claude' as never, scopes: ['read'] },
-        },
-      });
-      expect(await authorizer.can(viaRead, 'invoice.issue', resource)).toEqual({
+      expect(await can({ actor: viaAiClient(USER, ['read']) }, 'invoice.issue')).toEqual({
         allow: false,
         reason: 'SCOPE_EXCEEDED',
       });
-      expect(await authorizer.can(viaRead, 'invoice.read', resource)).toEqual({ allow: true });
+      expect(await can({ actor: viaAiClient(USER, ['read']) })).toEqual({ allow: true });
+      expect(await can({ actor: viaAiClient(USER, ['read', 'write']) }, 'invoice.issue')).toEqual({
+        allow: true,
+      });
     });
 
-    it('keeps a support operator read-only', async () => {
-      const authorizer = await make(seed);
-      const operator = tenantContext({
-        actor: { kind: 'operator', operatorId: testId(9), supportSessionId: testId(10) },
-      });
-      expect(await authorizer.can(operator, 'invoice.issue', resource)).toEqual({
+    it('keeps a support operator read-only, and needs a grant even to read', async () => {
+      expect(await can({ actor: operator }, 'invoice.issue')).toEqual({
         allow: false,
         reason: 'SUPPORT_READ_ONLY',
       });
-      expect(await authorizer.can(operator, 'invoice.read', resource)).toEqual({ allow: true });
+      expect(await can({ actor: operator })).toEqual({ allow: true });
+      const ungranted = {
+        kind: 'operator',
+        operatorId: testId(12),
+        supportSessionId: testId(10),
+      } as const;
+      expect(await can({ actor: ungranted })).toEqual({ allow: false, reason: 'NO_GRANT' });
+    });
+
+    it("never applies one actor kind's grant to another kind with the same id", async () => {
+      expect(await can({ actor: { kind: 'user', userId: OPERATOR } })).toEqual({
+        allow: false,
+        reason: 'NO_GRANT',
+      });
+      expect(await can({ actor: { kind: 'service_account', serviceAccountId: USER } })).toEqual({
+        allow: false,
+        reason: 'NO_GRANT',
+      });
+    });
+
+    it('checks service accounts and system processes by their own grants', async () => {
+      expect(await can({ actor: { kind: 'service_account', serviceAccountId: SERVICE } })).toEqual({
+        allow: true,
+      });
+      expect(await can({ actor: { kind: 'system', process: 'jobs' } })).toEqual({ allow: true });
+      expect(await can({ actor: { kind: 'system', process: 'other' } })).toEqual({
+        allow: false,
+        reason: 'NO_GRANT',
+      });
     });
 
     it('denies an anonymous caller', async () => {
-      const authorizer = await make(seed);
-      expect(
-        await authorizer.can(
-          tenantContext({ actor: { kind: 'anonymous' } }),
-          'invoice.read',
-          resource,
-        ),
-      ).toEqual({ allow: false, reason: 'NO_GRANT' });
+      expect(await can({ actor: { kind: 'anonymous' } })).toEqual({
+        allow: false,
+        reason: 'NO_GRANT',
+      });
     });
   });
 }
@@ -148,9 +177,14 @@ export function entitlementGateContract(
   });
 }
 
+/** Two or more instances over one store, as two app servers would share one database. */
+export interface QuotaHarness {
+  readonly instance: () => QuotaProvider;
+}
+
 export function quotaProviderContract(
   name: string,
-  make: ContractFactory<QuotaSeed, QuotaProvider>,
+  make: ContractFactory<QuotaSeed, QuotaHarness>,
 ): void {
   describe(`${name}: QuotaProvider contract`, () => {
     const seed: QuotaSeed = {
@@ -159,9 +193,10 @@ export function quotaProviderContract(
         { tenantId: B, quota: 'records', limit: 5 },
       ],
     };
+    const one = async (s: QuotaSeed = seed) => (await make(s)).instance();
 
     it('treats an unknown quota as exhausted, never unlimited', async () => {
-      expect(await (await make({})).consume(tenantContext(), 'records', 1)).toEqual({
+      expect(await (await one({})).consume(tenantContext(), 'records', 1)).toEqual({
         granted: false,
         reason: 'UNKNOWN_QUOTA',
       });
@@ -170,7 +205,7 @@ export function quotaProviderContract(
     it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
       'rejects the amount %s',
       async (amount) => {
-        expect(await (await make(seed)).consume(tenantContext(), 'records', amount)).toEqual({
+        expect(await (await one()).consume(tenantContext(), 'records', amount)).toEqual({
           granted: false,
           reason: 'INVALID_AMOUNT',
         });
@@ -178,7 +213,7 @@ export function quotaProviderContract(
     );
 
     it('grants within the limit and refuses past it without partial consumption', async () => {
-      const quotas = await make(seed);
+      const quotas = await one();
       expect(await quotas.consume(tenantContext(), 'records', 4)).toEqual({
         granted: true,
         remaining: 1,
@@ -193,16 +228,19 @@ export function quotaProviderContract(
       });
     });
 
-    it('never overdraws under 20 concurrent callers', async () => {
-      const quotas = await make(seed);
-      const results = await Promise.all(
-        Array.from({ length: 20 }, () => quotas.consume(tenantContext(), 'records', 1)),
+    it('never overdraws under 200 concurrent callers spread over two instances', async () => {
+      const harness = await make(seed);
+      const first = harness.instance();
+      const second = harness.instance();
+      const calls = Array.from({ length: 200 }, (_, i) =>
+        (i % 2 === 0 ? first : second).consume(tenantContext(), 'records', 1),
       );
+      const results = await Promise.all(calls);
       expect(results.filter((r) => r.granted)).toHaveLength(5);
     });
 
     it("does not spend one tenant's quota for another", async () => {
-      const quotas = await make(seed);
+      const quotas = await one();
       await quotas.consume(tenantContext(), 'records', 5);
       expect(await quotas.consume(tenantContext({ tenantId: B }), 'records', 5)).toEqual({
         granted: true,
@@ -251,16 +289,15 @@ export function secretsProviderContract(
       if (!result.ok) return;
       const secret = result.value;
       expect(secret.reveal()).toBe('platform-pepper-value');
-      for (const printed of [
-        String(secret),
+      const printed = [
         String(secret),
         JSON.stringify({ secret }),
         inspect(secret),
         inspect({ nested: { secret } }),
-      ]) {
-        expect(printed).not.toContain('platform-pepper-value');
-      }
-      expect(JSON.stringify({ secret })).toBe('{"secret":"[secret]"}');
+        inspect(secret, { customInspect: false }),
+        format('%o %O %s %j', secret, secret, secret, { secret }),
+      ];
+      for (const text of printed) expect(text).not.toContain('platform-pepper-value');
     });
 
     it("gives another tenant's secret the same NOT_FOUND as a missing one", async () => {
@@ -273,8 +310,10 @@ export function secretsProviderContract(
       expect(own.ok && own.value.reveal()).toBe('tenant-a-key-value');
     });
 
-    it('does not return a tenant secret as a platform secret', async () => {
-      expect((await (await make(seed)).platform('whatsapp_key')).ok).toBe(false);
+    it('never falls back between platform and tenant secrets', async () => {
+      const secrets = await make(seed);
+      expect((await secrets.platform('whatsapp_key')).ok).toBe(false);
+      expect((await secrets.forTenant(tenantContext(), 'pepper')).ok).toBe(false);
     });
   });
 }

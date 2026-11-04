@@ -261,7 +261,7 @@
         "type"
       ],
       "declarations": [
-        "interface EraserRegistry {\n    register(handler: EraserHandler): Result<undefined, AppError<'CONFLICT'>>;\n    erase(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<EraseOutcome>, AppError<'UNPROCESSABLE'>>>;\n    export(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<readonly JsonValue[]>, AppError<'UNPROCESSABLE'>>>;\n}"
+        "interface EraserRegistry {\n    register(handler: EraserHandler): Result<undefined, AppError<'CONFLICT'>>;\n    erase(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<EraseOutcome>, IncompleteSubjectReport<EraseOutcome>>>;\n    export(context: TenantContext, subject: DataSubject): Promise<Result<SubjectReport<readonly JsonValue[]>, IncompleteSubjectReport<readonly JsonValue[]>>>;\n}"
       ]
     },
     {
@@ -370,6 +370,15 @@
       ],
       "declarations": [
         "interface IdGeneratorOptions {\n    readonly clock: Clock;\n    readonly randomBytes?: RandomBytes;\n}"
+      ]
+    },
+    {
+      "name": "IncompleteSubjectReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface IncompleteSubjectReport<T> extends SubjectReport<T> {\n    readonly code: 'NO_HANDLERS' | 'INCOMPLETE';\n}"
       ]
     },
     {
@@ -523,7 +532,7 @@
         "type"
       ],
       "declarations": [
-        "interface SubjectReport<T> {\n    readonly complete: boolean;\n    readonly outcomes: readonly HandlerOutcome<T>[];\n}"
+        "interface SubjectReport<T> {\n    readonly outcomes: readonly HandlerOutcome<T>[];\n}"
       ]
     },
     {
@@ -659,6 +668,15 @@
       ],
       "declarations": [
         "declare function err<E>(error: E): Err<E>;"
+      ]
+    },
+    {
+      "name": "grantSubject",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function grantSubject(actor: Actor): string | undefined;"
       ]
     },
     {

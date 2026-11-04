@@ -35,24 +35,34 @@ export interface HandlerOutcome<T> {
 }
 
 export interface SubjectReport<T> {
-  /** True only when every handler succeeded. */
-  readonly complete: boolean;
   readonly outcomes: readonly HandlerOutcome<T>[];
+}
+
+/**
+ * Why an erasure or export is not complete. `NO_HANDLERS` means nothing was registered;
+ * `INCOMPLETE` means at least one handler failed, timed out or answered badly, and the
+ * report shows which. A caller must not close a data request on either.
+ */
+export interface IncompleteSubjectReport<T> extends SubjectReport<T> {
+  readonly code: 'NO_HANDLERS' | 'INCOMPLETE';
 }
 
 /**
  * Every module that stores personal data registers a handler here, so K7b's request desk
  * can erase and export a person without importing the modules. A second handler for the
- * same module and entity is rejected; erasing with no handlers is a failure, not a success.
+ * same module and entity is rejected. Handlers run concurrently, each with a deadline, so
+ * one that hangs cannot block the rest; only a complete run is `ok`.
  */
 export interface EraserRegistry {
   register(handler: EraserHandler): Result<undefined, AppError<'CONFLICT'>>;
   erase(
     context: TenantContext,
     subject: DataSubject,
-  ): Promise<Result<SubjectReport<EraseOutcome>, AppError<'UNPROCESSABLE'>>>;
+  ): Promise<Result<SubjectReport<EraseOutcome>, IncompleteSubjectReport<EraseOutcome>>>;
   export(
     context: TenantContext,
     subject: DataSubject,
-  ): Promise<Result<SubjectReport<readonly JsonValue[]>, AppError<'UNPROCESSABLE'>>>;
+  ): Promise<
+    Result<SubjectReport<readonly JsonValue[]>, IncompleteSubjectReport<readonly JsonValue[]>>
+  >;
 }

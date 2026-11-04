@@ -1,10 +1,12 @@
 import {
   createContext,
+  parseAiClientId,
   parseCorrelationId,
   parseId,
   parseTenantId,
   requireTenant,
   type Actor,
+  type AiClientScope,
   type Clock,
   type CorrelationId,
   type Id,
@@ -53,4 +55,11 @@ export function tenantContext(options: TenantContextOptions = {}): TenantContext
   const checked = requireTenant(context);
   if (!checked.ok) throw new Error('unreachable: the context has a tenant');
   return checked.value;
+}
+
+/** A user acting through an AI client with the given scopes (ADR-0005), with a validated client id. */
+export function viaAiClient(userId: Id, scopes: readonly AiClientScope[]): Actor {
+  const clientId = parseAiClientId('test-ai-client');
+  if (clientId === undefined) throw new Error('unreachable: the fixture id is valid');
+  return { kind: 'user', userId, via: { kind: 'ai_client', clientId, scopes } };
 }

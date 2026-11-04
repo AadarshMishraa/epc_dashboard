@@ -45,6 +45,7 @@ describe('@gx/core public API', () => {
       'deny',
       'deriveContext',
       'err',
+      'grantSubject',
       'idTimestamp',
       'isAllowed',
       'isId',

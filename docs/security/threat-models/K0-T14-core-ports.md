@@ -33,3 +33,14 @@ Module to port (in-process); tenant to tenant; operator and AI client to tenant;
 
 ## Out of scope
 Real adapters (K1 to K7), row-level security, the role model and cache invalidation (K2), consent logic (K7b).
+
+## Blocking review, 2026-11-04: findings and controls added
+| Finding | Control now | Test |
+|---|---|---|
+| H1 Audit entry could carry its own `initiatedBy`, tenant or id | Records are built from named fields only | Contract: spoofed tenant, actor, initiatedBy, correlation, id, at and extra keys are all ignored |
+| M1 A polluted `Object.prototype.allow` or `enabled` turned a deny into an allow | `authorize`, `isAllowed` and `checkEntitlement` read own properties only | Prototype-pollution test |
+| M2 Message store kept extra fields and parameter values | Stored as named fields: masked recipient, parameter names only | Contract: recipient equals `maskAddress`; no number, name, amount or extra key in the store |
+| M3 One hanging handler blocked erasure; malformed or partial results counted as done | Handlers run concurrently with a deadline; only a well-formed `ok: true` counts; incomplete runs are `err` (`NO_HANDLERS`, `INCOMPLETE`) | Contract: hang, malformed answer, ok without value, partial failure |
+| M4 Grants were not keyed by actor kind | `grantSubject(actor)` gives `kind:id`; operators need a grant even to read | Contract: same id across kinds, service accounts, system processes, ungranted operator |
+| M5 Quota concurrency test could not catch a race | Harness gives two instances over one store; 200 concurrent calls | Mutation with a yield between check and write turns it red |
+| Low | Short addresses fully masked by code point; unclonable payloads rejected as `VALIDATION_FAILED`; quota seed limits validated; `viaAiClient` fixture validates the id; no fallback between platform and tenant secrets | Unit and contract tests |

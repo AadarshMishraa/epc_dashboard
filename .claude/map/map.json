@@ -319,7 +319,7 @@
     "packages/core/src/index.ts"
    ],
    "env": [],
-   "hash": "dc6fb283d599",
+   "hash": "8285a4735f2c",
    "imports": [
     "node:fs",
     "vitest",
@@ -328,7 +328,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 69,
+   "loc": 70,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -359,7 +359,7 @@
     "packages/core/src/secret.ts"
    ],
    "env": [],
-   "hash": "65e67045181d",
+   "hash": "943e16cfe78a",
    "imports": [
     "./module-id.ts",
     "./module-id.ts",
@@ -382,7 +382,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 103,
+   "loc": 105,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -455,7 +455,7 @@
     "packages/core/src/secret.ts"
    ],
    "env": [],
-   "hash": "6f108e1ecb42",
+   "hash": "69083e709c02",
    "imports": [
     "node:util",
     "vitest",
@@ -471,7 +471,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 180,
+   "loc": 207,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -523,7 +523,7 @@
     "packages/core/src/ids.ts"
    ],
    "env": [],
-   "hash": "cc6b6028d2b3",
+   "hash": "0668e7fdeb6d",
    "imports": [
     "../context.ts",
     "../ids.ts"
@@ -531,7 +531,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 84,
+   "loc": 110,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -545,7 +545,8 @@
     "Authorizer",
     "isAllowed",
     "authorize",
-    "actorCeiling"
+    "actorCeiling",
+    "grantSubject"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -582,14 +583,14 @@
     "packages/core/src/context.ts"
    ],
    "env": [],
-   "hash": "e92de1fdacb4",
+   "hash": "5b15b315992d",
    "imports": [
     "../context.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 35,
+   "loc": 34,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -613,7 +614,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "b744c98b91c1",
+   "hash": "09e1ea7e690a",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -624,7 +625,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 59,
+   "loc": 69,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -634,6 +635,7 @@
     "EraserHandler",
     "HandlerOutcome",
     "SubjectReport",
+    "IncompleteSubjectReport",
     "EraserRegistry"
    ],
    "table_refs": {},
@@ -684,7 +686,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "a33c9093dcde",
+   "hash": "e4ab33c46625",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -694,7 +696,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 49,
+   "loc": 53,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -1592,7 +1594,7 @@
     "packages/testkit/src/clock.ts"
    ],
    "env": [],
-   "hash": "e05c2e259a95",
+   "hash": "a307de2554d3",
    "imports": [
     "@gx/core",
     "./clock.ts"
@@ -1600,7 +1602,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 57,
+   "loc": 66,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1609,7 +1611,8 @@
     "testTenant",
     "TEST_CORRELATION",
     "TenantContextOptions",
-    "tenantContext"
+    "tenantContext",
+    "viaAiClient"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -1624,7 +1627,7 @@
     "packages/testkit/src/fakes/secrets.ts"
    ],
    "env": [],
-   "hash": "9e93576c7be7",
+   "hash": "d9419a6b2d04",
    "imports": [
     "@gx/core",
     "node:util",
@@ -1636,7 +1639,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 281,
+   "loc": 320,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1644,6 +1647,7 @@
     "ContractFactory",
     "authorizerContract",
     "entitlementGateContract",
+    "QuotaHarness",
     "quotaProviderContract",
     "classificationLookupContract",
     "secretsProviderContract"
@@ -1660,7 +1664,7 @@
     "packages/testkit/src/context.ts"
    ],
    "env": [],
-   "hash": "f85b956cc349",
+   "hash": "b62074da25b6",
    "imports": [
     "@gx/core",
     "vitest",
@@ -1670,7 +1674,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 228,
+   "loc": 290,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1696,7 +1700,7 @@
     "packages/testkit/src/index.ts"
    ],
    "env": [],
-   "hash": "2b6c86382a28",
+   "hash": "835a1ed9dae7",
    "imports": [
     "@gx/core",
     "fast-check",
@@ -1708,7 +1712,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 133,
+   "loc": 154,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1722,20 +1726,19 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "23714c1037ad",
+   "hash": "3e73ae10e692",
    "imports": [
     "@gx/core"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 127,
+   "loc": 117,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "AuthorizerSeed",
-    "subjectOf",
     "fakeAuthorizer",
     "EntitlementSeed",
     "fakeEntitlementGate",
@@ -1753,14 +1756,14 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "ed4dd62a4656",
+   "hash": "839f761d7c6a",
    "imports": [
     "@gx/core"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 56,
+   "loc": 87,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1776,14 +1779,14 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "ca19683a5445",
+   "hash": "e2b863fa08f2",
    "imports": [
     "@gx/core"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 155,
+   "loc": 197,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1864,7 +1867,7 @@
     "packages/testkit/src/fakes/secrets.ts"
    ],
    "env": [],
-   "hash": "3cba8ad42f2b",
+   "hash": "7793a32673c0",
    "imports": [
     "@gx/core",
     "./clock.ts",
@@ -2708,8 +2711,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 20:05",
- "head": "bb1be6b",
+ "generated": "2026-11-04 20:15",
+ "head": "4cca524",
  "root": "epc_dashboard",
  "version": 1
 }

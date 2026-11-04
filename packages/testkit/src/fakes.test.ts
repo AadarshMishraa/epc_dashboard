@@ -27,7 +27,10 @@ import {
 // The 9 core ports' contract suites, run against the fakes (F-02-AC2: 9 of 9 pass).
 authorizerContract('fakeAuthorizer', fakeAuthorizer);
 entitlementGateContract('fakeEntitlementGate', fakeEntitlementGate);
-quotaProviderContract('fakeQuotaProvider', fakeQuotaProvider);
+quotaProviderContract('fakeQuotaProvider', (seed) => {
+  const shared = fakeQuotaProvider(seed);
+  return { instance: () => shared };
+});
 classificationLookupContract('fakeClassificationLookup', fakeClassificationLookup);
 secretsProviderContract('fakeSecretsProvider', fakeSecretsProvider);
 auditSinkContract('fakeAuditSink', (clock) => {
@@ -42,7 +45,7 @@ messageSenderContract('fakeMessageSender', (clock) => {
   const sender = fakeMessageSender({ clock });
   return { sender, sent: (t) => sender.sent(t) };
 });
-eraserRegistryContract('inMemoryEraserRegistry', inMemoryEraserRegistry);
+eraserRegistryContract('inMemoryEraserRegistry', (options) => inMemoryEraserRegistry(options));
 
 describe('fakes beyond the contracts', () => {
   it('property: no permission string is ever allowed without an explicit grant', async () => {
@@ -106,6 +109,24 @@ describe('fakes beyond the contracts', () => {
     });
     expect(result.ok && Object.isFrozen(result.value)).toBe(true);
     expect(result.ok && Object.isFrozen(result.value.payload)).toBe(true);
+  });
+});
+
+describe('security review fixes', () => {
+  it('rejects a payload that cannot be stored as data, instead of throwing', async () => {
+    const publisher = fakeEventPublisher({ clock: frozenClock() });
+    const result = await publisher.publish(tenantContext(), {
+      type: 'x.happened',
+      version: 1,
+      payload: { f: (() => 1) as never },
+    });
+    expect(!result.ok && result.error.code).toBe('VALIDATION_FAILED');
+  });
+
+  it.each([Number.NaN, -1, 1.5])('refuses a quota seed limit of %s', (limit) => {
+    expect(() =>
+      fakeQuotaProvider({ limits: [{ tenantId: testTenant(1), quota: 'q', limit }] }),
+    ).toThrow(RangeError);
   });
 });
 

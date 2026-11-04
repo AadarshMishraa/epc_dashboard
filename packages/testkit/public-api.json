@@ -117,7 +117,16 @@
         "type"
       ],
       "declarations": [
-        "interface MessageHarness {\n    readonly sender: MessageSender;\n    readonly sent: (tenantId: TenantId) => Promise<readonly {\n        readonly to: string;\n        readonly messageId: string;\n    }[]>;\n}"
+        "interface MessageHarness {\n    readonly sender: MessageSender;\n    readonly sent: (tenantId: TenantId) => Promise<readonly object[]>;\n}"
+      ]
+    },
+    {
+      "name": "QuotaHarness",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface QuotaHarness {\n    readonly instance: () => QuotaProvider;\n}"
       ]
     },
     {
@@ -144,7 +153,7 @@
         "type"
       ],
       "declarations": [
-        "interface SentMessage extends Omit<OutgoingMessage, 'to'> {\n    readonly messageId: Id;\n    readonly to: string;\n}"
+        "interface SentMessage {\n    readonly messageId: Id;\n    readonly channel: MessageChannel;\n    readonly to: string;\n    readonly template: string;\n    readonly paramNames: readonly string[];\n    readonly purpose: string;\n    readonly consentRef: string;\n}"
       ]
     },
     {
@@ -207,7 +216,7 @@
         "value"
       ],
       "declarations": [
-        "declare function eraserRegistryContract(name: string, make: () => EraserRegistry | Promise<EraserRegistry>): void;"
+        "declare function eraserRegistryContract(name: string, make: (options: {\n    readonly handlerTimeoutMs: number;\n}) => EraserRegistry | Promise<EraserRegistry>): void;"
       ]
     },
     {
@@ -306,7 +315,7 @@
         "value"
       ],
       "declarations": [
-        "declare function inMemoryEraserRegistry(): EraserRegistry;"
+        "declare function inMemoryEraserRegistry(options?: {\n    readonly handlerTimeoutMs?: number;\n}): EraserRegistry;"
       ]
     },
     {
@@ -324,7 +333,7 @@
         "value"
       ],
       "declarations": [
-        "declare function quotaProviderContract(name: string, make: ContractFactory<QuotaSeed, QuotaProvider>): void;"
+        "declare function quotaProviderContract(name: string, make: ContractFactory<QuotaSeed, QuotaHarness>): void;"
       ]
     },
     {
@@ -334,15 +343,6 @@
       ],
       "declarations": [
         "declare function secretsProviderContract(name: string, make: ContractFactory<SecretsSeed, SecretsProvider>): void;"
-      ]
-    },
-    {
-      "name": "subjectOf",
-      "meanings": [
-        "value"
-      ],
-      "declarations": [
-        "declare function subjectOf(actor: Actor): string | undefined;"
       ]
     },
     {
