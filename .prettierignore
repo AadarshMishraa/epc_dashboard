@@ -1,0 +1,12 @@
+# Prettier formats code and config only. Documents, design assets and generated files are
+# owned by their own tools (tools/plangen, design/tools, .claude/gx).
+**/*.md
+.claude/
+design/
+docs/
+packs/
+tools/
+**/dist/
+**/.turbo/
+**/coverage/
+pnpm-lock.yaml

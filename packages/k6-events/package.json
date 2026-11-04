@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k6-events",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Event bus and jobs: transactional outbox, dispatch with retries and dead letters, job queue with tenant fairness and a scheduler.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

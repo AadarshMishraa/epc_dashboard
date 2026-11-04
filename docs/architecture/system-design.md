@@ -1,6 +1,6 @@
 # System design
 
-_Curated. Keep in step with code (skill `gx-system-design`). Generated views: `.claude/map/system-design.html`. Status: initial design from ADR-0001 to 0005, 2026-11-04. Stack (language, framework, hosting vendor) is **not chosen yet**: see `.claude/memory/OPEN_QUESTIONS.md`._
+_Curated. Keep in step with code (skill `gx-system-design`). Generated views: `.claude/map/system-design.html`. Status: design from ADR-0001 to 0005; stack, hosting and repo shape from ADR-0006 (TypeScript on Node.js 24, Next.js on Vercel, Supabase Postgres and Storage in Mumbai, pnpm and Turborepo monorepo). Workspace skeleton built 2026-11-04 (K0-T02)._
 
 ## 1. Context
 ```mermaid
@@ -75,7 +75,37 @@ Each module owns its tables (prefix = module id) and exposes an interface and ev
 Pooled by default: shared schema, `tenant_id` on every table, RLS, tenant set per transaction (ADR-0002). Silo option: same codebase on a dedicated database or region. Compliance rules: `docs/compliance/register.md`. API security: `gx-architecture` security reference.
 
 ## 6. Deployment
-Indian region (CMP-12). One deployable plus workers; pooled production, silo per tenant on demand. Infra vendor and stack: open.
+Indian region (CMP-12): Supabase and Vercel Functions pinned to Mumbai (ADR-0006). One deployable plus workers; pooled production, silo per tenant on demand as a separate Supabase and Vercel project from the same code. Postgres 17 is pinned (ADR-0006 amendment). The Supabase and Vercel projects are configured with placeholders but not created yet; the owner steps are in docs/operations/environments.md.
 
-## 7. Change log
+## 7. Workspace and packages
+One monorepo (ADR-0006). `packages/register.json` is the module register: every workspace package, its plan brief and the workspace packages it may depend on. `pnpm check:imports` fails when the register, the `package.json` files and the source imports disagree.
+
+```mermaid
+flowchart BT
+  core["@gx/core<br/>contracts and ports, no I/O"]
+  testkit["@gx/testkit (support)"] --> core
+  toolchain["@gx/toolchain (support)<br/>import graph; later manifest, boundary, API diff"] --> core
+  k1["@gx/k1-tenancy"] --> core
+  k2["@gx/k2-identity"] --> core
+  k3["@gx/k3-entitlements"] --> core
+  k4["@gx/k4-config"] --> core
+  k5["@gx/k5-workflow"] --> core
+  k6["@gx/k6-events"] --> core
+  k7a["@gx/k7a-audit"] --> core
+  k7b["@gx/k7b-privacy"] --> core
+  k8["@gx/k8-files"] --> core
+```
+
+Skeleton stage: every package depends on core only. A module gains a dependency on another (for example K6 on K1) by adding it to its register entry and `package.json` in a small pull request; manifests (K0-T07) and the boundary lint (K0-T08) then enforce layering.
+
+| Rule | Mechanism |
+|---|---|
+| One public-API file per package | `exports` has one `"."` entry: `@gx/source` condition to `src/index.ts` for typecheck and tests, `types` and `default` to `dist/` for runtime |
+| No cross-package internals | The `exports` map blocks deep imports at resolution; the import-graph check reports them with file and line |
+| Core has no I/O | Core builds without Node.js type definitions, so `process`, `fs` or `net` fail its build |
+| Build order | Turborepo `build` depends on `^build`; typecheck uses the transit-node pattern so a change in core invalidates dependants' cache |
+
+## 8. Change log
 - 2026-11-04: initial design from ADR-0001 to ADR-0005
+- 2026-11-04: stack from ADR-0006; workspace and packages section for the K0-T02 skeleton
+- 2026-11-04: Supabase (Postgres 17, Mumbai) and Vercel (bom1) configured with placeholders

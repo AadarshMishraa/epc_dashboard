@@ -71,3 +71,45 @@ Format per entry:
 - Revisit if: pilots reject the owner-first scope, or an owner needs invoices issued in-app (Q-03).
 - Evidence: OBSERVED. prdtool lint and check on packs/epc: 0 errors; sources are the three earlier EPC documents and docs/compliance/register.md.
 
+
+## 2026-11-04 — Workspace shape (K0-T02): 12 packages, packages/register.json as the module register
+- Context: F-01-AC2 counts 10 packages with exactly 1 public-API file each; the K0 lane is "core + testkit + toolchain"; core must have no I/O and no dependencies.
+- Options considered: A) testkit and toolchain inside core as subpath exports; B) separate support packages in the core lane.
+- Chosen: B. Folding them into core would give core more than one public-API file and pull I/O (Postgres driver, file system, TypeScript compiler) into it. The 10 module packages satisfy the AC; testkit and toolchain follow the same rules. The register lists each package's allowed `depends`; at the skeleton stage all depend on core only.
+- Consequences: manifests (K0-T07) also declare `depends`; K0-T08 must make one of them derive from or cross-check the other so there is a single source of truth.
+- Revisit if: a reviewer reads F-01-AC2 as "exactly 10 workspace packages".
+- Evidence: OBSERVED. packages/register.json, `pnpm check:imports` → 12 packages, 0 violations.
+
+## 2026-11-04 — Toolchain pins: TypeScript 6.0.3, pnpm 10.34.9, Vitest 5.0.5, ESLint 10.13.0
+- Context: TypeScript 7.0.2 (native port) is npm `latest`, pnpm 12 is `latest`.
+- Chosen: TypeScript 6.0.3, because 7.0 exposes only `unstable/*` APIs and typescript-eslint 8.72.1 requires `typescript <6.1.0`; the API-diff gate (K0-T09) needs a stable compiler API. pnpm 10.34.9, because the 10.x line is still patched (2026-10-25) and its supply-chain settings are known; moving to 12.x is its own reviewed chore.
+- Revisit if: typescript-eslint supports TypeScript 7 and 7 ships a stable API; pnpm 10 stops receiving security patches.
+- Evidence: OBSERVED. `npm view typescript-eslint@8.72.1 peerDependencies`, `npm view typescript@7.0.2 exports`, `npm view pnpm time` (2026-11-04).
+
+## 2026-11-04 — Supply-chain install policy (security guidelines 4.10)
+- Chosen: pnpm `minimumReleaseAge` 7 days, `strictDepBuilds` with no install scripts approved, `engineStrict` (Node 24 only), `strictPeerDependencies`, exact versions (`savePrefix: ''`), lockfile committed.
+- Consequences: a new release cannot be adopted for 7 days; an urgent security fix goes through `minimumReleaseAgeExclude` with the reason in the pull request.
+- Evidence: OBSERVED. pnpm-workspace.yaml; install on Node 22 fails with ERR_PNPM_UNSUPPORTED_ENGINE.
+
+## 2026-11-04 — Started K0-T02 before the ADR-0006 Supabase and Vercel gate was closed
+- Context: ADR-0006 says "Before K0-T02: create the Supabase and Vercel projects in Mumbai; record the Postgres major version in the K0 brief". The projects are not recorded anywhere in the repo. Aadarsh asked to start implementing.
+- Chosen: build K0-T02, which has no database, hosting or Postgres dependency. The gate stays open and now blocks the first tasks that need it: K0-T05 (migrations), K0-T11 (local database image) and K0-T10 (CI Postgres pin).
+- Revisit if: Aadarsh wants the gate held literally; nothing in K0-T02 depends on the version, so no rework follows.
+- Evidence: OBSERVED. grep for a recorded Postgres version finds none; .claude/memory/OPEN_QUESTIONS.md.
+
+## 2026-11-04 — K0-T02 staff review: 6 findings fixed, 4 deferred to K0-T08
+- Context: gx-staff-reviewer did not approve the first version. It found 2 High false negatives (the preprocessor scan missed `export * as` and `export type *`; local aliases bypassed the register), plus Medium and Low items.
+- Chosen: fixed 1, 2, 3 (`isolated` register flag and `isolation` rule for core), 5 (turbo globalDependencies), 8 and 9 with tests and mutation checks. Deferred to K0-T08 (boundary lint): 4, read the pnpm-workspace globs and decide how packs register; 6, a pnpm catalog for the shared typescript and zod pins; 7, scan files outside `src/`; 10, pnpm `trustPolicy` and `blockExoticSubdeps` (support in 10.34 unverified). Re-review (approved) added two Low items for K0-T08: reject `@gx/*` keys in `overrides` (pnpm-workspace.yaml and root package.json), and check `git:`, `github:` and tarball specs, which `minimumReleaseAge` does not cover. Item 4 must be settled before the EPC pack joins the workspace.
+- Evidence: OBSERVED. 102 tests; each new rule disabled in turn turns a test red.
+
+## 2026-11-04 — Postgres 17 pinned; Supabase and Vercel configured with placeholders
+- Context: Aadarsh: "use Supabase for database and Vercel for hosting, set these up, leave placeholders; I add keys and run migrations later".
+- Chosen: Postgres 17 (Supabase platform default and CLI default on 2026-11-04). In supabase/config.toml, the Data API, Realtime, Edge Functions, Auth and analytics are off, and the pooler is on in transaction mode. vercel.json pins bom1, sets security headers and keeps git deploys off until an app exists. .env.example holds placeholders, with no anon or service_role key and no client prefix; a test guards all of this. The Supabase CLI is not a repo dependency, because its install script downloads a binary, which the strictDepBuilds policy blocks; developers install it themselves.
+- Revisit if: the hosted project shows another Postgres major; D-05 adopts Supabase Auth (turn [auth] on then).
+- Evidence: OBSERVED. supabase.com changelog 46080 ("Postgres 17 ... platform default"); `supabase init` with CLI 2.122.0 writes major_version = 17; packages/toolchain/src/environment-config.test.ts.
+
+## 2026-11-04 — K0-T03 core type shape after staff review
+- Chosen: `TenantId` is its own brand; tenant-scoped code takes `TenantContext`, which only `requireTenant` produces, so a skipped check is a compile error. `Clock` has wall time and monotonic time. AppError carries `retryAfterSeconds` (whole seconds) and `currentVersion`. Context carries `initiatedBy` for jobs. Errors are values with a public message; `detail` and `cause` are for logs only.
+- Deferred, now in the briefs: error-code collisions across catalogues (K0-T07 done-when); summarising `cause` in logs (K0-T04 threat line).
+- Accepted risk: a UUIDv7 reveals the record's creation time, and its counter hints at volume. Before ids appear in public or customer links (pack S19), use an opaque token instead of the id.
+- Evidence: OBSERVED. 200 tests; 14 mutations across core each turn a test red; reviewer approved.

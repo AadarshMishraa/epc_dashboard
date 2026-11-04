@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k7b-privacy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Privacy desk: notices and consent, data requests with clocks, retention, erasure and export, incident log and breach clocks.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

@@ -1,7 +1,7 @@
-# STATUS (updated 2026-11-04 by session 1)
+# STATUS (updated 2026-11-04 by session 2)
 Release target: foundation v1.0 (date TBD)   Current phase: P1 Foundation   Overall: GREEN
 
-GREEN: ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
+GREEN: ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. K0-T02 done 2026-11-04 (gx-staff-reviewer approved after fixes; 4 Low and Medium findings deferred to K0-T08, see .claude/memory/DECISIONS.md). F-01-AC2 counts the 10 `kind: module` packages; testkit and toolchain are support packages in the same lane. 2026-11-04: Postgres 17 pinned; Supabase and Vercel configured with placeholders (docs/operations/environments.md). Owner steps: create both projects in Mumbai and add keys before the first hosted deploy or migration (owner Aadarsh). Local Docker is unavailable in the cloud container, so the local stack (K0-T11) is verified on a developer machine or in CI. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
 
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
@@ -22,8 +22,8 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 ## Features
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
 |----|------|----------|-----------|-------|-----------|-------|----|
-| F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 0 of 3 pass | - | - |
-| F-02 | Core contracts, ports and redacted logging | Must | M-01 | Not started | 0 of 3 pass | - | - |
+| F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 2 of 3 pass (AC2 local, AC3; AC1 needs K0-T11) | toolchain import-graph suite, `pnpm verify` | - |
+| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 0 of 3 pass | core unit and property tests | - |
 | F-03 | Migration framework and test kit | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-04 | Manifest, boundary and API gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-05 | CI pipeline with security gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
@@ -94,10 +94,10 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | ID | Feature | Task | State | Blocked by |
 |----|---------|------|-------|-----------|
 | T-001 | F-01 | K0-T01 Decide stack and repo layout (ADR-0006) | Done | - |
-| T-002 | F-01 | K0-T02 Workspace skeleton | Not started | - |
-| T-003 | F-02 | K0-T03 Core types | Not started | T-002 |
+| T-002 | F-01 | K0-T02 Workspace skeleton | Done | - |
+| T-003 | F-02 | K0-T03 Core types | Done | - |
 | T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
-| T-005 | F-03 | K0-T05 Migration framework | Not started | T-002 |
+| T-005 | F-03 | K0-T05 Migration framework | Not started | - |
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
 | T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | Not started | T-002 |
 | T-008 | F-04 | K0-T08 Boundary lint | Not started | T-002, T-007 |

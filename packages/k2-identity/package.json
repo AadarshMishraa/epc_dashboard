@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k2-identity",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Identity and access: credentials, sessions, MFA, roles and permissions as data, service accounts and OAuth for AI clients.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

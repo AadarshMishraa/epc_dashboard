@@ -61,8 +61,8 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: ADR accepted by Aadarsh: language, framework, Postgres version, queue approach, package manager, monorepo layout
   - Tests: review only
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-  - Human gate: Done: ADR-0006 accepted 2026-11-04. Before K0-T02, create the Supabase and Vercel projects in Mumbai and record the Postgres major version in the K0 brief.
-- [ ] **K0-T02** (T-002) Workspace skeleton: one package per module with public-API file, register entry, README, changelog (M)
+  - Human gate: Done: ADR-0006 accepted 2026-11-04. Postgres major version pinned to 17 (Supabase platform default, 2026-11-04) in supabase/config.toml, CI and local. Supabase and Vercel are configured with placeholders (docs/operations/environments.md); Aadarsh creates both projects in Mumbai, confirms the project shows Postgres 17, and adds the keys before the first deploy or hosted migration.
+- [x] **K0-T02** (T-002) Workspace skeleton: one package per module with public-API file, register entry, README, changelog (M)
   - Feature: F-01 | Milestone: M-01 | Level: 1 | Lane: core
   - Needs: K0-T01 (T-001)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer
@@ -71,7 +71,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Workspace builds; every package imports only core
   - Tests: build and import-graph check
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T03** (T-003) Core types: Context, ordered ids, error codes, Result, Clock (M)
+- [x] **K0-T03** (T-003) Core types: Context, ordered ids, error codes, Result, Clock (M)
   - Feature: F-02 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer
@@ -85,7 +85,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Needs: K0-T03 (T-003)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-security-reviewer (blocking)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
-  - Security: S3. Threat: personal data leaks through logs. Control: redact by classification before write; test with seeded phone, email and ID values.
+  - Security: S3. Threat: personal data leaks through logs. Control: redact by classification before write; summarise AppError.cause by type and code, never serialise it raw (driver messages can hold personal data); test with seeded phone, email and ID values.
   - Done when: Phone, email and ID patterns are masked in logs; correlation id on every line
   - Tests: log-redaction test with seeded personal data
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
@@ -113,7 +113,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
   - Security: S1. Module security baseline applies.
-  - Done when: Valid sample passes; undeclared event, tool without mode or missing permission fails
+  - Done when: Valid sample passes; undeclared event, tool without mode or missing permission fails; an error code that collides with core or another module fails
   - Tests: validator tests with good and bad manifests
   - Rollback: Revert the commit; the migration is expand-only, so a schema fault is fixed forward, never edited in place.
 - [ ] **K0-T08** (T-008) Boundary lint: no upward imports, no cross-package internals, table ownership, no industry words (M)

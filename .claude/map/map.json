@@ -1,7 +1,1510 @@
 {
- "files": {},
- "generated": "2026-11-04 11:44",
- "head": "no-git",
+ "files": {
+  "design/gx.js": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "7212b7d21609",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "js",
+   "loc": 141,
+   "module": "design",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "design/tools/colorbudget.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "e2c186dcc786",
+   "imports": [
+    "sys",
+    "PIL"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 44,
+   "module": "design/tools",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "main"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "design/tools/contrast.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "1748fcba8223",
+   "imports": [
+    "re"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 67,
+   "module": "design/tools",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "block",
+    "vars_of",
+    "lin",
+    "lum",
+    "ratio"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "eslint.config.js": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "79348e411f17",
+   "imports": [
+    "@eslint/js",
+    "typescript-eslint"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "js",
+   "loc": 47,
+   "module": "(root)",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/clock.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "a832ea7674e0",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 36,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "Clock",
+    "systemClock",
+    "nowDate"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/context.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/context.ts",
+    "packages/core/src/ids.ts"
+   ],
+   "env": [],
+   "hash": "684b23cd20ef",
+   "imports": [
+    "vitest",
+    "./clock.ts",
+    "./context.ts",
+    "./ids.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 251,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/context.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "d1384898393c",
+   "imports": [
+    "./clock.ts",
+    "./errors.ts",
+    "./ids.ts",
+    "./result.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 169,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "CorrelationId",
+    "TenantId",
+    "AiClientId",
+    "parseCorrelationId",
+    "correlationIdFromId",
+    "parseTenantId",
+    "parseAiClientId",
+    "AiClientScope",
+    "AiClient",
+    "Actor",
+    "Context",
+    "TenantContext",
+    "ContextInput",
+    "createContext",
+    "deriveContext",
+    "requireTenant"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/errors.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts"
+   ],
+   "env": [],
+   "hash": "eac7b07e2327",
+   "imports": [
+    "vitest",
+    "./errors.ts",
+    "./context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 141,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/errors.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts"
+   ],
+   "env": [],
+   "hash": "67e7da9be47a",
+   "imports": [
+    "./context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 193,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ERROR_STATUSES",
+    "ErrorStatus",
+    "ErrorDefinition",
+    "defineErrorCatalogue",
+    "CORE_ERRORS",
+    "CoreErrorCode",
+    "FieldError",
+    "AppError",
+    "AppErrorOptions",
+    "appError",
+    "coreError",
+    "ErrorResponseBody",
+    "toErrorResponse"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ids.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/ids.ts"
+   ],
+   "env": [],
+   "hash": "8fe16291928f",
+   "imports": [
+    "fast-check",
+    "vitest",
+    "./clock.ts",
+    "./ids.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 161,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/ids.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts"
+   ],
+   "env": [],
+   "hash": "618db8752553",
+   "imports": [
+    "./clock.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 105,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "Id",
+    "isId",
+    "parseId",
+    "RandomBytes",
+    "webCryptoRandomBytes",
+    "IdGeneratorOptions",
+    "IdGenerator",
+    "createIdGenerator",
+    "idTimestamp"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/index.ts"
+   ],
+   "env": [],
+   "hash": "08c9c85d67b6",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 57,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/module-id.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "793ed4977ed2",
+   "imports": [
+    "./module-id.ts",
+    "./module-id.ts",
+    "./result.ts",
+    "./errors.ts",
+    "./clock.ts",
+    "./ids.ts",
+    "./context.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 58,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/module-id.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/module-id.ts"
+   ],
+   "env": [],
+   "hash": "37d740975cd8",
+   "imports": [
+    "vitest",
+    "./module-id.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 51,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/module-id.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "8f9b4e8b749a",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 34,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ModuleId",
+    "MODULE_ID_MAX_LENGTH",
+    "isModuleId",
+    "moduleId"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/result.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/result.ts"
+   ],
+   "env": [],
+   "hash": "b36bf7763c70",
+   "imports": [
+    "vitest",
+    "./clock.ts",
+    "./result.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 37,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/result.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "4ef8fe640797",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 24,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "Result",
+    "Ok",
+    "Err",
+    "ok",
+    "err"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k1-tenancy/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k1-tenancy/src/index.ts"
+   ],
+   "env": [],
+   "hash": "45a6f22775bf",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k1-tenancy",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k1-tenancy/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "c38b20626ea4",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k1-tenancy",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k2-identity/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k2-identity/src/index.ts"
+   ],
+   "env": [],
+   "hash": "e99625f80fb2",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k2-identity",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k2-identity/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "e43092920e31",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k2-identity",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k3-entitlements/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k3-entitlements/src/index.ts"
+   ],
+   "env": [],
+   "hash": "2493ea0ca12c",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k3-entitlements",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k3-entitlements/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "72f05b82d726",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k3-entitlements",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k4-config/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k4-config/src/index.ts"
+   ],
+   "env": [],
+   "hash": "13710b2e910b",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k4-config",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k4-config/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "b577b8a381b3",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k4-config",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k5-workflow/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k5-workflow/src/index.ts"
+   ],
+   "env": [],
+   "hash": "ffc372e1cc54",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k5-workflow",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k5-workflow/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "dbad47486104",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k5-workflow",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k6-events/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k6-events/src/index.ts"
+   ],
+   "env": [],
+   "hash": "9204afa08851",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k6-events",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k6-events/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "54b1f68e9328",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k6-events",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k7a-audit/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k7a-audit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "5ad01f9e03e8",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k7a-audit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k7a-audit/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "ca1da791633b",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k7a-audit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k7b-privacy/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k7b-privacy/src/index.ts"
+   ],
+   "env": [],
+   "hash": "50012e4aaf20",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k7b-privacy",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k7b-privacy/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "dc6e7636b2a4",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k7b-privacy",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k8-files/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/k8-files/src/index.ts"
+   ],
+   "env": [],
+   "hash": "7a5b8fa4a4e7",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/k8-files",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/k8-files/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "b0f7242e1132",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/k8-files",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "40e982aa948d",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "8093ca79df34",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 9,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/bin/check-imports.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/index.ts"
+   ],
+   "env": [],
+   "hash": "5de0163e33d1",
+   "imports": [
+    "node:util",
+    "../index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 37,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/environment-config.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "8a1e0bf90c31",
+   "imports": [
+    "node:fs",
+    "vitest"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 110,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/import-graph.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/index.ts",
+    "packages/toolchain/src/import-graph.ts",
+    "packages/toolchain/src/index.ts"
+   ],
+   "env": [],
+   "hash": "aa67bd908d5a",
+   "imports": [
+    "node:child_process",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url",
+    "vitest",
+    "./import-graph.ts",
+    "@gx/core",
+    "@gx/core",
+    "node:fs",
+    "vitest",
+    "./index.ts",
+    "@gx/core",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy",
+    "@gx/core",
+    "@gx/k1-tenancy",
+    "@gx/k9-unknown",
+    "@gx/core/src/module-id.ts",
+    "@gx/core",
+    "../../core/src/index.ts",
+    "./nested/a.ts",
+    "../b.ts",
+    "@gx/k1-tenancy",
+    "zod",
+    "vitest",
+    "zod",
+    "zod/mini",
+    "fs",
+    "https://example.com/x.js",
+    "/etc/x.js",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy",
+    "k2",
+    "node:fs",
+    "node:fs",
+    "@gx/k1-tenancy"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 496,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/import-graph.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/imports.ts",
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "54fdb8a2cdb5",
+   "imports": [
+    "node:fs",
+    "node:module",
+    "node:path",
+    "zod",
+    "./imports.ts",
+    "./register.ts",
+    "x",
+    "${name}"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 461,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "RuleId",
+    "Violation",
+    "ImportGraphResult",
+    "ImportGraphOptions",
+    "REGISTER_PATH",
+    "checkImportGraph",
+    "formatViolation"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/imports.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/imports.ts"
+   ],
+   "env": [],
+   "hash": "585fcccbad66",
+   "imports": [
+    "vitest",
+    "./imports.ts",
+    "static",
+    "type-only",
+    "re-export",
+    "star",
+    "side-effect",
+    "import-equals",
+    "dynamic",
+    "required",
+    "bare-side-effect",
+    "namespace-re-export",
+    "type-namespace-re-export",
+    "type-import",
+    "a",
+    "in-line-comment",
+    "in-block-comment",
+    "real",
+    "a"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 95,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/imports.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "38539a56e9de",
+   "imports": [
+    "typescript",
+    "x"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 96,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ImportReference",
+    "findImports"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/import-graph.ts",
+    "packages/toolchain/src/imports.ts",
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "c9503a47ee67",
+   "imports": [
+    "@gx/core",
+    "./import-graph.ts",
+    "./imports.ts",
+    "./register.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 27,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/register.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "965a15b04b89",
+   "imports": [
+    "vitest",
+    "./register.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 88,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/register.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "f42e1b2bd1d1",
+   "imports": [
+    "@gx/core",
+    "zod"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 119,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "RegisterEntry",
+    "Register",
+    "RegisterParse",
+    "parseRegister",
+    "allDepends"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/assign.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "fab059b50470",
+   "imports": [
+    "re"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 177,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "module_of",
+    "skills_for",
+    "qa_needed",
+    "sec_level",
+    "reviewers",
+    "rollback"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/epc_features.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "e96dcca138fd",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 364,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "feat"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/epc_gen.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "af70c8f3d5ce",
+   "imports": [
+    "os",
+    "re",
+    "sys",
+    "epc_project",
+    "epc_features",
+    "features"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 618,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "fnd_waves",
+    "load",
+    "w",
+    "agents",
+    "skills",
+    "lane",
+    "write_prd",
+    "write_status",
+    "render_task",
+    "ticked_ids",
+    "write_briefs",
+    "write_register",
+    "write_playbook",
+    "write_foundation_map",
+    "main"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/epc_project.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "cd167d68054f",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 152,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/features.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "0b31ee28dd6e",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 438,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "feat"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/gen.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "c5cb6618be11",
+   "imports": [
+    "os",
+    "re",
+    "sys",
+    "features",
+    "project",
+    "assign",
+    "modules_a",
+    "modules_b"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 502,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "load_tasks",
+    "build",
+    "lane",
+    "w",
+    "write_prd",
+    "agent_line",
+    "render_task",
+    "ticked_ids",
+    "write_brief",
+    "write_register",
+    "write_playbook",
+    "write_plans",
+    "main"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/modules_a.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "5a15c67b4d50",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 99,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/modules_b.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "4ff3000a652a",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 132,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "tools/plangen/project.py": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "94a24dc38112",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "py",
+   "loc": 93,
+   "module": "tools/plangen",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "vitest.config.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "723e3d89a527",
+   "imports": [
+    "node:fs",
+    "vite",
+    "vitest/config"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 35,
+   "module": "(root)",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  }
+ },
+ "generated": "2026-11-04 18:32",
+ "head": "50a3659",
  "root": "epc_dashboard",
  "version": 1
 }

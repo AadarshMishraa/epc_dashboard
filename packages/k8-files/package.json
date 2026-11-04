@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k8-files",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Files and vault: blob storage port, file model, secure upload and download, document types with expiry, scanning and quotas.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

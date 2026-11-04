@@ -12,7 +12,7 @@ Rules (applied by gen.py):
 import re
 
 HUMAN_GATES = {
-    "K0-T01": "Done: ADR-0006 accepted 2026-11-04. Before K0-T02, create the Supabase and Vercel projects in Mumbai and record the Postgres major version in the K0 brief.",
+    "K0-T01": "Done: ADR-0006 accepted 2026-11-04. Postgres major version pinned to 17 (Supabase platform default, 2026-11-04) in supabase/config.toml, CI and local. Supabase and Vercel are configured with placeholders (docs/operations/environments.md); Aadarsh creates both projects in Mumbai, confirms the project shows Postgres 17, and adds the keys before the first deploy or hosted migration.",
     "K2-T15": "ADR-0006 sets the direction: delegate the protocol to Supabase Auth. Before code, confirm GA, connector conformance and password-policy fit; if any fails, gx-planner drafts a follow-up ADR and Aadarsh decides.",
     "K4-T06": "Record the custom-field storage ADR (column per field, JSON document, or EAV) with a benchmark before code. gx-planner drafts; Aadarsh decides.",
     "K3-T09": "Decide Q-07 (licence and IP model) with counsel before code. gx-planner drafts; Aadarsh decides.",
@@ -71,7 +71,7 @@ SEC_MODULE = {
 }
 
 SEC_TASK = {
-    "K0-T04": "Threat: personal data leaks through logs. Control: redact by classification before write; test with seeded phone, email and ID values.",
+    "K0-T04": "Threat: personal data leaks through logs. Control: redact by classification before write; summarise AppError.cause by type and code, never serialise it raw (driver messages can hold personal data); test with seeded phone, email and ID values.",
     "K0-T10": "Threat: vulnerable or tampered dependency, leaked secret. Control: lockfile, advisory scan, secret scan, pinned CI actions, no secrets in CI logs.",
     "K0-T14": "Threat: a fake or port that fails open. Control: deny-by-default fakes; contract suite proves denial on missing permission, key or classification.",
     "K1-T02": "Threat: code path runs without tenant. Control: requireTenant throws TENANT_REQUIRED; context survives async hops; test with background jobs.",
