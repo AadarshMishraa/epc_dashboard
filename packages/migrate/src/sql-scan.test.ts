@@ -27,7 +27,7 @@ describe('the expand allow-list', () => {
       CREATE INDEX k1_tenant_region_idx ON k1_tenant (region);
       CREATE TYPE k1_status AS ENUM ('active');
       ALTER TYPE k1_status ADD VALUE 'suspended';
-      CREATE OR REPLACE FUNCTION k1_touch() RETURNS trigger AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END $$ LANGUAGE plpgsql;
+      CREATE FUNCTION k1_touch() RETURNS trigger AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END $$ LANGUAGE plpgsql;
       COMMENT ON TABLE k1_tenant IS 'tenants';
       GRANT SELECT, INSERT ON k1_tenant TO gx_app;
       INSERT INTO k1_status_label (code) VALUES ('active');
@@ -45,6 +45,65 @@ describe('the expand allow-list', () => {
     expect(severities('CREATE TABLE "a" (id int);\nALTER TABLE "b" DROP COLUMN c;')).toEqual([
       'contract',
     ]);
+  });
+});
+
+describe('re-review findings', () => {
+  it('flags a view without security_invoker, which can read across tenants', () => {
+    expect(severities('CREATE VIEW k1_v AS SELECT * FROM k1_tenant;')).toEqual(['security']);
+    expect(severities('CREATE OR REPLACE VIEW k1_v AS SELECT * FROM k1_tenant;')).toEqual([
+      'security',
+    ]);
+  });
+
+  it('accepts a security_invoker view, and a replaced one is still contract', () => {
+    expect(
+      findRiskyStatements('CREATE VIEW k1_v WITH (security_invoker = true) AS SELECT 1;'),
+    ).toEqual([]);
+    expect(
+      severities('CREATE OR REPLACE VIEW k1_v WITH (security_invoker = on) AS SELECT 1;'),
+    ).toEqual(['contract']);
+  });
+
+  it('flags replacing a function that policies may call', () => {
+    const sql =
+      'CREATE OR REPLACE FUNCTION k1_current_tenant() RETURNS uuid AS $$ SELECT NULL::uuid $$ LANGUAGE sql;';
+    expect(severities(sql)).toEqual(['security']);
+  });
+
+  it('flags a blocking index on an existing table, but not CONCURRENTLY or on a new table', () => {
+    expect(severities('CREATE INDEX k1_t_c ON k1_t (c);')).toEqual(['contract']);
+    expect(findRiskyStatements('CREATE INDEX CONCURRENTLY k1_t_c ON k1_t (c);')).toEqual([]);
+    expect(
+      findRiskyStatements('CREATE TABLE k1_n (c int);\nCREATE UNIQUE INDEX k1_n_c ON k1_n (c);'),
+    ).toEqual([]);
+  });
+
+  it('flags upserts and INSERT ... SELECT, not plain seed inserts', () => {
+    expect(
+      severities('INSERT INTO k1_t (id) VALUES (1) ON CONFLICT (id) DO UPDATE SET id = 2;'),
+    ).toEqual(['contract']);
+    expect(severities('INSERT INTO k1_t SELECT * FROM k1_old;')).toEqual(['contract']);
+    expect(findRiskyStatements('INSERT INTO k1_t (id) VALUES (1) ON CONFLICT DO NOTHING;')).toEqual(
+      [],
+    );
+  });
+
+  it('flags materialized views and turning security_invoker off', () => {
+    expect(severities('CREATE MATERIALIZED VIEW k1_mv AS SELECT * FROM k1_tenant;')).toEqual([
+      'security',
+    ]);
+    expect(severities('ALTER VIEW k1_v SET (security_invoker = false);')).toEqual(['security']);
+  });
+
+  it('treats ON n(x) with no space as the same new table', () => {
+    expect(
+      findRiskyStatements('CREATE TABLE k1_n (x int);\nCREATE INDEX k1_n_x ON k1_n(x);'),
+    ).toEqual([]);
+  });
+
+  it('accepts a grant to the quoted app role', () => {
+    expect(findRiskyStatements('GRANT SELECT ON k1_t TO "gx_app";')).toEqual([]);
   });
 });
 

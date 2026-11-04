@@ -126,6 +126,8 @@ export function countStatements(sql: string): number {
 
 /** Roles a migration may grant to without a security review. */
 export const KNOWN_ROLES: readonly string[] = ['GX_APP'];
+/** The same roles written as quoted identifiers, as the blanker leaves them (q...q). */
+const KNOWN_ROLES_QUOTED: readonly string[] = KNOWN_ROLES.map((role) => `Q${role}Q`);
 
 const TRANSACTION_CONTROL =
   /^(?:BEGIN|START|COMMIT|END|ROLLBACK|ABORT|SAVEPOINT|RELEASE|PREPARE TRANSACTION|COMMIT PREPARED|ROLLBACK PREPARED)\b/;
@@ -147,15 +149,21 @@ const SECURITY_HEADS: readonly [RegExp, string][] = [
   [/^(?:CREATE|ALTER|DROP) EXTENSION\b/, 'extensions run privileged code'],
   [/^(?:REVOKE|GRANT)\b.*\bON (?:SCHEMA|DATABASE|ALL)\b/, 'schema- and database-wide privileges'],
   [/^SECURITY LABEL\b/, 'security labels'],
+  [
+    /^CREATE MATERIALIZED VIEW\b/,
+    'a materialized view stores rows with its owner’s rights, outside row-level security',
+  ],
+  [
+    /^ALTER VIEW\b.*\bSECURITY_INVOKER\s*=\s*(?:FALSE|OFF|0)\b/,
+    'turning off security_invoker makes the view bypass row-level security',
+  ],
 ];
 const SAFE_HEADS: readonly RegExp[] = [
   /^CREATE (?:UNLOGGED )?TABLE\b/,
-  /^CREATE (?:UNIQUE )?INDEX\b/,
   /^CREATE (?:TYPE|SEQUENCE|SCHEMA|DOMAIN)\b/,
-  /^CREATE (?:OR REPLACE )?(?:FUNCTION|PROCEDURE|VIEW|TRIGGER)\b/,
+  /^CREATE (?:FUNCTION|PROCEDURE|TRIGGER)\b/,
   /^CREATE CONSTRAINT TRIGGER\b/,
   /^COMMENT ON\b/,
-  /^INSERT INTO\b/,
   /^ALTER TYPE \S+ ADD VALUE\b/,
 ];
 
@@ -253,7 +261,9 @@ export function findRiskyStatements(sql: string): Finding[] {
         .replace(/\bWITH GRANT OPTION\b/, '')
         .split(',')
         .map((r) => r.trim());
-      if (/\bWITH GRANT OPTION\b/.test(code) || roles.some((role) => !KNOWN_ROLES.includes(role))) {
+      const known = (role: string): boolean =>
+        KNOWN_ROLES.includes(role) || KNOWN_ROLES_QUOTED.includes(role);
+      if (/\bWITH GRANT OPTION\b/.test(code) || roles.some((role) => !known(role))) {
         add('security', statement, `GRANT to a role other than ${KNOWN_ROLES.join(', ')}`);
       }
       continue;
@@ -267,6 +277,50 @@ export function findRiskyStatements(sql: string): Finding[] {
       for (const action of splitActions(alterTable[2])) {
         const reason = judgeAlterTableAction(action, tableIsNew);
         if (reason !== undefined) add('contract', statement, reason);
+      }
+      continue;
+    }
+    if (/^CREATE (?:OR REPLACE )?(?:TEMP |TEMPORARY )?(?:RECURSIVE )?VIEW\b/.test(code)) {
+      if (!/\bSECURITY_INVOKER\s*=\s*(?:TRUE|ON|1)\b/.test(code)) {
+        add(
+          'security',
+          statement,
+          'a view runs with its owner’s rights and can bypass row-level security; create it WITH (security_invoker = true)',
+        );
+      } else if (/^CREATE OR REPLACE\b/.test(code)) {
+        add('contract', statement, 'replacing a view changes what the previous release reads');
+      }
+      continue;
+    }
+    if (/^CREATE OR REPLACE (?:FUNCTION|PROCEDURE|TRIGGER)\b/.test(code)) {
+      add(
+        'security',
+        statement,
+        'replacing a function can change behaviour that policies and other code rely on',
+      );
+      continue;
+    }
+    const index =
+      /^CREATE (?:UNIQUE )?INDEX (CONCURRENTLY )?(?:IF NOT EXISTS )?(?:\S+ )?ON (?:ONLY )?([^\s(]+)/.exec(
+        code,
+      );
+    if (index !== null) {
+      if (index[1] === undefined && !createdTables.has(index[2] ?? '')) {
+        add(
+          'contract',
+          statement,
+          'a plain CREATE INDEX on an existing table blocks writes; use CONCURRENTLY in a gx:no-transaction migration',
+        );
+      }
+      continue;
+    }
+    if (/^INSERT INTO\b/.test(code)) {
+      if (/\bON CONFLICT\b.*\bDO UPDATE\b/.test(code) || /\bSELECT\b/.test(code)) {
+        add(
+          'contract',
+          statement,
+          'INSERT ... SELECT and upserts rewrite or copy data; run them as jobs or in a contract migration',
+        );
       }
       continue;
     }

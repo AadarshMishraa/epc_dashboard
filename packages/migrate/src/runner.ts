@@ -216,7 +216,10 @@ async function applyOne(
   ];
   try {
     // A fresh session state for every migration: nothing one file SETs leaks into the next.
+    // Not DISCARD ALL: it would also release this run's advisory lock.
     await client.query('RESET ALL');
+    await client.query('RESET ROLE');
+    await client.query('SET SESSION AUTHORIZATION DEFAULT');
     await setting(client, 'lock_timeout', timeouts.migrationLock);
     await setting(client, 'statement_timeout', timeouts.statement);
     if (migration.transactional) {
