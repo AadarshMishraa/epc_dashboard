@@ -51,7 +51,8 @@ export interface IncompleteSubjectReport<T> extends SubjectReport<T> {
  * Every module that stores personal data registers a handler here, so K7b's request desk
  * can erase and export a person without importing the modules. A second handler for the
  * same module and entity is rejected. Handlers run concurrently, each with a deadline, so
- * one that hangs cannot block the rest; only a complete run is `ok`.
+ * one that hangs cannot block the rest; only a complete run is `ok`. Because they run
+ * concurrently, a handler must not rely on another module's handler running first.
  */
 export interface EraserRegistry {
   register(handler: EraserHandler): Result<undefined, AppError<'CONFLICT'>>;

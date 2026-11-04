@@ -6,3 +6,4 @@
 | TD-2 | Migration ordering edges across packages (`gx:after`) | Package order is safe while no package touches another's objects; needed only if a contract migration removes something shared, such as a role | K1-T03 or the first shared object | 2026-11-04 |
 | TD-3 | Public-API gate does not see module augmentation of an exported interface from another file | No package augments modules; add when one does | first module augmentation | 2026-11-04 |
 | TD-4 | Declaration-emit error messages from the API gate include absolute source paths (error output only, never the report) | Cosmetic | K0-T10 CI output review | 2026-11-04 |
+| TD-5 | Erasure handler timeout does not cancel the handler, and a late finish is not recorded; the 30 s default is not pinned to the request clock | The in-memory registry is a fake; the real desk is K7b | K7b-T03 erasure orchestrator (pass an AbortSignal, log late completions, set the deadline from the DPDP request clock) | 2026-11-04 |

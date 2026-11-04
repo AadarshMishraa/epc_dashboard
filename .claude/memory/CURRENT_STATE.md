@@ -17,7 +17,7 @@ Scope and progress: docs/prd/STATUS.md; work queue docs/plans/TASKS.md; current 
 | K0-T05 migrations | done | @gx/migrate; allow-list scanner; approved after three review passes |
 | K0-T07 manifest validator | done | Entity ownership, versioned events, pack discovery; approved after two passes |
 | K0-T09 public-API gate | done | .d.ts-based; CR-001 proposed |
-| K0-T14 core ports | in review | Blocking security review running |
+| K0-T14 core ports | done | 9 ports, fakes and contracts; security review approved after fixes |
 | K0-T04, T06, T08, T10 to T13 | todo | K0-T04 threat model ready (docs/security/threat-models) |
 | Supabase and Vercel | configured, not created | Postgres 17 pinned; owner creates the projects and adds keys (docs/operations/environments.md) |
 | EPC pack | todo | Phase 0 validation not started |
@@ -26,8 +26,7 @@ Scope and progress: docs/prd/STATUS.md; work queue docs/plans/TASKS.md; current 
 Nothing. K0-T02 is committed on `claude/nice-allen-uihlqb`.
 
 ## Next up (ordered)
-1. Close the K0-T14 security review.
-2. K0-T04 redacted logging (both S3: threat model by gx-security-reviewer before code).
+1. K0-T04 redacted logging (both S3: threat model by gx-security-reviewer before code).
 3. K0-T06 test kit (tenant matrix, contract harness, frozen clock), then K0-T08 boundary lint (layers by path, industry words, table ownership), K0-T10 CI with Postgres 17, K0-T11, K0-T12 and K0-T13.
 4. (was) K0-T07 manifest schema and validator, then K0-T08 boundary lint (make register `depends` and manifest `depends` one source of truth).
 3. K0-T09 public-API diff and semver gate (TypeScript 6 compiler API).
@@ -47,6 +46,6 @@ Nothing. K0-T02 is committed on `claude/nice-allen-uihlqb`.
 - Local Postgres 16 exists in the container but is not wired; the version must match the Supabase project.
 
 ## Baseline: what was green last time
-- tests: 481 unit tests pass; test:db 23 of 23 (local Postgres 16) (2026-11-04, Node 24.22.2).
+- tests: 492 unit tests pass; test:db 23 of 23 (local Postgres 16) (2026-11-04, Node 24.22.2).
 - typecheck/lint: typecheck 12 of 12 packages, ESLint 0 warnings, Prettier clean, build 12 of 12, check:imports 0 violations.
 - privacycheck: 1 pre-existing error (false positive above). prdtool check: 0 errors, 8 warnings (TBD dates).

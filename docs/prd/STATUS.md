@@ -23,7 +23,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
 |----|------|----------|-----------|-------|-----------|-------|----|
 | F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 2 of 3 pass (AC2 local, AC3; AC1 needs K0-T11) | toolchain import-graph suite, `pnpm verify` | - |
-| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 0 of 3 pass | core unit and property tests | - |
+| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 1 of 3 pass (AC2: 9 of 9 contract suites) | core and testkit suites | - |
 | F-03 | Migration framework and test kit | Must | M-01 | In progress | 1 of 4 pass (AC1 on local Postgres 16; Postgres 17 in CI pending K0-T10) | migrate unit and db suites | - |
 | F-04 | Manifest, boundary and API gates | Must | M-01 | In progress | 2 of 4 pass (AC1; AC4 from 1.0.0, wording CR-001 proposed) | toolchain manifest and API suites | - |
 | F-05 | CI pipeline with security gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
@@ -106,7 +106,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-011 | F-01 | K0-T11 One-command local environment | Not started | - |
 | T-012 | F-06 | K0-T12 Sandbox host app | Not started | T-002, T-014 |
 | T-013 | F-06 | K0-T13 Observability baseline | Not started | T-004, T-012 |
-| T-014 | F-02 | K0-T14 Core ports with in-memory fakes | In review | security review (blocking) |
+| T-014 | F-02 | K0-T14 Core ports with in-memory fakes | Done | - |
 
 ## Decisions needed from the client
 | ID | Decision | Needed by | Impact if late |
