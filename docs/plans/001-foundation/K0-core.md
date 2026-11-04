@@ -125,7 +125,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Seeded violations of each kind fail CI
   - Tests: one failing fixture per rule
   - Rollback: Revert the commit; the migration is expand-only, so a schema fault is fixed forward, never edited in place.
-- [ ] **K0-T09** (T-009) Public-API diff and semver gate (S)
+- [x] **K0-T09** (T-009) Public-API diff and semver gate (S)
   - Feature: F-04 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer
