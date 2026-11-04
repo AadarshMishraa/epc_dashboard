@@ -16,6 +16,10 @@ const register = JSON.parse(readFileSync('packages/register.json', 'utf8')) as {
 // so tests run against source without a prior build.
 const conditions = ['@gx/source', ...defaultServerConditions];
 
+// Two suites: unit tests (no I/O beyond the file system) run everywhere; database tests
+// (`*.db.test.ts`) need GX_TEST_DATABASE_URL and run with `pnpm test:db` and in CI.
+const databaseSuite = process.env['GX_TEST_SUITE'] === 'db';
+
 export default defineConfig({
   resolve: { conditions },
   ssr: { resolve: { conditions } },
@@ -25,10 +29,12 @@ export default defineConfig({
       test: {
         name: entry.id,
         root: entry.path,
-        include: ['src/**/*.test.ts'],
+        include: databaseSuite ? ['src/**/*.db.test.ts'] : ['src/**/*.test.ts'],
+        exclude: databaseSuite ? [] : ['src/**/*.db.test.ts'],
       },
     })),
-    passWithNoTests: false,
+    // In the database suite most packages have no database tests yet.
+    passWithNoTests: databaseSuite,
     sequence: { shuffle: true },
   },
 });

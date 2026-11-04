@@ -904,6 +904,290 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/migrate/src/bin/gx-migrate.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/index.ts"
+   ],
+   "env": [],
+   "hash": "4c1cfbbc591c",
+   "imports": [
+    "node:util",
+    "../index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 99,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/index.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/index.ts"
+   ],
+   "env": [],
+   "hash": "bcf998a54683",
+   "imports": [
+    "node:fs",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 25,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/index.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/migrations.ts",
+    "packages/migrate/src/runner.ts",
+    "packages/migrate/src/sources.ts",
+    "packages/migrate/src/sql-scan.ts"
+   ],
+   "env": [],
+   "hash": "9f6488c6938b",
+   "imports": [
+    "@gx/core",
+    "./migrations.ts",
+    "./runner.ts",
+    "./sql-scan.ts",
+    "./sources.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 36,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/migrations.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/migrations.ts"
+   ],
+   "env": [],
+   "hash": "8575eb619b9e",
+   "imports": [
+    "node:fs",
+    "node:os",
+    "node:path",
+    "vitest",
+    "./migrations.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 169,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/migrations.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/sql-scan.ts"
+   ],
+   "env": [],
+   "hash": "032675d26053",
+   "imports": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "./sql-scan.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 249,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MigrationSource",
+    "Phase",
+    "Migration",
+    "ProblemRule",
+    "MigrationProblem",
+    "LoadedMigrations",
+    "loadMigrations"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/runner.db.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/migrations.ts",
+    "packages/migrate/src/runner.ts"
+   ],
+   "env": [],
+   "hash": "c861c7941837",
+   "imports": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url",
+    "pg",
+    "vitest",
+    "./migrations.ts",
+    "./runner.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 349,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/runner.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/migrations.ts"
+   ],
+   "env": [],
+   "hash": "d7da7257f4f5",
+   "imports": [
+    "@gx/core",
+    "pg",
+    "./migrations.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 211,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MIGRATION_LOCK_KEY",
+    "LEDGER_TABLE",
+    "MigrateOptions",
+    "AppliedMigration",
+    "MigrateReport",
+    "MigrateFailure",
+    "migrate"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/sources.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/migrations.ts"
+   ],
+   "env": [],
+   "hash": "e50f007e307c",
+   "imports": [
+    "node:fs",
+    "node:path",
+    "./migrations.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 43,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "sourcesFromRegister"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/sql-scan.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/migrate/src/sql-scan.ts"
+   ],
+   "env": [],
+   "hash": "7c9741a58554",
+   "imports": [
+    "vitest",
+    "./sql-scan.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 108,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/migrate/src/sql-scan.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "af3b68ecdf76",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 156,
+   "module": "packages/migrate",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "StatementKind",
+    "Finding",
+    "blankCommentsAndStrings",
+    "findRiskyStatements",
+    "countStatements"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/testkit/src/index.test.ts": {
    "calls": [],
    "defines_tables": [],
@@ -1007,7 +1291,7 @@
     "packages/toolchain/src/index.ts"
    ],
    "env": [],
-   "hash": "aa67bd908d5a",
+   "hash": "490e0df52b81",
    "imports": [
     "node:child_process",
     "node:fs",
@@ -1053,7 +1337,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 496,
+   "loc": 498,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1484,7 +1768,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "723e3d89a527",
+   "hash": "e27f79c62b55",
    "imports": [
     "node:fs",
     "vite",
@@ -1493,7 +1777,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 35,
+   "loc": 41,
    "module": "(root)",
    "routes": [],
    "rpcs": [],
@@ -1503,8 +1787,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 18:32",
- "head": "50a3659",
+ "generated": "2026-11-04 18:51",
+ "head": "b3c5a34",
  "root": "epc_dashboard",
  "version": 1
 }

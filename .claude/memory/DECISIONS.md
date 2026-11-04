@@ -113,3 +113,9 @@ Format per entry:
 - Deferred, now in the briefs: error-code collisions across catalogues (K0-T07 done-when); summarising `cause` in logs (K0-T04 threat line).
 - Accepted risk: a UUIDv7 reveals the record's creation time, and its counter hints at volume. Before ids appear in public or customer links (pack S19), use an opaque token instead of the id.
 - Evidence: OBSERVED. 200 tests; 14 mutations across core each turn a test red; reviewer approved.
+
+## 2026-11-04 — Migration runner is its own package, @gx/migrate; database tests are a separate suite
+- Context: K0-T05 needs I/O (pg), so not core; the sandbox host must migrate at boot (F-06-AC4), so not toolchain, which ships the TypeScript compiler.
+- Chosen: `@gx/migrate` (support, depends on core and pg 8.23.1). Database tests are `*.db.test.ts`, run with `pnpm test:db` against GX_TEST_DATABASE_URL; they fail loudly without it and never skip. CI provides a postgres:17 service (K0-T10).
+- Rejected: the embedded-postgres npm binaries (postinstall script, single maintainer, newest 17.x build inside the 7-day window). Downloaded Postgres 17 binaries could not be run in this sandbox (permission policy), so local verification uses the container's system Postgres 16; the SQL used (DDL, advisory locks, transactions) behaves the same in 16 and 17.
+- Evidence: OBSERVED. 15 of 15 db tests on Postgres 16.15; 7 mutations turned tests red (one was equivalent, and a fault-injection test was added for it).

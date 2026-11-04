@@ -1,0 +1,32 @@
+{
+  "name": "@gx/migrate",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Migration framework: package-namespaced, forward-only, expand then contract, run in dependency order with a checksum ledger.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "gx-migrate": "./dist/bin/gx-migrate.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}

@@ -50,7 +50,14 @@ Placeholders are in [.env.example](../../.env.example). Copy it to `.env.local` 
 
 ## Migrations
 
-You will run migrations later. The runner arrives with K0-T05 and will run as one command against `DATABASE_MIGRATION_URL`: from empty to head on a new project, and from the previous release in CI. Do not use `supabase db push` or the `supabase/migrations` folder: each foundation package owns its own namespaced migrations (`k1_`, `k2_` and so on), and they run in dependency order.
+The runner is `@gx/migrate` (K0-T05; rules in [its README](../../packages/migrate/README.md)). When the projects exist:
+
+```
+DATABASE_MIGRATION_URL='<session pooler URL, postgres user>' pnpm migrate plan   # see what will run
+DATABASE_MIGRATION_URL='<session pooler URL, postgres user>' pnpm migrate up     # apply
+```
+
+Use the session pooler (port 5432) or the direct connection, never the transaction pooler: the runner holds a session advisory lock. Do not use `supabase db push` or the `supabase/migrations` folder: each foundation package owns its own namespaced migrations (`k1_`, `k2_` and so on), and they run in dependency order. CI runs `pnpm migrate check` on every change and migrates from empty and from the previous release (K0-T10).
 
 ## Rules that do not bend (ADR-0006)
 

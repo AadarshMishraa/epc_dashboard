@@ -477,19 +477,21 @@ describe('this repository', () => {
     const root = fileURLToPath(new URL('../../../', import.meta.url));
     const result = checkImportGraph({ root });
     expect(result.violations.map(formatViolation)).toEqual([]);
-    expect(result.packagesChecked).toBe(12);
+    expect(result.packagesChecked).toBe(13);
   });
 
-  it('has the 10 module packages F-01-AC2 counts, plus testkit and toolchain as support', () => {
+  it('has the 10 module packages F-01-AC2 counts, plus testkit, toolchain and migrate as support', () => {
     const root = fileURLToPath(new URL('../../../', import.meta.url));
     const register = JSON.parse(readFileSync(join(root, 'packages/register.json'), 'utf8')) as {
       packages: { id: string; kind: string }[];
     };
     const modules = register.packages.filter((p) => p.kind === 'module').map((p) => p.id);
     expect(modules).toHaveLength(10);
-    expect(register.packages.filter((p) => p.kind === 'support').map((p) => p.id)).toEqual([
-      'testkit',
-      'toolchain',
-    ]);
+    expect(
+      register.packages
+        .filter((p) => p.kind === 'support')
+        .map((p) => p.id)
+        .sort(),
+    ).toEqual(['migrate', 'testkit', 'toolchain']);
   });
 });
