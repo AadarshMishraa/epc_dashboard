@@ -3,6 +3,8 @@ Release target: foundation v1.0 (date TBD)   Current phase: P1 Foundation   Over
 
 GREEN: ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
 
+F-05 prep (T-010 still Not started): privacycheck now exits clean on the repo (narrow CMP-03 prose marker, tests in .claude/gx/bin/test_privacycheck.py), so the privacycheck CI stage will not start red.
+
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
 Done for a feature means every acceptance criterion passes on staging ("N of N pass"). Done for a milestone needs evidence.

@@ -83,6 +83,25 @@ class ProseAllowed(unittest.TestCase):
         self.assertIn(("CMP-03", "tools/plangen/gen.py", 1), errs)
 
 
+class GeneratorOutput(unittest.TestCase):
+    """epc_gen.py emits rule 9 unchanged and never leaks the marker into domain-notes.md."""
+    def setUp(self):
+        sys.path.insert(0, os.path.join(REPO, "tools", "plangen"))
+        import epc_gen
+        self.domain = epc_gen.DOMAIN
+
+    def test_rule_9_present_once_and_marker_absent(self):
+        line = "9. Do not store Aadhaar numbers, card numbers or a consumer's bank account (CMP-03).\n"
+        self.assertEqual(self.domain.count(line), 1)
+        self.assertNotIn("privacycheck", self.domain)
+        self.assertIn("8. Utility and subsidy portals", self.domain)
+        self.assertIn("\n## What is evidence and what is hypothesis", self.domain)
+
+    def test_committed_domain_notes_match_generator(self):
+        with open(os.path.join(REPO, "packs", "epc", "docs", "domain-notes.md"), encoding="utf-8") as f:
+            self.assertEqual(f.read().rstrip("\n"), self.domain.rstrip("\n"))
+
+
 class Repo(unittest.TestCase):
     def test_repo_is_clean(self):
         hits = privacycheck.scan(REPO)
