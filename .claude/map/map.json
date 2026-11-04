@@ -1251,7 +1251,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "5ef0a75d27aa",
+   "hash": "9ba4f7d9c18f",
    "imports": [
     "node:fs",
     "node:path",
@@ -1262,7 +1262,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 127,
+   "loc": 152,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1285,7 +1285,7 @@
     "packages/toolchain/src/api-report.ts"
    ],
    "env": [],
-   "hash": "b7942343e6ad",
+   "hash": "911b560866ca",
    "imports": [
     "node:child_process",
     "node:fs",
@@ -1295,13 +1295,20 @@
     "vitest",
     "./api-check.ts",
     "./api-report.ts",
-    "./greet.ts",
-    "./greet.ts"
+    "./ns.ts",
+    "./x.ts",
+    "./x.ts",
+    "./ns.ts",
+    "./ns.ts",
+    "./hidden.ts",
+    "./hidden.ts",
+    "./hidden.ts",
+    "./h.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 364,
+   "loc": 354,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1315,21 +1322,25 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "fd918ad987c1",
+   "hash": "26cb8b39ac9c",
    "imports": [
-    "typescript"
+    "node:path",
+    "typescript",
+    "./x.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 205,
+   "loc": 379,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
    "symbols": [
-    "ExportKind",
+    "API_REPORT_FORMAT",
+    "Meaning",
     "ApiExport",
     "ApiReport",
+    "ApiExtraction",
     "extractApi",
     "Bump",
     "ChangeKind",
@@ -2045,8 +2056,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 19:26",
- "head": "bfbaab3",
+ "generated": "2026-11-04 19:35",
+ "head": "1b26875",
  "root": "epc_dashboard",
  "version": 1
 }

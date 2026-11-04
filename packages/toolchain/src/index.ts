@@ -25,6 +25,7 @@ export {
 } from './manifest.ts';
 export { MANIFEST_FILE, checkManifests, type ManifestCheckResult } from './manifest-check.ts';
 export {
+  API_REPORT_FORMAT,
   bumpBetween,
   bumpSatisfies,
   diffApi,
@@ -33,10 +34,12 @@ export {
   requiredBump,
   type ApiChange,
   type ApiExport,
+  type ApiExtraction,
   type ApiReport,
   type Bump,
   type ChangeKind,
-  type ExportKind,
+  type Meaning,
+  type Version,
 } from './api-report.ts';
 export {
   API_REPORT_FILE,

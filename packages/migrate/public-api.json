@@ -1,193 +1,240 @@
 {
+  "format": 2,
   "package": "@gx/migrate",
   "version": "0.0.0",
   "exports": [
     {
       "name": "AppliedMigration",
-      "kind": "interface",
-      "signature": "AppliedMigration",
-      "members": [
-        "durationMs: number",
-        "name: string",
-        "packageId: string"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AppliedMigration {\n    readonly packageId: string;\n    readonly name: string;\n    readonly durationMs: number;\n}"
       ]
-    },
-    {
-      "name": "blankCommentsAndStrings",
-      "kind": "function",
-      "signature": "(sql: string) => string"
-    },
-    {
-      "name": "countStatements",
-      "kind": "function",
-      "signature": "(sql: string) => number"
     },
     {
       "name": "Finding",
-      "kind": "interface",
-      "signature": "Finding",
-      "members": [
-        "line: number",
-        "reason: string",
-        "severity: Severity",
-        "text: string"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Finding {\n    readonly severity: Severity;\n    readonly line: number;\n    readonly reason: string;\n    readonly text: string;\n}"
       ]
-    },
-    {
-      "name": "findRiskyStatements",
-      "kind": "function",
-      "signature": "(sql: string) => Finding[]"
-    },
-    {
-      "name": "forgetStarted",
-      "kind": "function",
-      "signature": "(connectionString: string, migration: string) => Promise<Result<undefined, { readonly message: string; }>>"
     },
     {
       "name": "KNOWN_ROLES",
-      "kind": "value",
-      "signature": "readonly string[]"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const KNOWN_ROLES: readonly string[];"
+      ]
     },
     {
       "name": "LEDGER_TABLE",
-      "kind": "value",
-      "signature": "\"gx_migrations.ledger\""
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LEDGER_TABLE = \"gx_migrations.ledger\";"
+      ]
     },
     {
       "name": "LEDGER_VERSION",
-      "kind": "value",
-      "signature": "1"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LEDGER_VERSION = 1;"
+      ]
     },
     {
       "name": "LoadedMigrations",
-      "kind": "interface",
-      "signature": "LoadedMigrations",
-      "members": [
-        "migrations: readonly Migration[]",
-        "problems: readonly MigrationProblem[]"
-      ]
-    },
-    {
-      "name": "loadMigrations",
-      "kind": "function",
-      "signature": "(sources: readonly MigrationSource[]) => LoadedMigrations"
-    },
-    {
-      "name": "migrate",
-      "kind": "function",
-      "signature": "(options: MigrateOptions) => Promise<Result<MigrateReport, MigrateFailure>>"
-    },
-    {
-      "name": "MigrateFailure",
-      "kind": "type",
-      "signature": "{ readonly kind: \"invalid\"; readonly problems: readonly MigrationProblem[]; } | { readonly kind: \"lock-timeout\"; readonly message: string; } | { readonly kind: \"ledger-mismatch\"; readonly problems: readonly MigrationProblem[]; } | { readonly kind: \"ledger-too-new\"; readonly message: string; } | { readonly kind: \"session-not-pinned\"; readonly message: string; } | { readonly kind: \"dirty\"; readonly migrations: readonly string[]; readonly message: string; } | { readonly kind: \"migration-failed\"; readonly packageId: string; readonly name: string; readonly sqlState: string | undefined; readonly message: string; readonly applied: readonly AppliedMigration[]; }"
-    },
-    {
-      "name": "MigrateOptions",
-      "kind": "interface",
-      "signature": "MigrateOptions",
-      "members": [
-        "connectionString: string",
-        "dryRun?: boolean | undefined",
-        "migrationLockTimeoutMs?: number | undefined",
-        "release?: string | undefined",
-        "runLockTimeoutMs?: number | undefined",
-        "sources: readonly MigrationSource[]",
-        "statementTimeoutMs?: number | undefined"
-      ]
-    },
-    {
-      "name": "MigrateReport",
-      "kind": "interface",
-      "signature": "MigrateReport",
-      "members": [
-        "alreadyApplied: number",
-        "applied: readonly AppliedMigration[]",
-        "pending: readonly Pick<Migration, \"packageId\" | \"name\">[]"
-      ]
-    },
-    {
-      "name": "Migration",
-      "kind": "interface",
-      "signature": "Migration",
-      "members": [
-        "checksum: string",
-        "file: string",
-        "name: string",
-        "number: number",
-        "packageId: string",
-        "phase: Phase",
-        "reason?: string | undefined",
-        "securityReview?: string | undefined",
-        "sql: string",
-        "transactional: boolean"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LoadedMigrations {\n    readonly migrations: readonly Migration[];\n    readonly problems: readonly MigrationProblem[];\n}"
       ]
     },
     {
       "name": "MIGRATION_LOCK_KEY",
-      "kind": "value",
-      "signature": "4712003005"
-    },
-    {
-      "name": "MigrationProblem",
-      "kind": "interface",
-      "signature": "MigrationProblem",
-      "members": [
-        "file?: string | undefined",
-        "line?: number | undefined",
-        "message: string",
-        "migration?: string | undefined",
-        "rule: ProblemRule"
-      ]
-    },
-    {
-      "name": "MigrationSource",
-      "kind": "interface",
-      "signature": "MigrationSource",
-      "members": [
-        "depends: readonly string[]",
-        "dir: string",
-        "displayDir: string",
-        "packageId: string"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MIGRATION_LOCK_KEY = 4712003005;"
       ]
     },
     {
       "name": "MODULE_ID",
-      "kind": "value",
-      "signature": "ModuleId"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MigrateFailure",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type MigrateFailure = {\n    readonly kind: 'invalid';\n    readonly problems: readonly MigrationProblem[];\n} | {\n    readonly kind: 'lock-timeout';\n    readonly message: string;\n} | {\n    readonly kind: 'ledger-mismatch';\n    readonly problems: readonly MigrationProblem[];\n} | {\n    readonly kind: 'ledger-too-new';\n    readonly message: string;\n} | {\n    readonly kind: 'session-not-pinned';\n    readonly message: string;\n} | {\n    readonly kind: 'dirty';\n    readonly migrations: readonly string[];\n    readonly message: string;\n} | {\n    readonly kind: 'migration-failed';\n    readonly packageId: string;\n    readonly name: string;\n    readonly sqlState: string | undefined;\n    readonly message: string;\n    readonly applied: readonly AppliedMigration[];\n};"
+      ]
+    },
+    {
+      "name": "MigrateOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrateOptions {\n    readonly connectionString: string;\n    readonly sources: readonly MigrationSource[];\n    readonly runLockTimeoutMs?: number;\n    readonly migrationLockTimeoutMs?: number;\n    readonly statementTimeoutMs?: number;\n    readonly release?: string;\n    readonly dryRun?: boolean;\n}"
+      ]
+    },
+    {
+      "name": "MigrateReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrateReport {\n    readonly applied: readonly AppliedMigration[];\n    readonly pending: readonly Pick<Migration, 'packageId' | 'name'>[];\n    readonly alreadyApplied: number;\n}"
+      ]
+    },
+    {
+      "name": "Migration",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Migration {\n    readonly packageId: string;\n    readonly name: string;\n    readonly number: number;\n    readonly file: string;\n    readonly sql: string;\n    readonly checksum: string;\n    readonly phase: Phase;\n    readonly transactional: boolean;\n    readonly reason?: string;\n    readonly securityReview?: string;\n}"
+      ]
+    },
+    {
+      "name": "MigrationProblem",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrationProblem {\n    readonly rule: ProblemRule;\n    readonly migration?: string;\n    readonly file?: string;\n    readonly line?: number;\n    readonly message: string;\n}"
+      ]
+    },
+    {
+      "name": "MigrationSource",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrationSource {\n    readonly packageId: string;\n    readonly dir: string;\n    readonly depends: readonly string[];\n    readonly displayDir: string;\n}"
+      ]
     },
     {
       "name": "Phase",
-      "kind": "type",
-      "signature": "\"expand\" | \"contract\""
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Phase = 'expand' | 'contract';"
+      ]
     },
     {
       "name": "ProblemRule",
-      "kind": "type",
-      "signature": "\"file-name\" | \"numbering\" | \"directive\" | \"destructive-without-contract\" | \"security-review-required\" | \"transaction-control\" | \"no-transaction-multi-statement\" | \"dependency\" | \"ledger\" | \"empty\""
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type ProblemRule = 'file-name' | 'numbering' | 'directive' | 'destructive-without-contract' | 'security-review-required' | 'transaction-control' | 'no-transaction-multi-statement' | 'dependency' | 'ledger' | 'empty';"
+      ]
     },
     {
       "name": "Severity",
-      "kind": "type",
-      "signature": "\"contract\" | \"security\" | \"forbidden\""
-    },
-    {
-      "name": "sourcesFromRegister",
-      "kind": "function",
-      "signature": "(root: string) => MigrationSource[]"
-    },
-    {
-      "name": "splitStatements",
-      "kind": "function",
-      "signature": "(sql: string) => Statement[]"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Severity = 'contract' | 'security' | 'forbidden';"
+      ]
     },
     {
       "name": "Statement",
-      "kind": "interface",
-      "signature": "Statement",
-      "members": [
-        "code: string",
-        "line: number"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Statement {\n    readonly code: string;\n    readonly line: number;\n}"
+      ]
+    },
+    {
+      "name": "blankCommentsAndStrings",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function blankCommentsAndStrings(sql: string): string;"
+      ]
+    },
+    {
+      "name": "countStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function countStatements(sql: string): number;"
+      ]
+    },
+    {
+      "name": "findRiskyStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function findRiskyStatements(sql: string): Finding[];"
+      ]
+    },
+    {
+      "name": "forgetStarted",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function forgetStarted(connectionString: string, migration: string): Promise<Result<undefined, {\n    readonly message: string;\n}>>;"
+      ]
+    },
+    {
+      "name": "loadMigrations",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function loadMigrations(sources: readonly MigrationSource[]): LoadedMigrations;"
+      ]
+    },
+    {
+      "name": "migrate",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function migrate(options: MigrateOptions): Promise<Result<MigrateReport, MigrateFailure>>;"
+      ]
+    },
+    {
+      "name": "sourcesFromRegister",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function sourcesFromRegister(root: string): MigrationSource[];"
+      ]
+    },
+    {
+      "name": "splitStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function splitStatements(sql: string): Statement[];"
       ]
     }
   ]

@@ -1,328 +1,466 @@
 {
+  "format": 2,
   "package": "@gx/core",
   "version": "0.0.0",
   "exports": [
     {
       "name": "Actor",
-      "kind": "type",
-      "signature": "{ readonly kind: \"user\"; readonly userId: Id; readonly via?: AiClient; } | { readonly kind: \"service_account\"; readonly serviceAccountId: Id; } | { readonly kind: \"operator\"; readonly operatorId: Id; readonly supportSessionId: Id; } | { readonly kind: \"system\"; readonly process: string; } | { readonly kind: \"anonymous\"; }"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Actor = {\n    readonly kind: 'user';\n    readonly userId: Id;\n    readonly via?: AiClient;\n} | {\n    readonly kind: 'service_account';\n    readonly serviceAccountId: Id;\n} | {\n    readonly kind: 'operator';\n    readonly operatorId: Id;\n    readonly supportSessionId: Id;\n} | {\n    readonly kind: 'system';\n    readonly process: string;\n} | {\n    readonly kind: 'anonymous';\n};"
+      ]
     },
     {
       "name": "AiClient",
-      "kind": "interface",
-      "signature": "AiClient",
-      "members": [
-        "clientId: AiClientId",
-        "kind: \"ai_client\"",
-        "scopes: readonly AiClientScope[]"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AiClient {\n    readonly kind: 'ai_client';\n    readonly clientId: AiClientId;\n    readonly scopes: readonly AiClientScope[];\n}"
       ]
     },
     {
       "name": "AiClientId",
-      "kind": "type",
-      "signature": "string & { readonly [aiClientIdBrand]: true; }"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type AiClientId = string & {\n    readonly [aiClientIdBrand]: true;\n};"
+      ]
     },
     {
       "name": "AiClientScope",
-      "kind": "type",
-      "signature": "\"read\" | \"write\""
-    },
-    {
-      "name": "appError",
-      "kind": "function",
-      "signature": "<const C extends string>(catalogue: Readonly<Record<C, ErrorDefinition>>, code: C, options?: AppErrorOptions) => AppError<C>"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type AiClientScope = 'read' | 'write';"
+      ]
     },
     {
       "name": "AppError",
-      "kind": "interface",
-      "signature": "AppError<C extends string = string>",
-      "members": [
-        "cause?: unknown",
-        "code: C",
-        "currentVersion?: string | number | undefined",
-        "detail?: string | undefined",
-        "fields: readonly FieldError[]",
-        "message: string",
-        "retryAfterSeconds?: number | undefined",
-        "retryable: boolean",
-        "status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AppError<C extends string = string> {\n    readonly code: C;\n    readonly status: ErrorStatus;\n    readonly message: string;\n    readonly retryable: boolean;\n    readonly fields: readonly FieldError[];\n    readonly retryAfterSeconds?: number;\n    readonly currentVersion?: number | string;\n    readonly detail?: string;\n    readonly cause?: unknown;\n}"
       ]
     },
     {
       "name": "AppErrorOptions",
-      "kind": "interface",
-      "signature": "AppErrorOptions",
-      "members": [
-        "cause?: unknown",
-        "currentVersion?: string | number | undefined",
-        "detail?: string | undefined",
-        "fields?: readonly FieldError[] | undefined",
-        "retryAfterSeconds?: number | undefined"
-      ]
-    },
-    {
-      "name": "Clock",
-      "kind": "interface",
-      "signature": "Clock",
-      "members": [
-        "monotonicMillis: () => number",
-        "nowMillis: () => number"
-      ]
-    },
-    {
-      "name": "Context",
-      "kind": "interface",
-      "signature": "Context",
-      "members": [
-        "actor: Actor",
-        "causationId?: Id | undefined",
-        "clock: Clock",
-        "correlationId: CorrelationId",
-        "initiatedBy?: Actor | undefined",
-        "tenantId?: TenantId | undefined"
-      ]
-    },
-    {
-      "name": "ContextInput",
-      "kind": "interface",
-      "signature": "ContextInput",
-      "members": [
-        "actor: Actor",
-        "causationId?: Id | undefined",
-        "clock: Clock",
-        "correlationId: CorrelationId",
-        "initiatedBy?: Actor | undefined",
-        "tenantId?: TenantId | undefined"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AppErrorOptions {\n    readonly fields?: readonly FieldError[];\n    readonly retryAfterSeconds?: number;\n    readonly currentVersion?: number | string;\n    readonly detail?: string;\n    readonly cause?: unknown;\n}"
       ]
     },
     {
       "name": "CORE_ERRORS",
-      "kind": "value",
-      "signature": "Readonly<{ readonly VALIDATION_FAILED: { readonly status: 400; readonly message: \"Some details are missing or not valid.\"; readonly retryable: false; }; readonly UNAUTHENTICATED: { readonly status: 401; readonly message: \"Sign in to continue.\"; readonly retryable: false; }; readonly FORBIDDEN: { readonly status: 403; readonly message: \"You do not have permission to do this.\"; readonly retryable: false; }; readonly TENANT_REQUIRED: { readonly status: 403; readonly message: \"You do not have access to this workspace.\"; readonly retryable: false; }; readonly ENTITLEMENT_REQUIRED: { readonly status: 403; readonly message: \"Your plan does not include this.\"; readonly retryable: false; }; readonly NOT_FOUND: { readonly status: 404; readonly message: \"This item was not found.\"; readonly retryable: false; }; readonly CONFLICT: { readonly status: 409; readonly message: \"Someone else changed this. Reload to see the latest version, then try again.\"; readonly retryable: false; }; readonly UNPROCESSABLE: { readonly status: 422; readonly message: \"This cannot be done in the current state.\"; readonly retryable: false; }; readonly IDEMPOTENCY_KEY_REUSED: { readonly status: 422; readonly message: \"This request key was already used for a different request.\"; readonly retryable: false; }; readonly RATE_LIMITED: { readonly status: 429; readonly message: \"Too many requests. Try again shortly.\"; readonly retryable: true; }; readonly INTERNAL: { readonly status: 500; readonly message: \"Something went wrong on our side. Quote the reference if you contact support.\"; readonly retryable: false; }; readonly DEPENDENCY_UNAVAILABLE: { readonly status: 503; readonly message: \"A service we depend on is not responding. Try again shortly.\"; readonly retryable: true; }; }>"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const CORE_ERRORS: Readonly<{\n    readonly VALIDATION_FAILED: {\n        readonly status: 400;\n        readonly message: \"Some details are missing or not valid.\";\n        readonly retryable: false;\n    };\n    readonly UNAUTHENTICATED: {\n        readonly status: 401;\n        readonly message: \"Sign in to continue.\";\n        readonly retryable: false;\n    };\n    readonly FORBIDDEN: {\n        readonly status: 403;\n        readonly message: \"You do not have permission to do this.\";\n        readonly retryable: false;\n    };\n    readonly TENANT_REQUIRED: {\n        readonly status: 403;\n        readonly message: \"You do not have access to this workspace.\";\n        readonly retryable: false;\n    };\n    readonly ENTITLEMENT_REQUIRED: {\n        readonly status: 403;\n        readonly message: \"Your plan does not include this.\";\n        readonly retryable: false;\n    };\n    readonly NOT_FOUND: {\n        readonly status: 404;\n        readonly message: \"This item was not found.\";\n        readonly retryable: false;\n    };\n    readonly CONFLICT: {\n        readonly status: 409;\n        readonly message: \"Someone else changed this. Reload to see the latest version, then try again.\";\n        readonly retryable: false;\n    };\n    readonly UNPROCESSABLE: {\n        readonly status: 422;\n        readonly message: \"This cannot be done in the current state.\";\n        readonly retryable: false;\n    };\n    readonly IDEMPOTENCY_KEY_REUSED: {\n        readonly status: 422;\n        readonly message: \"This request key was already used for a different request.\";\n        readonly retryable: false;\n    };\n    readonly RATE_LIMITED: {\n        readonly status: 429;\n        readonly message: \"Too many requests. Try again shortly.\";\n        readonly retryable: true;\n    };\n    readonly INTERNAL: {\n        readonly status: 500;\n        readonly message: \"Something went wrong on our side. Quote the reference if you contact support.\";\n        readonly retryable: false;\n    };\n    readonly DEPENDENCY_UNAVAILABLE: {\n        readonly status: 503;\n        readonly message: \"A service we depend on is not responding. Try again shortly.\";\n        readonly retryable: true;\n    };\n}>;"
+      ]
     },
     {
-      "name": "coreError",
-      "kind": "function",
-      "signature": "<const C extends CoreErrorCode>(code: C, options?: AppErrorOptions) => AppError<C>"
+      "name": "Clock",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Clock {\n    nowMillis(): number;\n    monotonicMillis(): number;\n}"
+      ]
+    },
+    {
+      "name": "Context",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Context {\n    readonly tenantId?: TenantId;\n    readonly actor: Actor;\n    readonly initiatedBy?: Actor;\n    readonly correlationId: CorrelationId;\n    readonly causationId?: Id;\n    readonly clock: Clock;\n}"
+      ]
+    },
+    {
+      "name": "ContextInput",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ContextInput {\n    readonly tenantId?: TenantId;\n    readonly actor: Actor;\n    readonly initiatedBy?: Actor;\n    readonly correlationId: CorrelationId;\n    readonly causationId?: Id;\n    readonly clock: Clock;\n}"
+      ]
     },
     {
       "name": "CoreErrorCode",
-      "kind": "type",
-      "signature": "\"VALIDATION_FAILED\" | \"UNAUTHENTICATED\" | \"FORBIDDEN\" | \"TENANT_REQUIRED\" | \"ENTITLEMENT_REQUIRED\" | \"NOT_FOUND\" | \"CONFLICT\" | \"UNPROCESSABLE\" | \"IDEMPOTENCY_KEY_REUSED\" | \"RATE_LIMITED\" | \"INTERNAL\" | \"DEPENDENCY_UNAVAILABLE\""
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type CoreErrorCode = keyof typeof CORE_ERRORS;"
+      ]
     },
     {
       "name": "CorrelationId",
-      "kind": "type",
-      "signature": "string & { readonly [correlationIdBrand]: true; }"
-    },
-    {
-      "name": "correlationIdFromId",
-      "kind": "function",
-      "signature": "(id: Id) => CorrelationId"
-    },
-    {
-      "name": "createContext",
-      "kind": "function",
-      "signature": "(input: ContextInput) => Context"
-    },
-    {
-      "name": "createIdGenerator",
-      "kind": "function",
-      "signature": "(options: IdGeneratorOptions) => IdGenerator"
-    },
-    {
-      "name": "defineErrorCatalogue",
-      "kind": "function",
-      "signature": "<const C extends Record<string, ErrorDefinition>>(catalogue: C) => Readonly<C>"
-    },
-    {
-      "name": "deriveContext",
-      "kind": "function",
-      "signature": "{ (parent: TenantContext, change: { readonly causationId: Id; readonly actor?: Actor; }): TenantContext; (parent: Context, change: { readonly causationId: Id; readonly actor?: Actor; }): Context; }"
-    },
-    {
-      "name": "err",
-      "kind": "function",
-      "signature": "<E>(error: E) => Err<E>"
-    },
-    {
-      "name": "Err",
-      "kind": "interface",
-      "signature": "Err<E>",
-      "members": [
-        "error: E",
-        "ok: false"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type CorrelationId = string & {\n    readonly [correlationIdBrand]: true;\n};"
       ]
     },
     {
       "name": "ERROR_STATUSES",
-      "kind": "value",
-      "signature": "readonly [400, 401, 403, 404, 409, 413, 422, 429, 500, 503]"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const ERROR_STATUSES: readonly [\n    400,\n    401,\n    403,\n    404,\n    409,\n    413,\n    422,\n    429,\n    500,\n    503\n];"
+      ]
+    },
+    {
+      "name": "Err",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Err<E> {\n    readonly ok: false;\n    readonly error: E;\n}"
+      ]
     },
     {
       "name": "ErrorDefinition",
-      "kind": "interface",
-      "signature": "ErrorDefinition",
-      "members": [
-        "message: string",
-        "retryable: boolean",
-        "status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ErrorDefinition {\n    readonly status: ErrorStatus;\n    readonly message: string;\n    readonly retryable: boolean;\n}"
       ]
     },
     {
       "name": "ErrorResponseBody",
-      "kind": "interface",
-      "signature": "ErrorResponseBody",
-      "members": [
-        "error: { readonly code: string; readonly message: string; readonly fields: readonly FieldError[]; readonly correlation_id: CorrelationId; readonly retry_after_seconds?: number; readonly current_version?: string | number; }"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ErrorResponseBody {\n    readonly error: {\n        readonly code: string;\n        readonly message: string;\n        readonly fields: readonly FieldError[];\n        readonly correlation_id: CorrelationId;\n        readonly retry_after_seconds?: number;\n        readonly current_version?: number | string;\n    };\n}"
       ]
     },
     {
       "name": "ErrorStatus",
-      "kind": "type",
-      "signature": "400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type ErrorStatus = (typeof ERROR_STATUSES)[number];"
+      ]
     },
     {
       "name": "FieldError",
-      "kind": "interface",
-      "signature": "FieldError",
-      "members": [
-        "code: string",
-        "path: string"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface FieldError {\n    readonly path: string;\n    readonly code: string;\n}"
       ]
     },
     {
       "name": "Id",
-      "kind": "type",
-      "signature": "string & { readonly [idBrand]: true; }"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Id = string & {\n    readonly [idBrand]: true;\n};"
+      ]
     },
     {
       "name": "IdGenerator",
-      "kind": "type",
-      "signature": "() => Id"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type IdGenerator = () => Id;"
+      ]
     },
     {
       "name": "IdGeneratorOptions",
-      "kind": "interface",
-      "signature": "IdGeneratorOptions",
-      "members": [
-        "clock: Clock",
-        "randomBytes?: RandomBytes | undefined"
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface IdGeneratorOptions {\n    readonly clock: Clock;\n    readonly randomBytes?: RandomBytes;\n}"
+      ]
+    },
+    {
+      "name": "MODULE_ID",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MODULE_ID_MAX_LENGTH",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID_MAX_LENGTH = 64;"
+      ]
+    },
+    {
+      "name": "ModuleId",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type ModuleId = string & {\n    readonly [moduleIdBrand]: true;\n};"
+      ]
+    },
+    {
+      "name": "Ok",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Ok<T> {\n    readonly ok: true;\n    readonly value: T;\n}"
+      ]
+    },
+    {
+      "name": "RandomBytes",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type RandomBytes = (target: Uint8Array) => void;"
+      ]
+    },
+    {
+      "name": "Result",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Result<T, E> = Ok<T> | Err<E>;"
+      ]
+    },
+    {
+      "name": "TenantContext",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type TenantContext = Context & {\n    readonly tenantId: TenantId;\n    readonly [tenantContextBrand]: true;\n};"
+      ]
+    },
+    {
+      "name": "TenantId",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type TenantId = Id & {\n    readonly [tenantIdBrand]: true;\n};"
+      ]
+    },
+    {
+      "name": "appError",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function appError<const C extends string>(catalogue: Readonly<Record<C, ErrorDefinition>>, code: C, options?: AppErrorOptions): AppError<C>;"
+      ]
+    },
+    {
+      "name": "coreError",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function coreError<const C extends CoreErrorCode>(code: C, options?: AppErrorOptions): AppError<C>;"
+      ]
+    },
+    {
+      "name": "correlationIdFromId",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function correlationIdFromId(id: Id): CorrelationId;"
+      ]
+    },
+    {
+      "name": "createContext",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function createContext(input: ContextInput): Context;"
+      ]
+    },
+    {
+      "name": "createIdGenerator",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function createIdGenerator(options: IdGeneratorOptions): IdGenerator;"
+      ]
+    },
+    {
+      "name": "defineErrorCatalogue",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function defineErrorCatalogue<const C extends Record<string, ErrorDefinition>>(catalogue: C): Readonly<C>;"
+      ]
+    },
+    {
+      "name": "deriveContext",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function deriveContext(parent: TenantContext, change: {\n    readonly causationId: Id;\n    readonly actor?: Actor;\n}): TenantContext;\ndeclare function deriveContext(parent: Context, change: {\n    readonly causationId: Id;\n    readonly actor?: Actor;\n}): Context;"
+      ]
+    },
+    {
+      "name": "err",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function err<E>(error: E): Err<E>;"
       ]
     },
     {
       "name": "idTimestamp",
-      "kind": "function",
-      "signature": "(id: Id) => number | undefined"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function idTimestamp(id: Id): number | undefined;"
+      ]
     },
     {
       "name": "isId",
-      "kind": "function",
-      "signature": "(value: unknown) => value is Id"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isId(value: unknown): value is Id;"
+      ]
     },
     {
       "name": "isModuleId",
-      "kind": "function",
-      "signature": "(value: unknown) => value is ModuleId"
-    },
-    {
-      "name": "MODULE_ID",
-      "kind": "value",
-      "signature": "ModuleId"
-    },
-    {
-      "name": "MODULE_ID_MAX_LENGTH",
-      "kind": "value",
-      "signature": "64"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isModuleId(value: unknown): value is ModuleId;"
+      ]
     },
     {
       "name": "moduleId",
-      "kind": "function",
-      "signature": "(value: string) => ModuleId"
-    },
-    {
-      "name": "ModuleId",
-      "kind": "type",
-      "signature": "string & { readonly [moduleIdBrand]: true; }"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function moduleId(value: string): ModuleId;"
+      ]
     },
     {
       "name": "nowDate",
-      "kind": "function",
-      "signature": "(clock: Clock) => Date"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function nowDate(clock: Clock): Date;"
+      ]
     },
     {
       "name": "ok",
-      "kind": "function",
-      "signature": "<T>(value: T) => Ok<T>"
-    },
-    {
-      "name": "Ok",
-      "kind": "interface",
-      "signature": "Ok<T>",
-      "members": [
-        "ok: true",
-        "value: T"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function ok<T>(value: T): Ok<T>;"
       ]
     },
     {
       "name": "parseAiClientId",
-      "kind": "function",
-      "signature": "(value: unknown) => AiClientId | undefined"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function parseAiClientId(value: unknown): AiClientId | undefined;"
+      ]
     },
     {
       "name": "parseCorrelationId",
-      "kind": "function",
-      "signature": "(value: unknown) => CorrelationId | undefined"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function parseCorrelationId(value: unknown): CorrelationId | undefined;"
+      ]
     },
     {
       "name": "parseId",
-      "kind": "function",
-      "signature": "(value: unknown) => Id | undefined"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function parseId(value: unknown): Id | undefined;"
+      ]
     },
     {
       "name": "parseTenantId",
-      "kind": "function",
-      "signature": "(value: unknown) => TenantId | undefined"
-    },
-    {
-      "name": "RandomBytes",
-      "kind": "type",
-      "signature": "(target: Uint8Array<ArrayBufferLike>) => void"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function parseTenantId(value: unknown): TenantId | undefined;"
+      ]
     },
     {
       "name": "requireTenant",
-      "kind": "function",
-      "signature": "(context: Context) => Result<TenantContext, AppError<\"TENANT_REQUIRED\">>"
-    },
-    {
-      "name": "Result",
-      "kind": "type",
-      "signature": "<T, E> Ok<T> | Err<E>"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function requireTenant(context: Context): Result<TenantContext, AppError<'TENANT_REQUIRED'>>;"
+      ]
     },
     {
       "name": "systemClock",
-      "kind": "value",
-      "signature": "Clock"
-    },
-    {
-      "name": "TenantContext",
-      "kind": "type",
-      "signature": "Context & { readonly tenantId: TenantId; readonly [tenantContextBrand]: true; }"
-    },
-    {
-      "name": "TenantId",
-      "kind": "type",
-      "signature": "string & { readonly [idBrand]: true; } & { readonly [tenantIdBrand]: true; }"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const systemClock: Clock;"
+      ]
     },
     {
       "name": "toErrorResponse",
-      "kind": "function",
-      "signature": "(error: AppError<string>, correlationId: CorrelationId) => ErrorResponseBody"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function toErrorResponse(error: AppError, correlationId: CorrelationId): ErrorResponseBody;"
+      ]
     },
     {
       "name": "webCryptoRandomBytes",
-      "kind": "value",
-      "signature": "RandomBytes"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const webCryptoRandomBytes: RandomBytes;"
+      ]
     }
   ]
 }

@@ -1,11 +1,16 @@
 {
+  "format": 2,
   "package": "@gx/testkit",
   "version": "0.0.0",
   "exports": [
     {
       "name": "MODULE_ID",
-      "kind": "value",
-      "signature": "ModuleId"
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID: ModuleId;"
+      ]
     }
   ]
 }

@@ -50,19 +50,26 @@ Cross-checks are skipped (with one note) while any manifest fails to parse. Outp
 ## Public-API gate
 
 ```
-pnpm api:update                 # rewrite every package's public-api.json from its source
-pnpm api:check                  # the committed reports match the source and package.json
-pnpm api:check --base main      # also require a version bump that covers each change (CI)
+pnpm api:update                         # rewrite every package's public-api.json from its source
+pnpm api:check                          # the committed reports match the source and package.json
+pnpm api:check --base main              # also require a version bump that covers each change (CI)
+pnpm api:check --base main --allow-format-change   # only in a pull request that changes the report format
 ```
 
-Each package commits `public-api.json`: every export of `src/index.ts`, with its kind and type signature, and interface and class members listed one per line. Any API change therefore shows up in review. Against the base branch:
+Each package commits `public-api.json`, built from the compiler's own declaration output (`.d.ts`) for every export of `src/index.ts`. It is normalised: comments are removed, there are no absolute paths, and entries are sorted in byte order. So it sees constructors, statics, modifiers, `readonly`, call and index signatures, overloads, enums, namespaces (including `export * as`), merged declarations and type-only exports. Any change to that text is breaking unless it is provably an addition.
 
-| Change | From 1.0.0 | Before 1.0.0 |
+| Change against the merge-base with `--base` | From 1.0.0 | Before 1.0.0 |
 |---|---|---|
-| Export removed, signature changed, or required member added or removed | major | minor |
-| Export added, or only optional interface members added | minor | patch |
+| Export removed, meaning changed (for example value to type-only), or declaration text changed | major | minor |
+| Export added, or an interface that only gains optional members | minor | none |
 
-A version going back fails, a package that is new on the base branch is not compared, and a base ref that does not exist exits 2. Signatures name the types they use; a change inside an exported type shows on that type's own entry.
+Fails closed:
+- **Forgotten export:** an exported signature uses a type declared in the package but not exported. Export it, so its changes are tracked.
+- **`any`** in the public API.
+- **Report format change:** a base report in another report format needs `--allow-format-change`, after a review of the diff by hand.
+- **Versions:** a version going back, or a base ref that does not exist (exit 2).
+
+Base reports are found by package name through the base commit's register. Packages that are new since the base are listed, not silently skipped. CI must fetch enough history for `git merge-base`.
 
 ## Public API
 

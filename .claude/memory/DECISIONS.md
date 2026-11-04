@@ -124,3 +124,8 @@ Format per entry:
 - Chosen: each package commits public-api.json (exports, kinds, signatures and members, from the TypeScript 6 compiler API). `pnpm api:check` requires it to match the source; with `--base <ref>` a break needs major (minor before 1.0.0), an addition needs minor (patch). No new dependency: API Extractor was rejected because it bundles its own TypeScript and adds weight for the same check.
 - Consequence: every task that changes a package's exports bumps that package's version in the same change. All packages are at 0.0.0 until the first base exists on main.
 - Revisit if: signature strings prove unstable across TypeScript upgrades (then pin the report format to declaration text).
+
+## 2026-11-04 — K0-T09 reworked after staff review: reports from declaration output
+- Context: the first gate described exports by checker type strings and missed constructors, statics, modifiers, readonly, call and index signatures, enums, namespaces, merged declarations, type-only changes and unexported referenced types; `export * as` wrote absolute paths.
+- Chosen: API Extractor's model without the dependency. Report = normalised .d.ts text per export plus its meanings; any text change is breaking unless it is a proven addition; forgotten exports and `any` fail; format stamp with an explicit override; merge-base comparison by package name. Before 1.0.0, additions need no bump (this is an unpublished workspace); breaks need minor.
+- Evidence: OBSERVED. 48 gate tests include a fixture for each review finding; 7 mutations turn tests red; the first run caught a real forgotten export (Version).

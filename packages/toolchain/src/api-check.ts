@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  API_REPORT_FORMAT,
   bumpBetween,
   bumpSatisfies,
   diffApi,
@@ -25,22 +26,26 @@ export interface ApiCheckOptions {
   /** Write fresh reports instead of checking them. */
   readonly update?: boolean;
   /**
-   * The base branch's report for a package path (`packages/core/public-api.json`), or
-   * undefined when the package is new there. Without it, only the committed report is checked.
+   * The base branch's report for a package, looked up by package name, or undefined when
+   * the package does not exist there. Any other failure must throw, never return undefined.
    */
-  readonly readBase?: (reportPath: string) => string | undefined;
+  readonly readBase?: (packageName: string) => string | undefined;
+  /** Accept a base report written in an older report format (a toolchain change). */
+  readonly allowFormatChange?: boolean;
 }
 
 export interface ApiCheckResult {
   readonly problems: readonly ApiProblem[];
   readonly changes: readonly { readonly package: string; readonly changes: readonly ApiChange[] }[];
+  /** Packages compared with nothing, because they are new on the base branch. */
+  readonly newPackages: readonly string[];
   readonly packagesChecked: number;
 }
 
 /**
- * For every registered package: the committed report must match the public API as it
- * is now, its version must match package.json, and, against the base branch, the version
- * bump must cover the change (break: major, or minor before 1.0.0; addition: minor, or patch).
+ * For every registered package: no forgotten exports or `any` in its public API; the
+ * committed report matches the source and package.json; and, against the base branch,
+ * the version bump covers the change.
  */
 export function checkApi(options: ApiCheckOptions): ApiCheckResult {
   const { root } = options;
@@ -49,11 +54,13 @@ export function checkApi(options: ApiCheckOptions): ApiCheckResult {
     return {
       problems: parsed.problems.map((message) => ({ file: REGISTER_PATH, message })),
       changes: [],
+      newPackages: [],
       packagesChecked: 0,
     };
   }
   const problems: ApiProblem[] = [];
   const changes: { package: string; changes: ApiChange[] }[] = [];
+  const newPackages: string[] = [];
   let packagesChecked = 0;
 
   for (const entry of parsed.register.packages) {
@@ -65,13 +72,18 @@ export function checkApi(options: ApiCheckOptions): ApiCheckResult {
       version?: unknown;
     };
     const version = typeof pkg.version === 'string' ? pkg.version : '';
+    const extraction = extractApi({
+      tsconfigPath: join(root, entry.path, 'tsconfig.json'),
+      entry: join(root, entry.path, 'src/index.ts'),
+    });
+    for (const message of extraction.problems) {
+      problems.push({ file: `${entry.path}/src/index.ts`, message });
+    }
     const current: ApiReport = {
+      format: API_REPORT_FORMAT,
       package: entry.package,
       version,
-      exports: extractApi({
-        tsconfigPath: join(root, entry.path, 'tsconfig.json'),
-        entry: join(root, entry.path, 'src/index.ts'),
-      }),
+      exports: extraction.exports,
     };
     packagesChecked += 1;
 
@@ -84,10 +96,16 @@ export function checkApi(options: ApiCheckOptions): ApiCheckResult {
       continue;
     }
     const committed = JSON.parse(readFileSync(join(root, reportPath), 'utf8')) as ApiReport;
+    if (committed.format !== API_REPORT_FORMAT) {
+      add(
+        `report format ${String(committed.format)} is not ${String(API_REPORT_FORMAT)}; run pnpm api:update`,
+      );
+      continue;
+    }
     const drift = diffApi(committed.exports, current.exports);
     if (drift.length > 0) {
       add(
-        `the public API changed but the report did not (${drift.map((c) => c.detail).join('; ')}); run pnpm api:update, bump the version and update the changelog`,
+        `the public API changed but the report did not (${drift.map((c) => c.detail).join('; ')}); run pnpm api:update, bump the version if needed and update the changelog`,
       );
     }
     if (committed.version !== version) {
@@ -96,9 +114,21 @@ export function checkApi(options: ApiCheckOptions): ApiCheckResult {
       );
     }
 
-    const baseText = options.readBase?.(reportPath);
-    if (baseText === undefined) continue;
+    if (options.readBase === undefined) continue;
+    const baseText = options.readBase(entry.package);
+    if (baseText === undefined) {
+      newPackages.push(entry.package);
+      continue;
+    }
     const base = JSON.parse(baseText) as ApiReport;
+    if (base.format !== API_REPORT_FORMAT) {
+      if (options.allowFormatChange !== true) {
+        add(
+          `the base report uses format ${String(base.format)} and this one ${String(API_REPORT_FORMAT)}, so the API cannot be compared; review the report diff by hand and rerun with --allow-format-change`,
+        );
+      }
+      continue;
+    }
     const baseVersion = parseVersion(base.version);
     const currentVersion = parseVersion(version);
     if (baseVersion === undefined || currentVersion === undefined) {
@@ -114,13 +144,12 @@ export function checkApi(options: ApiCheckOptions): ApiCheckResult {
     }
     const required = requiredBump(sinceBase, baseVersion);
     if (!bumpSatisfies(actual, required)) {
-      const why = sinceBase.filter(
-        (c) => required === 'none' || c.breaking || !sinceBase.some((x) => x.breaking),
-      );
+      const breaking = sinceBase.filter((c) => c.breaking);
+      const why = breaking.length > 0 ? breaking : sinceBase;
       add(
         `${entry.package} ${base.version} -> ${version} is a ${actual} bump, but the API change needs at least ${required}: ${why.map((c) => c.detail).join('; ')}`,
       );
     }
   }
-  return { problems, changes, packagesChecked };
+  return { problems, changes, newPackages, packagesChecked };
 }
