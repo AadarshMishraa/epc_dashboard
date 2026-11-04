@@ -7,6 +7,7 @@ import { createIdGenerator, idTimestamp, isId, parseId, type RandomBytes } from 
 function scriptedClock(readings: readonly number[]): Clock {
   let index = 0;
   return {
+    monotonicMillis: () => index,
     nowMillis: () => {
       const value = readings[Math.min(index, readings.length - 1)] ?? 0;
       index += 1;

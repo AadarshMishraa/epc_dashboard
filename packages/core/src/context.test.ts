@@ -1,22 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import type { Clock } from './clock.ts';
 import {
+  correlationIdFromId,
   createContext,
   deriveContext,
+  parseAiClientId,
   parseCorrelationId,
+  parseTenantId,
   requireTenant,
   type Actor,
+  type AiClientId,
+  type Context,
   type CorrelationId,
+  type TenantContext,
+  type TenantId,
 } from './context.ts';
 import { parseId, type Id } from './ids.ts';
 
-const clock: Clock = { nowMillis: () => 0 };
+const clock: Clock = { nowMillis: () => 0, monotonicMillis: () => 0 };
 const id = (value: string): Id => {
   const parsed = parseId(value);
   if (parsed === undefined) throw new Error(`bad fixture id ${value}`);
   return parsed;
 };
-const TENANT = id('0190f3e2-7a1b-7c3d-8e4f-000000000001');
+const TENANT = parseTenantId('0190f3e2-7a1b-7c3d-8e4f-000000000001') as TenantId;
 const USER = id('0190f3e2-7a1b-7c3d-8e4f-000000000002');
 const EVENT = id('0190f3e2-7a1b-7c3d-8e4f-000000000003');
 const correlation = parseCorrelationId('req-123') as CorrelationId;
@@ -49,7 +56,11 @@ describe('createContext', () => {
     const viaClient: Actor = {
       kind: 'user',
       userId: USER,
-      via: { kind: 'ai_client', clientId: 'claude' },
+      via: {
+        kind: 'ai_client',
+        clientId: parseAiClientId('https://claude.ai/client') as AiClientId,
+        scopes: ['read'],
+      },
     };
     const context = createContext({
       tenantId: TENANT,
@@ -107,7 +118,9 @@ describe('requireTenant', () => {
       correlationId: correlation,
       clock,
     });
-    expect(requireTenant(context)).toEqual({ ok: true, value: TENANT });
+    const result = requireTenant(context);
+    expect(result.ok && result.value.tenantId).toBe(TENANT);
+    expect(result.ok && result.value).toBe(context);
   });
 
   it('fails closed with TENANT_REQUIRED when absent; there is no default tenant', () => {
@@ -141,5 +154,97 @@ describe('parseCorrelationId', () => {
     ['not a string', 42],
   ])('rejects %s', (_label, value) => {
     expect(parseCorrelationId(value)).toBeUndefined();
+  });
+});
+
+describe('review fixes: brands and narrowing', () => {
+  it('does not accept a plain record id as a tenant id', () => {
+    // @ts-expect-error a user or record id is not a tenant id
+    const wrong: TenantId = USER;
+    expect(wrong).toBe(USER);
+  });
+
+  it('parseTenantId accepts only canonical ids', () => {
+    expect(parseTenantId('not-an-id')).toBeUndefined();
+    expect(parseTenantId(42)).toBeUndefined();
+  });
+
+  it('tenant-scoped code must take a TenantContext, which only requireTenant gives', () => {
+    const scoped = (context: TenantContext): TenantId => context.tenantId;
+    const context: Context = createContext({
+      tenantId: TENANT,
+      actor: user,
+      correlationId: correlation,
+      clock,
+    });
+    // @ts-expect-error a Context, even with a tenant, has not been checked
+    expect(() => scoped(context)).not.toThrow();
+    const checked = requireTenant(context);
+    expect(checked.ok && scoped(checked.value)).toBe(TENANT);
+  });
+
+  it('mints a correlation id from a fresh id', () => {
+    expect(parseCorrelationId(correlationIdFromId(EVENT))).toBe(EVENT);
+  });
+
+  it.each(['claude', 'https://chatgpt.com/connector/abc?v=1', 'client_01'])(
+    'accepts AI client id %s',
+    (value) => {
+      expect(parseAiClientId(value)).toBe(value);
+    },
+  );
+
+  it.each(['', 'a b', 'x\nforged', '<script>', '"quoted"', 'é', 'x'.repeat(257)])(
+    'rejects AI client id %j',
+    (value) => {
+      expect(parseAiClientId(value)).toBeUndefined();
+    },
+  );
+
+  it('freezes the AI client and its scopes, not only the actor', () => {
+    const scopes: ('read' | 'write')[] = ['read'];
+    const clientId = parseAiClientId('c') as AiClientId;
+    const context = createContext({
+      actor: { kind: 'user', userId: USER, via: { kind: 'ai_client', clientId, scopes } },
+      correlationId: correlation,
+      clock,
+    });
+    scopes.push('write');
+    const actor = context.actor;
+    expect(actor.kind === 'user' && actor.via?.scopes).toEqual(['read']);
+    expect(actor.kind === 'user' && Object.isFrozen(actor.via)).toBe(true);
+  });
+
+  it('keeps who started the chain when a system process takes over', () => {
+    const parent = createContext({
+      tenantId: TENANT,
+      actor: user,
+      correlationId: correlation,
+      clock,
+    });
+    const job = deriveContext(parent, {
+      causationId: EVENT,
+      actor: { kind: 'system', process: 'k6.jobs' },
+    });
+    const retry = deriveContext(job, {
+      causationId: EVENT,
+      actor: { kind: 'system', process: 'k6.retry' },
+    });
+    expect(job.initiatedBy).toEqual(user);
+    expect(retry.initiatedBy).toEqual(user);
+    expect(deriveContext(parent, { causationId: EVENT }).initiatedBy).toBeUndefined();
+  });
+
+  it('keeps the TenantContext type through deriveContext', () => {
+    const base = createContext({
+      tenantId: TENANT,
+      actor: user,
+      correlationId: correlation,
+      clock,
+    });
+    const checked = requireTenant(base);
+    if (!checked.ok) throw new Error('fixture has a tenant');
+    const child: TenantContext = deriveContext(checked.value, { causationId: EVENT });
+    expect(child.tenantId).toBe(TENANT);
   });
 });

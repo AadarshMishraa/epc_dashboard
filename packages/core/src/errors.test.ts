@@ -6,6 +6,9 @@ import {
   defineErrorCatalogue,
   toErrorResponse,
 } from './errors.ts';
+import { parseCorrelationId, type CorrelationId } from './context.ts';
+
+const REQ = parseCorrelationId('req-1') as CorrelationId;
 
 describe('the core error catalogue', () => {
   it('maps each code to the status in the API conventions', () => {
@@ -85,7 +88,7 @@ describe('toErrorResponse', () => {
       detail: 'amount -5 below minimum for tenant 0190f3e2',
       cause: new Error('stack with internals'),
     });
-    expect(toErrorResponse(error, 'req-1')).toEqual({
+    expect(toErrorResponse(error, REQ)).toEqual({
       error: {
         code: 'VALIDATION_FAILED',
         message: 'Some details are missing or not valid.',
@@ -97,7 +100,41 @@ describe('toErrorResponse', () => {
 
   it('does not carry extra properties smuggled onto field errors', () => {
     const smuggled = { path: 'phone', code: 'BAD', value: '+91 98765 43210' };
-    const body = toErrorResponse(coreError('VALIDATION_FAILED', { fields: [smuggled] }), 'r');
+    const body = toErrorResponse(coreError('VALIDATION_FAILED', { fields: [smuggled] }), REQ);
     expect(JSON.stringify(body)).not.toContain('98765');
   });
+
+  it('carries the retry delay for 429 and the current version for 409', () => {
+    expect(
+      toErrorResponse(coreError('RATE_LIMITED', { retryAfterSeconds: 30 }), REQ).error,
+    ).toMatchObject({
+      code: 'RATE_LIMITED',
+      retry_after_seconds: 30,
+    });
+    expect(toErrorResponse(coreError('CONFLICT', { currentVersion: 7 }), REQ).error).toMatchObject({
+      code: 'CONFLICT',
+      current_version: 7,
+    });
+  });
+
+  it('omits the optional keys when they are not set', () => {
+    expect(Object.keys(toErrorResponse(coreError('NOT_FOUND'), REQ).error).sort()).toEqual([
+      'code',
+      'correlation_id',
+      'fields',
+      'message',
+    ]);
+  });
+
+  it('only takes a validated correlation id', () => {
+    // @ts-expect-error a raw string could echo attacker-controlled text into the body
+    toErrorResponse(coreError('NOT_FOUND'), 'unvalidated');
+  });
+
+  it.each([1.5, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    'refuses a Retry-After that is not whole seconds: %s',
+    (value) => {
+      expect(() => coreError('RATE_LIMITED', { retryAfterSeconds: value })).toThrow(RangeError);
+    },
+  );
 });

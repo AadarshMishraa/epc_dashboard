@@ -46,7 +46,9 @@ const MAX_TIMESTAMP = 2 ** 48 - 1;
  * UUIDv7 ids (RFC 9562): 48-bit Unix milliseconds, then a 12-bit counter (method 1), then
  * 62 random bits. Ids from one generator sort strictly in creation order as strings, even
  * within one millisecond, and even if the clock steps backwards (the generator holds its
- * last timestamp until the clock catches up).
+ * last timestamp until the clock catches up). Under sustained overflow (more than about
+ * 2,000 ids per millisecond) the encoded time runs ahead of the clock until the load drops.
+ * The time in an id reveals when the record was created: do not expose ids where that matters.
  */
 export function createIdGenerator(options: IdGeneratorOptions): IdGenerator {
   const randomBytes = options.randomBytes ?? webCryptoRandomBytes;

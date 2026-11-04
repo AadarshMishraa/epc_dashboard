@@ -95,7 +95,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 |----|---------|------|-------|-----------|
 | T-001 | F-01 | K0-T01 Decide stack and repo layout (ADR-0006) | Done | - |
 | T-002 | F-01 | K0-T02 Workspace skeleton | Done | - |
-| T-003 | F-02 | K0-T03 Core types | In review | - |
+| T-003 | F-02 | K0-T03 Core types | Done | - |
 | T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
 | T-005 | F-03 | K0-T05 Migration framework | Not started | - |
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |

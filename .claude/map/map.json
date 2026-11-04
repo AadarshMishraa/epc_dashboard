@@ -97,12 +97,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "09157861b99c",
+   "hash": "a832ea7674e0",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 18,
+   "loc": 36,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -124,7 +124,7 @@
     "packages/core/src/ids.ts"
    ],
    "env": [],
-   "hash": "ed42b662ec99",
+   "hash": "684b23cd20ef",
    "imports": [
     "vitest",
     "./clock.ts",
@@ -134,7 +134,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 146,
+   "loc": 251,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -153,7 +153,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "afb49446d521",
+   "hash": "d1384898393c",
    "imports": [
     "./clock.ts",
     "./errors.ts",
@@ -163,17 +163,23 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 98,
+   "loc": 169,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "CorrelationId",
     "TenantId",
+    "AiClientId",
     "parseCorrelationId",
-    "Actor",
+    "correlationIdFromId",
+    "parseTenantId",
+    "parseAiClientId",
+    "AiClientScope",
     "AiClient",
+    "Actor",
     "Context",
+    "TenantContext",
     "ContextInput",
     "createContext",
     "deriveContext",
@@ -187,18 +193,20 @@
    "calls": [],
    "defines_tables": [],
    "deps": [
+    "packages/core/src/context.ts",
     "packages/core/src/errors.ts"
    ],
    "env": [],
-   "hash": "ed09861ef102",
+   "hash": "eac7b07e2327",
    "imports": [
     "vitest",
-    "./errors.ts"
+    "./errors.ts",
+    "./context.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 104,
+   "loc": 141,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -210,14 +218,18 @@
   "packages/core/src/errors.ts": {
    "calls": [],
    "defines_tables": [],
-   "deps": [],
+   "deps": [
+    "packages/core/src/context.ts"
+   ],
    "env": [],
-   "hash": "f46d9c9349a8",
-   "imports": [],
+   "hash": "67e7da9be47a",
+   "imports": [
+    "./context.ts"
+   ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 165,
+   "loc": 193,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -248,7 +260,7 @@
     "packages/core/src/ids.ts"
    ],
    "env": [],
-   "hash": "14775d9e2c3e",
+   "hash": "8fe16291928f",
    "imports": [
     "fast-check",
     "vitest",
@@ -258,7 +270,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 160,
+   "loc": 161,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -274,14 +286,14 @@
     "packages/core/src/clock.ts"
    ],
    "env": [],
-   "hash": "d87f0b6bb987",
+   "hash": "618db8752553",
    "imports": [
     "./clock.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 103,
+   "loc": 105,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -307,7 +319,7 @@
     "packages/core/src/index.ts"
    ],
    "env": [],
-   "hash": "3a781d69e983",
+   "hash": "08c9c85d67b6",
    "imports": [
     "node:fs",
     "vitest",
@@ -316,7 +328,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 54,
+   "loc": 57,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -337,7 +349,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "78ce46f85002",
+   "hash": "793ed4977ed2",
    "imports": [
     "./module-id.ts",
     "./module-id.ts",
@@ -350,7 +362,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 52,
+   "loc": 58,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -417,7 +429,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "7f62bc2730e4",
+   "hash": "b36bf7763c70",
    "imports": [
     "vitest",
     "./clock.ts",
@@ -426,7 +438,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 30,
+   "loc": 37,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -1242,7 +1254,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "9f481f8d419c",
+   "hash": "fab059b50470",
    "imports": [
     "re"
    ],
@@ -1491,8 +1503,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 18:27",
- "head": "8c0a4bc",
+ "generated": "2026-11-04 18:32",
+ "head": "50a3659",
  "root": "epc_dashboard",
  "version": 1
 }

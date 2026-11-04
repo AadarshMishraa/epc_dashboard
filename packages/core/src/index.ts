@@ -35,15 +35,21 @@ export {
   type RandomBytes,
 } from './ids.ts';
 export {
+  correlationIdFromId,
   createContext,
   deriveContext,
+  parseAiClientId,
   parseCorrelationId,
+  parseTenantId,
   requireTenant,
   type Actor,
   type AiClient,
+  type AiClientId,
+  type AiClientScope,
   type Context,
   type ContextInput,
   type CorrelationId,
+  type TenantContext,
   type TenantId,
 } from './context.ts';
 

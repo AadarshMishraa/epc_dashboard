@@ -71,7 +71,7 @@ SEC_MODULE = {
 }
 
 SEC_TASK = {
-    "K0-T04": "Threat: personal data leaks through logs. Control: redact by classification before write; test with seeded phone, email and ID values.",
+    "K0-T04": "Threat: personal data leaks through logs. Control: redact by classification before write; summarise AppError.cause by type and code, never serialise it raw (driver messages can hold personal data); test with seeded phone, email and ID values.",
     "K0-T10": "Threat: vulnerable or tampered dependency, leaked secret. Control: lockfile, advisory scan, secret scan, pinned CI actions, no secrets in CI logs.",
     "K0-T14": "Threat: a fake or port that fails open. Control: deny-by-default fakes; contract suite proves denial on missing permission, key or classification.",
     "K1-T02": "Threat: code path runs without tenant. Control: requireTenant throws TENANT_REQUIRED; context survives async hops; test with background jobs.",

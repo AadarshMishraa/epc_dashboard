@@ -107,3 +107,9 @@ Format per entry:
 - Chosen: Postgres 17 (Supabase platform default and CLI default on 2026-11-04). In supabase/config.toml, the Data API, Realtime, Edge Functions, Auth and analytics are off, and the pooler is on in transaction mode. vercel.json pins bom1, sets security headers and keeps git deploys off until an app exists. .env.example holds placeholders, with no anon or service_role key and no client prefix; a test guards all of this. The Supabase CLI is not a repo dependency, because its install script downloads a binary, which the strictDepBuilds policy blocks; developers install it themselves.
 - Revisit if: the hosted project shows another Postgres major; D-05 adopts Supabase Auth (turn [auth] on then).
 - Evidence: OBSERVED. supabase.com changelog 46080 ("Postgres 17 ... platform default"); `supabase init` with CLI 2.122.0 writes major_version = 17; packages/toolchain/src/environment-config.test.ts.
+
+## 2026-11-04 — K0-T03 core type shape after staff review
+- Chosen: `TenantId` is its own brand; tenant-scoped code takes `TenantContext`, which only `requireTenant` produces, so a skipped check is a compile error. `Clock` has wall time and monotonic time. AppError carries `retryAfterSeconds` (whole seconds) and `currentVersion`. Context carries `initiatedBy` for jobs. Errors are values with a public message; `detail` and `cause` are for logs only.
+- Deferred, now in the briefs: error-code collisions across catalogues (K0-T07 done-when); summarising `cause` in logs (K0-T04 threat line).
+- Accepted risk: a UUIDv7 reveals the record's creation time, and its counter hints at volume. Before ids appear in public or customer links (pack S19), use an opaque token instead of the id.
+- Evidence: OBSERVED. 200 tests; 14 mutations across core each turn a test red; reviewer approved.

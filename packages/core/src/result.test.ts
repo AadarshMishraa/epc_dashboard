@@ -21,8 +21,15 @@ describe('systemClock', () => {
     expect(Number.isSafeInteger(reading)).toBe(true);
   });
 
+  it('reads a monotonic time that never goes backwards', () => {
+    const readings = Array.from({ length: 1_000 }, () => systemClock.monotonicMillis());
+    for (let i = 1; i < readings.length; i += 1) {
+      expect(readings[i]).toBeGreaterThanOrEqual(readings[i - 1] ?? 0);
+    }
+  });
+
   it('nowDate returns a fresh Date for the clock reading', () => {
-    const clock = { nowMillis: () => 86_400_000 };
+    const clock = { nowMillis: () => 86_400_000, monotonicMillis: () => 0 };
     expect(nowDate(clock).toISOString()).toBe('1970-01-02T00:00:00.000Z');
     expect(nowDate(clock)).not.toBe(nowDate(clock));
   });

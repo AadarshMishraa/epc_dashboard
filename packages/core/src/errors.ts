@@ -1,3 +1,5 @@
+import type { CorrelationId } from './context.ts';
+
 /**
  * The error catalogue: every error a caller can see has a stable code, an HTTP status and
  * a plain public message. Messages never name tenants, accounts or internals; the
@@ -5,7 +7,7 @@
  */
 
 /** HTTP statuses an error may map to (development guidelines 8). */
-export const ERROR_STATUSES = [400, 401, 403, 404, 409, 422, 429, 500, 503] as const;
+export const ERROR_STATUSES = [400, 401, 403, 404, 409, 413, 422, 429, 500, 503] as const;
 export type ErrorStatus = (typeof ERROR_STATUSES)[number];
 
 export interface ErrorDefinition {
@@ -101,14 +103,23 @@ export interface AppError<C extends string = string> {
   readonly message: string;
   readonly retryable: boolean;
   readonly fields: readonly FieldError[];
+  /** Seconds to wait before retrying; sent as `Retry-After` and in the body (429, 503). */
+  readonly retryAfterSeconds?: number;
+  /** The record's current version on a 409, so the caller can reload and retry. */
+  readonly currentVersion?: number | string;
   /** For logs only: what went wrong, without personal data. Never returned to a caller. */
   readonly detail?: string;
-  /** For logs only. Never returned to a caller. */
+  /**
+   * For logs only. Never returned to a caller, and never logged raw: a driver message can
+   * hold personal data, so the logger (K0-T04) summarises it by type and code.
+   */
   readonly cause?: unknown;
 }
 
 export interface AppErrorOptions {
   readonly fields?: readonly FieldError[];
+  readonly retryAfterSeconds?: number;
+  readonly currentVersion?: number | string;
   readonly detail?: string;
   readonly cause?: unknown;
 }
@@ -120,12 +131,22 @@ export function appError<const C extends string>(
   options: AppErrorOptions = {},
 ): AppError<C> {
   const definition = catalogue[code];
+  const retryAfter = options.retryAfterSeconds;
+  if (retryAfter !== undefined && !(Number.isSafeInteger(retryAfter) && retryAfter >= 0)) {
+    throw new RangeError(
+      `retryAfterSeconds must be a whole number of seconds, found ${String(retryAfter)}`,
+    );
+  }
   return {
     code,
     status: definition.status,
     message: definition.message,
     retryable: definition.retryable,
     fields: options.fields ?? [],
+    ...(options.retryAfterSeconds === undefined
+      ? {}
+      : { retryAfterSeconds: options.retryAfterSeconds }),
+    ...(options.currentVersion === undefined ? {} : { currentVersion: options.currentVersion }),
     ...(options.detail === undefined ? {} : { detail: options.detail }),
     ...(options.cause === undefined ? {} : { cause: options.cause }),
   };
@@ -144,21 +165,28 @@ export interface ErrorResponseBody {
     readonly code: string;
     readonly message: string;
     readonly fields: readonly FieldError[];
-    readonly correlation_id: string;
+    readonly correlation_id: CorrelationId;
+    readonly retry_after_seconds?: number;
+    readonly current_version?: number | string;
   };
 }
 
 /**
  * The response body for an error (development guidelines 8). Only the code, the public
- * message, field problems and the correlation id leave the server.
+ * message, field problems, the correlation id, and the retry delay or current version when
+ * set, leave the server.
  */
-export function toErrorResponse(error: AppError, correlationId: string): ErrorResponseBody {
+export function toErrorResponse(error: AppError, correlationId: CorrelationId): ErrorResponseBody {
   return {
     error: {
       code: error.code,
       message: error.message,
       fields: error.fields.map(({ path, code }) => ({ path, code })),
       correlation_id: correlationId,
+      ...(error.retryAfterSeconds === undefined
+        ? {}
+        : { retry_after_seconds: error.retryAfterSeconds }),
+      ...(error.currentVersion === undefined ? {} : { current_version: error.currentVersion }),
     },
   };
 }
