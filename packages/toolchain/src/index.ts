@@ -16,6 +16,39 @@ export {
 } from './import-graph.ts';
 export { findImports, type ImportReference } from './imports.ts';
 export {
+  manifestSchema,
+  validateManifests,
+  type Layer,
+  type Manifest,
+  type ManifestInput,
+  type ManifestProblem,
+} from './manifest.ts';
+export { MANIFEST_FILE, checkManifests, type ManifestCheckResult } from './manifest-check.ts';
+export {
+  API_REPORT_FORMAT,
+  bumpBetween,
+  bumpSatisfies,
+  diffApi,
+  extractApi,
+  parseVersion,
+  requiredBump,
+  type ApiChange,
+  type ApiExport,
+  type ApiExtraction,
+  type ApiReport,
+  type Bump,
+  type ChangeKind,
+  type Meaning,
+  type Version,
+} from './api-report.ts';
+export {
+  API_REPORT_FILE,
+  checkApi,
+  type ApiCheckOptions,
+  type ApiCheckResult,
+  type ApiProblem,
+} from './api-check.ts';
+export {
   parseRegister,
   type Register,
   type RegisterEntry,

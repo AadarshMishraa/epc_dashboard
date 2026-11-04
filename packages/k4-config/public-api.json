@@ -1,0 +1,16 @@
+{
+  "format": 2,
+  "package": "@gx/k4-config",
+  "version": "0.0.0",
+  "exports": [
+    {
+      "name": "MODULE_ID",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID: ModuleId;"
+      ]
+    }
+  ]
+}

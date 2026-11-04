@@ -30,6 +30,15 @@
       "depends": ["core"]
     },
     {
+      "id": "migrate",
+      "package": "@gx/migrate",
+      "path": "packages/migrate",
+      "kind": "support",
+      "plan": "K0",
+      "purpose": "Migration framework: package-namespaced, forward-only, expand then contract, run in dependency order with a checksum ledger.",
+      "depends": ["core"]
+    },
+    {
       "id": "k1-tenancy",
       "package": "@gx/k1-tenancy",
       "path": "packages/k1-tenancy",

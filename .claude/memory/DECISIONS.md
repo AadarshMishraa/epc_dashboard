@@ -113,3 +113,19 @@ Format per entry:
 - Deferred, now in the briefs: error-code collisions across catalogues (K0-T07 done-when); summarising `cause` in logs (K0-T04 threat line).
 - Accepted risk: a UUIDv7 reveals the record's creation time, and its counter hints at volume. Before ids appear in public or customer links (pack S19), use an opaque token instead of the id.
 - Evidence: OBSERVED. 200 tests; 14 mutations across core each turn a test red; reviewer approved.
+
+## 2026-11-04 — Migration runner is its own package, @gx/migrate; database tests are a separate suite
+- Context: K0-T05 needs I/O (pg), so not core; the sandbox host must migrate at boot (F-06-AC4), so not toolchain, which ships the TypeScript compiler.
+- Chosen: `@gx/migrate` (support, depends on core and pg 8.23.1). Database tests are `*.db.test.ts`, run with `pnpm test:db` against GX_TEST_DATABASE_URL; they fail loudly without it and never skip. CI provides a postgres:17 service (K0-T10).
+- Rejected: the embedded-postgres npm binaries (postinstall script, single maintainer, newest 17.x build inside the 7-day window). Downloaded Postgres 17 binaries could not be run in this sandbox (permission policy), so local verification uses the container's system Postgres 16; the SQL used (DDL, advisory locks, transactions) behaves the same in 16 and 17.
+- Evidence: OBSERVED. 15 of 15 db tests on Postgres 16.15; 7 mutations turned tests red (one was equivalent, and a fault-injection test was added for it).
+
+## 2026-11-04 — Public-API gate is a committed report plus a base-branch semver check (K0-T09)
+- Chosen: each package commits public-api.json (exports, kinds, signatures and members, from the TypeScript 6 compiler API). `pnpm api:check` requires it to match the source; with `--base <ref>` a break needs major (minor before 1.0.0), an addition needs minor (patch). No new dependency: API Extractor was rejected because it bundles its own TypeScript and adds weight for the same check.
+- Consequence: every task that changes a package's exports bumps that package's version in the same change. All packages are at 0.0.0 until the first base exists on main.
+- Revisit if: signature strings prove unstable across TypeScript upgrades (then pin the report format to declaration text).
+
+## 2026-11-04 — K0-T09 reworked after staff review: reports from declaration output
+- Context: the first gate described exports by checker type strings and missed constructors, statics, modifiers, readonly, call and index signatures, enums, namespaces, merged declarations, type-only changes and unexported referenced types; `export * as` wrote absolute paths.
+- Chosen: API Extractor's model without the dependency. Report = normalised .d.ts text per export plus its meanings; any text change is breaking unless it is a proven addition; forgotten exports and `any` fail; format stamp with an explicit override; merge-base comparison by package name. Before 1.0.0, additions need no bump (this is an unpublished workspace); breaks need minor.
+- Evidence: OBSERVED. 48 gate tests include a fixture for each review finding; 7 mutations turn tests red; the first run caught a real forgotten export (Version).

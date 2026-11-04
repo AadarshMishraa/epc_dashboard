@@ -8,3 +8,6 @@ One bullet each, newest last. Format: `- YYYY-MM-DD [area] what is true — why 
 - 2026-11-04 [map] codemap.py does not resolve `@gx/*` workspace imports, so MAP.md under-reports package dependencies; `pnpm check:imports` is the authority for the package graph.
 - 2026-11-04 [env] The cloud session's network policy blocks government and review sites (pmsuryaghar.gov.in, g2.com, capterra.in), so web research returns search summaries only. Treat it as leads and verify by hand or allow the hosts.
 - 2026-11-04 [env] No Docker daemon in the cloud container, so `supabase start` cannot run here; database integration tests need local Postgres or CI.
+- 2026-11-04 [migrations] A keyword deny-list misses security changes (DISABLE RLS, ALTER POLICY, DO blocks, END). Judge statements by an allow-list of heads, and gate security statements separately from destructive ones.
+- 2026-11-04 [env] The sandbox refuses to run downloaded database binaries; use the system Postgres 16 locally and pin 17 in CI.
+- 2026-11-04 [postgres] COMMIT on a failed transaction performs a rollback, so 'replace ROLLBACK with COMMIT' is an equivalent mutation; prove atomicity with fault injection instead.

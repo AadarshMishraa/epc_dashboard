@@ -89,7 +89,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Phone, email and ID patterns are masked in logs; correlation id on every line
   - Tests: log-redaction test with seeded personal data
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T05** (T-005) Migration framework: package-namespaced, forward-only, expand then contract, dependency-ordered (M)
+- [x] **K0-T05** (T-005) Migration framework: package-namespaced, forward-only, expand then contract, dependency-ordered (M)
   - Feature: F-03 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer
@@ -107,7 +107,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Runner discovers tables and fails on a table without a policy
   - Tests: runner self-test on a deliberately bad table
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T07** (T-007) Manifest schema and validator CLI per docs/architecture/module-manifest.md (M)
+- [x] **K0-T07** (T-007) Manifest schema and validator CLI per docs/architecture/module-manifest.md (M)
   - Feature: F-04 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer
@@ -125,7 +125,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Seeded violations of each kind fail CI
   - Tests: one failing fixture per rule
   - Rollback: Revert the commit; the migration is expand-only, so a schema fault is fixed forward, never edited in place.
-- [ ] **K0-T09** (T-009) Public-API diff and semver gate (S)
+- [x] **K0-T09** (T-009) Public-API diff and semver gate (S)
   - Feature: F-04 | Milestone: M-01 | Level: 2 | Lane: core
   - Needs: K0-T02 (T-002)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer

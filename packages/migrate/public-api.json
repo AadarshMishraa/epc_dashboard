@@ -1,0 +1,241 @@
+{
+  "format": 2,
+  "package": "@gx/migrate",
+  "version": "0.0.0",
+  "exports": [
+    {
+      "name": "AppliedMigration",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AppliedMigration {\n    readonly packageId: string;\n    readonly name: string;\n    readonly durationMs: number;\n}"
+      ]
+    },
+    {
+      "name": "Finding",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Finding {\n    readonly severity: Severity;\n    readonly line: number;\n    readonly reason: string;\n    readonly text: string;\n}"
+      ]
+    },
+    {
+      "name": "KNOWN_ROLES",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const KNOWN_ROLES: readonly string[];"
+      ]
+    },
+    {
+      "name": "LEDGER_TABLE",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LEDGER_TABLE = \"gx_migrations.ledger\";"
+      ]
+    },
+    {
+      "name": "LEDGER_VERSION",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LEDGER_VERSION = 1;"
+      ]
+    },
+    {
+      "name": "LoadedMigrations",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LoadedMigrations {\n    readonly migrations: readonly Migration[];\n    readonly problems: readonly MigrationProblem[];\n}"
+      ]
+    },
+    {
+      "name": "MIGRATION_LOCK_KEY",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MIGRATION_LOCK_KEY = 4712003005;"
+      ]
+    },
+    {
+      "name": "MODULE_ID",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MigrateFailure",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type MigrateFailure = {\n    readonly kind: 'invalid';\n    readonly problems: readonly MigrationProblem[];\n} | {\n    readonly kind: 'lock-timeout';\n    readonly message: string;\n} | {\n    readonly kind: 'ledger-mismatch';\n    readonly problems: readonly MigrationProblem[];\n} | {\n    readonly kind: 'ledger-too-new';\n    readonly message: string;\n} | {\n    readonly kind: 'session-not-pinned';\n    readonly message: string;\n} | {\n    readonly kind: 'dirty';\n    readonly migrations: readonly string[];\n    readonly message: string;\n} | {\n    readonly kind: 'migration-failed';\n    readonly packageId: string;\n    readonly name: string;\n    readonly sqlState: string | undefined;\n    readonly message: string;\n    readonly applied: readonly AppliedMigration[];\n};"
+      ]
+    },
+    {
+      "name": "MigrateOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrateOptions {\n    readonly connectionString: string;\n    readonly sources: readonly MigrationSource[];\n    readonly runLockTimeoutMs?: number;\n    readonly migrationLockTimeoutMs?: number;\n    readonly statementTimeoutMs?: number;\n    readonly release?: string;\n    readonly dryRun?: boolean;\n}"
+      ]
+    },
+    {
+      "name": "MigrateReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrateReport {\n    readonly applied: readonly AppliedMigration[];\n    readonly pending: readonly Pick<Migration, 'packageId' | 'name'>[];\n    readonly alreadyApplied: number;\n}"
+      ]
+    },
+    {
+      "name": "Migration",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Migration {\n    readonly packageId: string;\n    readonly name: string;\n    readonly number: number;\n    readonly file: string;\n    readonly sql: string;\n    readonly checksum: string;\n    readonly phase: Phase;\n    readonly transactional: boolean;\n    readonly reason?: string;\n    readonly securityReview?: string;\n}"
+      ]
+    },
+    {
+      "name": "MigrationProblem",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrationProblem {\n    readonly rule: ProblemRule;\n    readonly migration?: string;\n    readonly file?: string;\n    readonly line?: number;\n    readonly message: string;\n}"
+      ]
+    },
+    {
+      "name": "MigrationSource",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MigrationSource {\n    readonly packageId: string;\n    readonly dir: string;\n    readonly depends: readonly string[];\n    readonly displayDir: string;\n}"
+      ]
+    },
+    {
+      "name": "Phase",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Phase = 'expand' | 'contract';"
+      ]
+    },
+    {
+      "name": "ProblemRule",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type ProblemRule = 'file-name' | 'numbering' | 'directive' | 'destructive-without-contract' | 'security-review-required' | 'transaction-control' | 'no-transaction-multi-statement' | 'dependency' | 'ledger' | 'empty';"
+      ]
+    },
+    {
+      "name": "Severity",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type Severity = 'contract' | 'security' | 'forbidden';"
+      ]
+    },
+    {
+      "name": "Statement",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Statement {\n    readonly code: string;\n    readonly line: number;\n}"
+      ]
+    },
+    {
+      "name": "blankCommentsAndStrings",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function blankCommentsAndStrings(sql: string): string;"
+      ]
+    },
+    {
+      "name": "countStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function countStatements(sql: string): number;"
+      ]
+    },
+    {
+      "name": "findRiskyStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function findRiskyStatements(sql: string): Finding[];"
+      ]
+    },
+    {
+      "name": "forgetStarted",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function forgetStarted(connectionString: string, migration: string): Promise<Result<undefined, {\n    readonly message: string;\n}>>;"
+      ]
+    },
+    {
+      "name": "loadMigrations",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function loadMigrations(sources: readonly MigrationSource[]): LoadedMigrations;"
+      ]
+    },
+    {
+      "name": "migrate",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function migrate(options: MigrateOptions): Promise<Result<MigrateReport, MigrateFailure>>;"
+      ]
+    },
+    {
+      "name": "sourcesFromRegister",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function sourcesFromRegister(root: string): MigrationSource[];"
+      ]
+    },
+    {
+      "name": "splitStatements",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function splitStatements(sql: string): Statement[];"
+      ]
+    }
+  ]
+}

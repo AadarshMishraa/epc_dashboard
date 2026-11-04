@@ -1,0 +1,17 @@
+{
+  "id": "k2-identity",
+  "layer": "L0",
+  "version": "0.0.0",
+  "depends": ["core"],
+  "table_prefix": "k2_",
+  "entities": [],
+  "events_emitted": [],
+  "events_consumed": [],
+  "permissions": [],
+  "custom_field_hosts": [],
+  "workflow_hooks": [],
+  "tools": [],
+  "extension_points": [],
+  "errors": {},
+  "tests_planned": []
+}
