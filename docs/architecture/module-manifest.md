@@ -1,6 +1,6 @@
 # Module manifest (contract)
 
-Status: implemented by K0-T07 (2026-11-04); implements ADR-0001, 0004, 0005. Every module ships one manifest, as `manifest.json` in its package. JSON rather than the YAML sketched below: no parser dependency, the same validation tools as `packages/register.json`. Validate with `pnpm check:manifests`; the schema is `manifestSchema` in `@gx/toolchain`. Fields added in the implementation: `table_prefix`, `extension_points`, `errors` (module error codes; colliding with core or another module fails), and `tools[].permission`. The kernel reads manifests to wire permissions, events, AI tools, settings screens and entitlements. Adding a module must never mean editing the kernel.
+Status: implemented by K0-T07 (2026-11-04); implements ADR-0001, 0004, 0005. Every module ships one manifest, as `manifest.json` in its package (or in a pack module's folder). It is JSON, not the YAML sketched below: no parser dependency, and the same validation tools as `packages/register.json`. Validate with `pnpm check:manifests`; the schema is `manifestSchema` in `@gx/toolchain`. Changes from the sketch: `table_prefix`; `events_emitted` as `{ name, version, schema }` and `events_consumed` as `{ name, version }`; `tools[].permission`; `extension_points`; `errors` (codes colliding with core or another module fail); and `tests_planned` replaces `tests`, because nothing enforces it until K0-T10. Entities are the unit of ownership: each entity has one owning module, and that module's permissions, workflow hooks, events and custom-field hosts must name its own entities. Foundation manifests must match their register entry and be L0; pack manifests need no foundation edit.
 
 ```yaml
 id: billing                  # S7 in module-catalog.md; lowercase, unique
@@ -21,7 +21,7 @@ tests: [tenant_isolation, immutability, idempotency, pack_conformance]
 ```
 
 ## Rules
-1. **Own your tables.** Table prefix = module id; `tenant_id NOT NULL`; RLS policy on every table. No module reads another module's tables, only its public interface or its events.
+1. **Own your tables.** Table prefix = the manifest's `table_prefix`, owned by exactly one module (foundation packages use `k1_` and so on); `tenant_id NOT NULL`; RLS policy on every table. No module reads another module's tables, only its public interface or its events.
 2. **Declare what varies.** Config schema, custom-field hosts, workflow hooks and labels are listed. Undeclared means not configurable.
 3. **Events are versioned contracts.** Add fields freely; never remove or rename; consumers ignore unknown fields. Events are written in the same transaction as the state change (outbox).
 4. **Tools have a mode: `read` or `draft`.** Anything that moves money, sends messages, issues documents or deletes is never exposed directly.

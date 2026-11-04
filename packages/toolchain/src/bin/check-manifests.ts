@@ -14,7 +14,7 @@ function main(): number {
     allowPositionals: false,
   });
   const result = checkManifests({ root: values.root ?? process.cwd() });
-  for (const problem of result.problems) console.error(`${problem.file} ${problem.message}`);
+  for (const problem of result.problems) console.error(`${problem.file}: ${problem.message}`);
   const summary = `manifests: ${String(result.manifestsChecked)} checked, ${String(result.problems.length)} problems`;
   if (result.problems.length > 0) {
     console.error(summary);

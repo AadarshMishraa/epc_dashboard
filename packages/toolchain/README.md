@@ -37,7 +37,15 @@ Not covered yet (K0-T08): workspace globs in `pnpm-workspace.yaml` (only `packag
 pnpm check:manifests          # from the repository root
 ```
 
-Every `kind: module` package must ship `manifest.json` (spec: [module-manifest.md](../../docs/architecture/module-manifest.md)). Unknown keys fail and are named. Across all manifests: `id`, `version` and `depends` must match the register and `package.json`; dependencies point to the same or a lower layer; every consumed event is emitted by some module, and each emitted event belongs to one of the emitter's entities; every tool has mode `read` or `draft` and a declared permission; error codes, table prefixes, events and permissions have one owner each, and core's error codes are reserved. Exit codes: 0, 1 with one line per problem, 2.
+Finds every `manifest.json` under `packages/` and `packs/`. Every `kind: module` package must have one; a foundation manifest must match its register entry (`id`, `depends`) and its `package.json` version, and be layer L0. A pack module needs no foundation edit (F-06-AC3). Unknown keys fail and are named. Across all manifests:
+
+- entities have one owner, and a module's permissions, workflow hooks, events and custom-field hosts must name its own entities;
+- events are versioned (`{ name, version, schema }`), every consumed event and version is emitted by someone, and schema files exist;
+- tools have mode `read` or `draft`, a unique name, and one of the module's own permissions;
+- error codes, table prefixes and module ids have one owner each, and core's error codes are reserved;
+- dependencies exist and point to the same or a lower layer; `config_schema` exists.
+
+Cross-checks are skipped (with one note) while any manifest fails to parse. Output is `file: message`; exit codes are 0, 1 and 2.
 
 ## Public API
 

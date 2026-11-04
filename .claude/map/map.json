@@ -1524,18 +1524,18 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "9770f8fa439c",
+   "hash": "2b55ed09f182",
    "imports": [
     "node:fs",
     "node:path",
+    "./import-graph.ts",
     "./manifest.ts",
-    "./register.ts",
-    "./import-graph.ts"
+    "./register.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 56,
+   "loc": 90,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1556,7 +1556,7 @@
     "packages/toolchain/src/manifest.ts"
    ],
    "env": [],
-   "hash": "6b6152078b5a",
+   "hash": "b846a55c739b",
    "imports": [
     "node:child_process",
     "node:fs",
@@ -1570,7 +1570,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 285,
+   "loc": 308,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1584,7 +1584,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "c5a02b4313b5",
+   "hash": "83f3e99a98fc",
    "imports": [
     "@gx/core",
     "zod"
@@ -1592,7 +1592,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 208,
+   "loc": 246,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1914,8 +1914,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 19:06",
- "head": "8d5955a",
+ "generated": "2026-11-04 19:10",
+ "head": "82cf092",
  "root": "epc_dashboard",
  "version": 1
 }

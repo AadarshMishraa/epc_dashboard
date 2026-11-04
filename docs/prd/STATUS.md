@@ -99,7 +99,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
 | T-005 | F-03 | K0-T05 Migration framework | Done | - |
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
-| T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | In review | - |
+| T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | In review | re-review after fixes |
 | T-008 | F-04 | K0-T08 Boundary lint | Not started | T-002, T-007 |
 | T-009 | F-04 | K0-T09 Public-API diff and semver gate | Not started | T-002 |
 | T-010 | F-05 | K0-T10 CI pipeline | Not started | T-006, T-008, T-009 |
