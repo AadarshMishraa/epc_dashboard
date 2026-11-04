@@ -83,12 +83,12 @@ OUT_OF_SCOPE = [
 
 RISKS = [
     ("R-01", "Residential subsidy ends and demand for small installers falls", "High", "High", "Target mid-size and commercial EPCs; keep residential as an on-ramp", "Aadarsh"),
-    ("R-02", "No owner pays: the pain is real but willingness to pay is untested", "Medium", "High", "Phase 0 conversations and a paid pilot offer before more code; gate G1 needs 3 paid commitments", "Aadarsh"),
+    ("R-02", "No owner pays: the pain is real but willingness to pay is untested", "Medium", "High", "Build the common must-haves now; run owner conversations and paid-pilot asks during refinement; revisit scope at gate G2 if no owner commits", "Aadarsh"),
     ("R-03", "Rivals add procurement and margin screens", "Medium", "Medium", "Own the India depth: state stage templates, ALMM and DCR flags, Tally sync", "Aadarsh"),
     ("R-04", "Every owner's sheet and utility stages differ by state", "High", "Medium", "Three canonical import layouts, a mapping screen, stage templates as data, 1 or 2 states first", "gx-implementer"),
     ("R-05", "Field adoption is low because phone updates take effort", "High", "High", "Few taps, photos, offline with visible sync; onboard supervisors first; measure weekly active crews", "Aadarsh"),
     ("R-06", "Offline storage on a phone conflicts with the rule of no personal data in browser storage", "High", "High", "Decision Q-05 and an ADR before any offline task; minimal fields, encrypted, wiped on logout", "gx-planner"),
-    ("R-07", "The foundation is late, so the pilot is late", "Medium", "High", "Pack builds against core ports and fakes during waves 0 to 2; a demo and Phase 0 run in parallel; start the privacy and files modules before the entitlements module in wave 4", "Aadarsh"),
+    ("R-07", "The foundation is late, so the pilot is late", "Medium", "High", "Pack builds against core ports and fakes during waves 0 to 2; a demo and refinement run in parallel; start the privacy and files modules before the entitlements module in wave 4", "Aadarsh"),
     ("R-08", "Wrong numbers lose trust", "Medium", "High", "Freshness labels, source drill-down, import row errors, reconcile screens", "gx-implementer"),
     ("R-09", "Tally sync formats vary by version and by accountant", "Medium", "Medium", "Export and import files first; confirm the version with the design partner; reconcile queue", "gx-implementer"),
     ("R-10", "Agency work competes for build time", "Medium", "Medium", "Fixed weekly build hours; agents carry the build under one lane each", "Aadarsh"),
@@ -96,17 +96,17 @@ RISKS = [
 ]
 
 DECISIONS = [
-    ("Q-01", "Which one or two states and utilities do we configure first, and who confirms their stage lists?", "Aadarsh with the design partner", "before E2-T02",
-     "Open. Lean: the state of the design partner plus one more where you already know owners."),
-    ("Q-02", "Who is the design partner owner and which 3 to 5 companies are the pilots?", "Aadarsh", "before E3-T01",
-     "Open. Lean: one design partner for definitions, three paid pilots from the EPCs already contacted."),
+    ("Q-01", "Which one or two states and utilities do we configure first, and who confirms their stage lists?", "Aadarsh with the design partner", "at refinement",
+     "Open for refinement. Build default: Maharashtra plus one example state from public information, marked unverified; replace by data."),
+    ("Q-02", "Who is the design partner owner and which 3 to 5 companies are the pilots?", "Aadarsh", "at refinement",
+     "Open for refinement. Build default: Aadarsh accepts drafted definitions; a design partner refines them later."),
     ("Q-03", "Do we issue GST invoices in the pack, or record and sync invoices from Tally?", "Aadarsh with a chartered accountant", "before E7-T02",
      "Open. Lean: record and sync; issuing invoices adds e-invoicing and numbering duties (CMP-22, CMP-23) for little extra value."),
     ("Q-04", "Do pilot companies hold warehouse stock, or buy project by project straight to site?", "Aadarsh from interviews", "before E5-T04",
      "Open. Lean: build for both with warehouse and site as locations; test in interviews."),
     ("Q-05", "What may the site app keep on the phone while offline?", "Aadarsh with gx-planner", "before E8-T01",
      "Open. Lean: the day's assigned jobs and drafts only, encrypted, removed on sign-out and after 72 hours; record as an ADR."),
-    ("Q-06", "What is the pilot offer: price, length and what the owner gives in return?", "Aadarsh", "before gate G1",
+    ("Q-06", "What is the pilot offer: price, length and what the owner gives in return?", "Aadarsh", "before the first pilot",
      "Open. Lean: paid even if small; hypothesis of 5,000 rupees per company per month including a defined user and project allowance."),
     ("Q-07", "How are the pack and its modules packaged into plans and limits?", "Aadarsh", "before foundation K3 tasks are used by the pack",
      "Open. Lean: one plan with project and user allowances at launch; modules switched on per tenant."),

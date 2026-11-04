@@ -44,7 +44,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: written definitions agreed with the design partner, stored in docs/pack and used by the rules
   - Tests: review recorded; each definition has a worked example with numbers
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-02 (design partner). Aadarsh and the design partner agree the five definitions in writing before any rule is coded.
+  - Human gate: Default now: gx-planner drafts the five definitions with worked numbers and Aadarsh accepts them. Refinement (Q-02) with a design partner may change them; rules read definitions and thresholds from configuration, so a change is data.
 - [ ] **E3-T02** (T-033) Exception rule model (M)
   - Feature: F-18 | Milestone: M-04 | Pack wave: B | Level: 2 | Lane: epc-control
   - Needs: E3-T01 (T-032), E0-T07 (T-007)

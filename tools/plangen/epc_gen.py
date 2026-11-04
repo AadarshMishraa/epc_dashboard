@@ -35,13 +35,13 @@ MOD = {
 }
 UI_TASKS = {"E0-T10", "E3-T08", "E3-T09", "E3-T13", "E3-T17", "E8-T02", "E8-T04", "E9-T05", "E1-T02", "E3-T11"}
 HUMAN_GATES = {
-    "E2-T02": "Decide Q-01 (first states and utilities). The design partner confirms the stage lists before merge.",
-    "E3-T01": "Decide Q-02 (design partner). Aadarsh and the design partner agree the five definitions in writing before any rule is coded.",
+    "E2-T02": "Default now: Maharashtra (the state utility) plus one example state from public information, each marked unverified. Refinement (Q-01) confirms or replaces the stage lists; the change is data only.",
+    "E3-T01": "Default now: gx-planner drafts the five definitions with worked numbers and Aadarsh accepts them. Refinement (Q-02) with a design partner may change them; rules read definitions and thresholds from configuration, so a change is data.",
     "E8-T01": "Decide Q-05 (what the phone may keep offline). gx-planner drafts the ADR; Aadarsh accepts it before any other E8 task starts.",
-    "E9-T03": "Decide Q-08 and confirm the Tally version and file format with the design partner's accountant.",
-    "E9-T06": "Decide Q-09 (provider and who pays per message) and confirm the customer's verified business number.",
-    "E7-T02": "Decide Q-03 (record and sync, or issue invoices) with a chartered accountant. Lean: record and sync.",
-    "E5-T04": "Decide Q-04 (warehouse stock or direct to site) from interviews; the ledger supports both locations.",
+    "E9-T03": "Default now: Tally Prime file exchange (Q-08 lean). The file format is confirmed at refinement before the first live sync.",
+    "E9-T06": "Needs the provider and cost decision (Q-09) before code; this task is not in the common must-haves.",
+    "E7-T02": "Default now: record and sync (Q-03 lean). A chartered accountant confirms at refinement; issuing invoices would be a new Later feature.",
+    "E5-T04": "Default now: both warehouse and site locations (Q-04 lean); refinement trims what is shown.",
 }
 SEC_NOTES = {
     "E1-T01": "Threat: malicious or malformed upload (macro, formula injection, zip bomb, oversize). Control: type sniffing, size and row caps, text-only cells, no macro execution, parse in a limited-memory worker.",
@@ -300,7 +300,7 @@ Later changes only via docs/prd/changes/CR-xxx.md in this pack
     rm = ["# Roadmap", "",
           "Dates stay TBD until each Must feature has its analysis and size. A phase closes at its gate, not on a date. The pack builds in step with the foundation: see docs/plans/README.md for the wave sequencing.", "",
           "## Phases and gates", "| Phase | Name | Gate | Gate criteria | Target date |", "|-------|------|------|---------------|-------------|",
-          "| P0 | Validate (no code, starts now) | Gate 0 | 8 to 10 owner conversations; 5 real sheets collected; definitions drafted; at least 3 companies agree to a paid pilot or defined paid trial; one repeated high-cost pain confirmed | TBD |",
+          "| P0 | Refine (runs in parallel, does not gate the build) | Gate 0 | Refinement inputs recorded: first states and stage lists confirmed, 5 real sheets tested against the importer, definitions confirmed with a design partner, pilot offer set. Changes land as data or change requests | TBD |",
           "| P1 | Demo and import | Gate 1 | Demo shown to 5 owners with the cold-viewer test passed; import of 3 real sheets with all row errors explained | TBD |",
           "| P2 | Control loop | Gate 2 | Pilot owners open the exceptions list and utility tracker weekly instead of their sheet; stage accuracy 95% or more on sampled jobs | TBD |",
           "| P3 | Material loop | Gate 3 | A pilot runs a live job through BOM, order, receipt and readiness with no parallel spreadsheet | TBD |",
@@ -322,14 +322,14 @@ def write_status(tasks, feats, ms, ms_of, force):
             print("STATUS.md shows progress; left alone (use --force to overwrite)")
             return
     st = ["# STATUS (updated 2026-11-04 by session 1)",
-          "Release target: first paid pilot (date TBD)   Current phase: P0 Validate   Overall: AMBER", "",
-          "AMBER because no owner has yet committed to a paid pilot (gate 0) and the foundation waves that the pack needs have not started.", "",
+          "Release target: first paid pilot (date TBD)   Current phase: P1 Demo and import (common must-haves)   Overall: GREEN", "",
+          "GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses.", "",
           "States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.",
           'RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.',
           'Done for a feature means every acceptance criterion passes on staging ("N of N pass"). Done for a milestone needs evidence.', "",
           "## Milestones", "| ID | Outcome the client can verify | Features | Date | State | RAG | Evidence |", "|----|-------------------------------|----------|------|-------|-----|----------|"]
     for mid, outcome, fl, demo in ms:
-        st.append("| %s | %s | %s | TBD | Not started | %s | - |" % (mid, outcome, ", ".join(fl), "AMBER" if mid == "M-01" else "GREEN"))
+        st.append("| %s | %s | %s | TBD | Not started | %s | - |" % (mid, outcome, ", ".join(fl), "GREEN"))
     st += ["", "## Features", "| ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |", "|----|------|----------|-----------|-------|-----------|-------|----|"]
     for f in feats.values():
         acc = "0 of %d pass" % len(f["acs"]) if f["acs"] else "-"
@@ -342,7 +342,7 @@ def write_status(tasks, feats, ms, ms_of, force):
         st.append("| %s | %s | %s %s | Not started | %s |" % (d["tno"], d["feature"], tid, d["title"], blocked))
     st += ["", "## Decisions needed from the client", "| ID | Decision | Needed by | Impact if late |", "|----|----------|-----------|----------------|"]
     impact = {"Q-01": "Stage templates cannot be written", "Q-02": "Definitions cannot be agreed", "Q-03": "Invoice records design blocked",
-              "Q-04": "Stock model unproven", "Q-05": "No offline site app", "Q-06": "Gate 0 cannot be judged", "Q-07": "Plan limits unset",
+              "Q-04": "Stock model unproven", "Q-05": "No offline site app", "Q-06": "First pilot offer unset", "Q-07": "Plan limits unset",
               "Q-08": "Tally scope unclear", "Q-09": "WhatsApp blocked", "Q-12": "Pilot start slips"}
     for i, q in enumerate(PJ.DECISIONS, 1):
         if q[4].startswith(("Decided", "Deferred")):
@@ -462,7 +462,7 @@ The pack uses only the foundation's public APIs, so it can start as soon as the 
 | C | Foundation wave 4 (identity, roles, workflow, approvals, SLA timers) | Roles and approval policies, stage tracker on workflow, approval queue, escalation, readiness gate overrides, site app sign-in | Wave 4 |
 | D | Foundation wave 5 (files, privacy desk, retention, erasure) | Evidence and document attachments, goods-receipt photos, handover pack, erase and export handlers, export everything | Wave 5 |
 
-Phase 0 (validate) needs no foundation and starts now: owner conversations, real sheets, definitions and the paid-pilot ask. It decides whether anything below ships.
+Refinement (Phase 0) runs in parallel and does not gate the build (decision 2026-11-05). The build starts on the common must-haves with default assumptions; owner conversations, real sheets, state stage lists and the pilot offer then tune data, thresholds and scope through change requests.
 
 ## Milestones and what unlocks them
 

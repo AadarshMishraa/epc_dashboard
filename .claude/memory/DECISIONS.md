@@ -129,3 +129,9 @@ Format per entry:
 - Context: the first gate described exports by checker type strings and missed constructors, statics, modifiers, readonly, call and index signatures, enums, namespaces, merged declarations, type-only changes and unexported referenced types; `export * as` wrote absolute paths.
 - Chosen: API Extractor's model without the dependency. Report = normalised .d.ts text per export plus its meanings; any text change is breaking unless it is a proven addition; forgotten exports and `any` fail; format stamp with an explicit override; merge-base comparison by package name. Before 1.0.0, additions need no bump (this is an unpublished workspace); breaks need minor.
 - Evidence: OBSERVED. 48 gate tests include a fixture for each review finding; 7 mutations turn tests red; the first run caught a real forgotten export (Version).
+
+## 2026-11-05: Phase 0 no longer gates the build
+- Decision: build the common must-haves now (foundation K0 onward, pack wave A as the foundation features land). Phase 0 (owner validation) becomes "Refine" and runs in parallel.
+- Human gates in the pack plan (E2-T02, E3-T01, E7-T02, E5-T04, E9-T03) now carry build defaults; E9-T06 still needs Q-09 and is outside the common must-haves.
+- Refinement changes data, thresholds or scope only, through change requests (CR-xxx). Rules read definitions and state stage lists from configuration, so refinement must not need code changes.
+- Risk accepted: no owner has committed to a paid pilot. Revisit scope at gate G2.

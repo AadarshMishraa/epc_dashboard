@@ -1,7 +1,7 @@
 # STATUS (updated 2026-11-04 by session 1)
-Release target: first paid pilot (date TBD)   Current phase: P0 Validate   Overall: AMBER
+Release target: first paid pilot (date TBD)   Current phase: P1 Demo and import (common must-haves)   Overall: GREEN
 
-AMBER because no owner has yet committed to a paid pilot (gate 0) and the foundation waves that the pack needs have not started.
+GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses.
 
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
@@ -10,7 +10,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 ## Milestones
 | ID | Outcome the client can verify | Features | Date | State | RAG | Evidence |
 |----|-------------------------------|----------|------|-------|-----|----------|
-| M-01 | A pitch demo opens on the owner home with sample data and shows exceptions, utility ageing, cash blocked and margin | F-05, F-01, F-02 | TBD | Not started | AMBER | - |
+| M-01 | A pitch demo opens on the owner home with sample data and shows exceptions, utility ageing, cash blocked and margin | F-05, F-01, F-02 | TBD | Not started | GREEN | - |
 | M-02 | An owner brings a project sheet in, fixes every row error and sees baselined projects | F-04, F-08, F-09, F-10, F-11, F-03 | TBD | Not started | GREEN | - |
 | M-03 | Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate | F-12, F-13, F-14, F-15, F-16, F-54, F-23, F-25 | TBD | Not started | GREEN | - |
 | M-04 | The owner opens one exceptions list and decides from it (pilot control loop) | F-18, F-19, F-20, F-21, F-22, F-24 | TBD | Not started | GREEN | - |
@@ -104,12 +104,12 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 ## Decisions needed from the client
 | ID | Decision | Needed by | Impact if late |
 |----|----------|-----------|----------------|
-| D-01 | Which one or two states and utilities do we configure first, and who confirms their stage lists? | before E2-T02 | Stage templates cannot be written |
-| D-02 | Who is the design partner owner and which 3 to 5 companies are the pilots? | before E3-T01 | Definitions cannot be agreed |
+| D-01 | Which one or two states and utilities do we configure first, and who confirms their stage lists? | at refinement | Stage templates cannot be written |
+| D-02 | Who is the design partner owner and which 3 to 5 companies are the pilots? | at refinement | Definitions cannot be agreed |
 | D-03 | Do we issue GST invoices in the pack, or record and sync invoices from Tally? | before E7-T02 | Invoice records design blocked |
 | D-04 | Do pilot companies hold warehouse stock, or buy project by project straight to site? | before E5-T04 | Stock model unproven |
 | D-05 | What may the site app keep on the phone while offline? | before E8-T01 | No offline site app |
-| D-06 | What is the pilot offer: price, length and what the owner gives in return? | before gate G1 | Gate 0 cannot be judged |
+| D-06 | What is the pilot offer: price, length and what the owner gives in return? | before the first pilot | First pilot offer unset |
 | D-07 | How are the pack and its modules packaged into plans and limits? | before foundation K3 tasks are used by the pack | Plan limits unset |
 | D-08 | Which accounting tool beyond Tally do the first 10 targets use? | before E9-T03 | Tally scope unclear |
 | D-09 | Which WhatsApp business provider, and who bears the per-message cost? | before E9-T06 | WhatsApp blocked |

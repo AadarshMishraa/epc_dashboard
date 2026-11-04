@@ -5,7 +5,7 @@ Dates stay TBD until each Must feature has its analysis and size. A phase closes
 ## Phases and gates
 | Phase | Name | Gate | Gate criteria | Target date |
 |-------|------|------|---------------|-------------|
-| P0 | Validate (no code, starts now) | Gate 0 | 8 to 10 owner conversations; 5 real sheets collected; definitions drafted; at least 3 companies agree to a paid pilot or defined paid trial; one repeated high-cost pain confirmed | TBD |
+| P0 | Refine (runs in parallel, does not gate the build) | Gate 0 | Refinement inputs recorded: first states and stage lists confirmed, 5 real sheets tested against the importer, definitions confirmed with a design partner, pilot offer set. Changes land as data or change requests | TBD |
 | P1 | Demo and import | Gate 1 | Demo shown to 5 owners with the cold-viewer test passed; import of 3 real sheets with all row errors explained | TBD |
 | P2 | Control loop | Gate 2 | Pilot owners open the exceptions list and utility tracker weekly instead of their sheet; stage accuracy 95% or more on sampled jobs | TBD |
 | P3 | Material loop | Gate 3 | A pilot runs a live job through BOM, order, receipt and readiness with no parallel spreadsheet | TBD |

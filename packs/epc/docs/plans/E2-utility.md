@@ -49,7 +49,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: stage lists, limits and document checklists for the two chosen states and the PM Surya Ghar flow, verified with the design partner
   - Tests: review by the design partner recorded in the PR; 0 code change to add a state
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-01 (first states and utilities). The design partner confirms the stage lists before merge.
+  - Human gate: Default now: Maharashtra (the state utility) plus one example state from public information, each marked unverified. Refinement (Q-01) confirms or replaces the stage lists; the change is data only.
 - [ ] **E2-T03** (T-025) Stage record (M)
   - Feature: F-13 | Milestone: M-03 | Pack wave: C | Level: 8 | Lane: epc-utility
   - Needs: E2-T01 (T-023)

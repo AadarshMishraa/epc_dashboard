@@ -57,7 +57,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: vouchers and bills as Tally-readable files; credentials never stored in the browser
   - Tests: file format fixtures; secret handling test; human gate on the Tally version
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-08 and confirm the Tally version and file format with the design partner's accountant.
+  - Human gate: Default now: Tally Prime file exchange (Q-08 lean). The file format is confirmed at refinement before the first live sync.
 - [ ] **E9-T04** (T-094) Tally import and reconcile (M)
   - Feature: F-56 | Milestone: M-07 | Pack wave: A | Level: 16 | Lane: epc-integrations
   - Needs: E9-T03 (T-093)
@@ -88,4 +88,4 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: provider adapter with per-contact opt-in, approved templates, opt-out honoured at once
   - Tests: opt-out test; template-only outside the window; secrets only through the secrets port; human gate on provider and cost
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-09 (provider and who pays per message) and confirm the customer's verified business number.
+  - Human gate: Needs the provider and cost decision (Q-09) before code; this task is not in the common must-haves.

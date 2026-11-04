@@ -46,7 +46,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: invoices entered or imported with Tally reference and tax split; unchangeable; corrections as credit-note records
   - Tests: edit refused; parts sum to total; unbilled-milestone exception at 7 days
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-03 (record and sync, or issue invoices) with a chartered accountant. Lean: record and sync.
+  - Human gate: Default now: record and sync (Q-03 lean). A chartered accountant confirms at refinement; issuing invoices would be a new Later feature.
 - [ ] **E7-T03** (T-080) Receipts (M)
   - Feature: F-47 | Milestone: M-06 | Pack wave: A | Level: 9 | Lane: epc-billing
   - Needs: E7-T02 (T-079)

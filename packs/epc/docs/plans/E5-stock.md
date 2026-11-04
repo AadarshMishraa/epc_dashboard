@@ -68,7 +68,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: append-only movements by item, warehouse, site and status; balances derived
   - Tests: no update or delete grant; balance equals the sum of movements in 10,000 random cases
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-  - Human gate: Decide Q-04 (warehouse stock or direct to site) from interviews; the ledger supports both locations.
+  - Human gate: Default now: both warehouse and site locations (Q-04 lean); refinement trims what is shown.
 - [ ] **E5-T05** (T-067) Reservations (M)
   - Feature: F-38 | Milestone: M-05 | Pack wave: A | Level: 15 | Lane: epc-stock
   - Needs: E5-T04 (T-066)

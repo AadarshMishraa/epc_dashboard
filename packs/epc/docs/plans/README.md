@@ -20,7 +20,7 @@ The pack uses only the foundation's public APIs, so it can start as soon as the 
 | C | Foundation wave 4 (identity, roles, workflow, approvals, SLA timers) | Roles and approval policies, stage tracker on workflow, approval queue, escalation, readiness gate overrides, site app sign-in | Wave 4 |
 | D | Foundation wave 5 (files, privacy desk, retention, erasure) | Evidence and document attachments, goods-receipt photos, handover pack, erase and export handlers, export everything | Wave 5 |
 
-Phase 0 (validate) needs no foundation and starts now: owner conversations, real sheets, definitions and the paid-pilot ask. It decides whether anything below ships.
+Refinement (Phase 0) runs in parallel and does not gate the build (decision 2026-11-05). The build starts on the common must-haves with default assumptions; owner conversations, real sheets, state stage lists and the pilot offer then tune data, thresholds and scope through change requests.
 
 ## Milestones and what unlocks them
 
