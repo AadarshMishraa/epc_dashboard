@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k7a-audit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Audit trail: append-only rows written in the same transaction, tamper-evident hash chain, sensitive-read logging and audit query.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

@@ -2,3 +2,10 @@
 .claude/gx/state/
 
 __pycache__/
+
+# Workspace build output and tool caches
+node_modules/
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo

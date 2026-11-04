@@ -1,0 +1,20 @@
+# Workspace manifest (shared file: change it in small, separate pull requests).
+# Package list must match packages/register.json; `pnpm check:imports` fails otherwise.
+packages:
+  - packages/*
+
+# Supply chain (docs/guidelines/security-guidelines.md 4.10).
+# Refuse any version published less than 7 days ago; a compromised release is usually
+# detected and pulled inside that window. An urgent security fix can be let through
+# by naming the package in minimumReleaseAgeExclude, with the reason in the pull request.
+minimumReleaseAge: 10080
+# Exact versions only when adding dependencies.
+savePrefix: ''
+# Fail on an engine mismatch instead of warning (Node 24 LTS per ADR-0006).
+engineStrict: true
+# Fail on peer conflicts instead of silently installing a mismatched peer.
+strictPeerDependencies: true
+# Install scripts of dependencies are blocked; a package that needs one must be
+# approved by name here, and the install fails until it is.
+strictDepBuilds: true
+onlyBuiltDependencies: []

@@ -1,0 +1,25 @@
+{
+  "name": "@gx/k5-workflow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workflow engine: definitions and instances, guards, stage requirements, actions, SLA timers and approvals as data.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@gx/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gx/core": "workspace:*"
+  }
+}

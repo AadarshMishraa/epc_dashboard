@@ -62,7 +62,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Tests: review only
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
   - Human gate: Done: ADR-0006 accepted 2026-11-04. Before K0-T02, create the Supabase and Vercel projects in Mumbai and record the Postgres major version in the K0 brief.
-- [ ] **K0-T02** (T-002) Workspace skeleton: one package per module with public-API file, register entry, README, changelog (M)
+- [x] **K0-T02** (T-002) Workspace skeleton: one package per module with public-API file, register entry, README, changelog (M)
   - Feature: F-01 | Milestone: M-01 | Level: 1 | Lane: core
   - Needs: K0-T01 (T-001)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer

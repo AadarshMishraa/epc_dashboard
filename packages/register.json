@@ -1,0 +1,114 @@
+{
+  "description": "Module register: every workspace package in packages/, its plan brief and the workspace packages it may depend on. Shared file: change it in small, separate pull requests. Checked by `pnpm check:imports`.",
+  "packages": [
+    {
+      "id": "core",
+      "package": "@gx/core",
+      "path": "packages/core",
+      "kind": "module",
+      "plan": "K0",
+      "purpose": "Shared contracts: context, ids, errors, Result, Clock and the core ports with in-memory fakes. No I/O and no dependencies.",
+      "depends": [],
+      "isolated": true
+    },
+    {
+      "id": "testkit",
+      "package": "@gx/testkit",
+      "path": "packages/testkit",
+      "kind": "support",
+      "plan": "K0",
+      "purpose": "Test kit: tenant matrix runner, adapter contract harness, frozen clock, fixtures and pool-leak helper.",
+      "depends": ["core"]
+    },
+    {
+      "id": "toolchain",
+      "package": "@gx/toolchain",
+      "path": "packages/toolchain",
+      "kind": "support",
+      "plan": "K0",
+      "purpose": "Checks that keep the foundation honest and extractable: import graph, manifest validator, boundary lint and public-API diff.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k1-tenancy",
+      "package": "@gx/k1-tenancy",
+      "path": "packages/k1-tenancy",
+      "kind": "module",
+      "plan": "K1",
+      "purpose": "Tenant isolation that is automatic and provable: lifecycle, fail-closed context, row-level security, resolution and organisation units.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k2-identity",
+      "package": "@gx/k2-identity",
+      "path": "packages/k2-identity",
+      "kind": "module",
+      "plan": "K2",
+      "purpose": "Identity and access: credentials, sessions, MFA, roles and permissions as data, service accounts and OAuth for AI clients.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k3-entitlements",
+      "package": "@gx/k3-entitlements",
+      "path": "packages/k3-entitlements",
+      "kind": "module",
+      "plan": "K3",
+      "purpose": "Entitlements and module registry: installed modules, plans, limits, usage metering and feature flags.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k4-config",
+      "package": "@gx/k4-config",
+      "path": "packages/k4-config",
+      "kind": "module",
+      "plan": "K4",
+      "purpose": "Configuration and custom fields: scoped config with versions, labels, lookup lists, typed fields, the condition language and bundles.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k5-workflow",
+      "package": "@gx/k5-workflow",
+      "path": "packages/k5-workflow",
+      "kind": "module",
+      "plan": "K5",
+      "purpose": "Workflow engine: definitions and instances, guards, stage requirements, actions, SLA timers and approvals as data.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k6-events",
+      "package": "@gx/k6-events",
+      "path": "packages/k6-events",
+      "kind": "module",
+      "plan": "K6",
+      "purpose": "Event bus and jobs: transactional outbox, dispatch with retries and dead letters, job queue with tenant fairness and a scheduler.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k7a-audit",
+      "package": "@gx/k7a-audit",
+      "path": "packages/k7a-audit",
+      "kind": "module",
+      "plan": "K7",
+      "purpose": "Audit trail: append-only rows written in the same transaction, tamper-evident hash chain, sensitive-read logging and audit query.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k7b-privacy",
+      "package": "@gx/k7b-privacy",
+      "path": "packages/k7b-privacy",
+      "kind": "module",
+      "plan": "K7",
+      "purpose": "Privacy desk: notices and consent, data requests with clocks, retention, erasure and export, incident log and breach clocks.",
+      "depends": ["core"]
+    },
+    {
+      "id": "k8-files",
+      "package": "@gx/k8-files",
+      "path": "packages/k8-files",
+      "kind": "module",
+      "plan": "K8",
+      "purpose": "Files and vault: blob storage port, file model, secure upload and download, document types with expiry, scanning and quotas.",
+      "depends": ["core"]
+    }
+  ]
+}

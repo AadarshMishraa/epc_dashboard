@@ -1,7 +1,7 @@
-# STATUS (updated 2026-11-04 by session 1)
+# STATUS (updated 2026-11-04 by session 2)
 Release target: foundation v1.0 (date TBD)   Current phase: P1 Foundation   Overall: GREEN
 
-GREEN: ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
+GREEN: ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. K0-T02 done 2026-11-04 (gx-staff-reviewer approved after fixes; 4 Low and Medium findings deferred to K0-T08, see .claude/memory/DECISIONS.md). F-01-AC2 counts the 10 `kind: module` packages; testkit and toolchain are support packages in the same lane. Open gate: Postgres major version and Mumbai projects (owner Aadarsh) before K0-T05, K0-T10 and K0-T11. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
 
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
@@ -22,7 +22,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 ## Features
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
 |----|------|----------|-----------|-------|-----------|-------|----|
-| F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 0 of 3 pass | - | - |
+| F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 1 of 3 pass (AC2, local; no staging yet) | toolchain import-graph suite, `pnpm verify` | - |
 | F-02 | Core contracts, ports and redacted logging | Must | M-01 | Not started | 0 of 3 pass | - | - |
 | F-03 | Migration framework and test kit | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-04 | Manifest, boundary and API gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
@@ -94,16 +94,16 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | ID | Feature | Task | State | Blocked by |
 |----|---------|------|-------|-----------|
 | T-001 | F-01 | K0-T01 Decide stack and repo layout (ADR-0006) | Done | - |
-| T-002 | F-01 | K0-T02 Workspace skeleton | Not started | - |
+| T-002 | F-01 | K0-T02 Workspace skeleton | Done | - |
 | T-003 | F-02 | K0-T03 Core types | Not started | T-002 |
 | T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
-| T-005 | F-03 | K0-T05 Migration framework | Not started | T-002 |
+| T-005 | F-03 | K0-T05 Migration framework | Not started | Postgres major version not recorded (ADR-0006 gate; owner Aadarsh; fix date TBD) |
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
 | T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | Not started | T-002 |
 | T-008 | F-04 | K0-T08 Boundary lint | Not started | T-002, T-007 |
 | T-009 | F-04 | K0-T09 Public-API diff and semver gate | Not started | T-002 |
 | T-010 | F-05 | K0-T10 CI pipeline | Not started | T-006, T-008, T-009 |
-| T-011 | F-01 | K0-T11 One-command local environment | Not started | - |
+| T-011 | F-01 | K0-T11 One-command local environment | Not started | Postgres major version not recorded (ADR-0006 gate; owner Aadarsh; fix date TBD) |
 | T-012 | F-06 | K0-T12 Sandbox host app | Not started | T-002, T-014 |
 | T-013 | F-06 | K0-T13 Observability baseline | Not started | T-004, T-012 |
 | T-014 | F-02 | K0-T14 Core ports with in-memory fakes | Not started | T-003 |

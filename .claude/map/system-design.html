@@ -8,9 +8,26 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px}h1{font-size:22px;margin:0
 p{color:var(--muted);margin:0 0 16px}nav a{margin-right:16px;color:inherit}
 section{border-top:1px solid var(--line);padding:16px 0;overflow-x:auto}h2{font-size:17px}
 </style></head><body><main>
-<h1>epc_dashboard: system design (generated)</h1><p>generated 2026-11-04 11:44 · git no-git · regenerate with <code>codemap.py build</code></p>
+<h1>epc_dashboard: system design (generated)</h1><p>generated 2026-11-04 18:11 · git cc265fa · regenerate with <code>codemap.py build</code></p>
 <nav><a href="#m">Modules</a><a href="#f">Request flow</a><a href="#e">Data model</a></nav>
 <section id="m"><h2>Module dependencies</h2><pre class="mermaid">flowchart LR
+  _root_["(root)<br/>2 files"]
+  design["design<br/>1 files"]
+  design_tools["design/tools<br/>2 files"]
+  packages_core["packages/core<br/>4 files"]
+  packages_k1_tenancy["packages/k1-tenancy<br/>2 files"]
+  packages_k2_identity["packages/k2-identity<br/>2 files"]
+  packages_k3_entitlements["packages/k3-entitlements<br/>2 files"]
+  packages_k4_config["packages/k4-config<br/>2 files"]
+  packages_k5_workflow["packages/k5-workflow<br/>2 files"]
+  packages_k6_events["packages/k6-events<br/>2 files"]
+  packages_k7a_audit["packages/k7a-audit<br/>2 files"]
+  packages_k7b_privacy["packages/k7b-privacy<br/>2 files"]
+  packages_k8_files["packages/k8-files<br/>2 files"]
+  packages_testkit["packages/testkit<br/>2 files"]
+  packages_toolchain["packages/toolchain<br/>8 files"]
+  tools_plangen["tools/plangen<br/>9 files"]
+  packages_toolchain --> packages_core
 </pre></section>
 <section id="f"><h2>Request flow: code modules → server functions → tables</h2><pre class="mermaid">flowchart LR
   subgraph Code
