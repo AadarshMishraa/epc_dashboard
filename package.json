@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:imports": "node --conditions=@gx/source packages/toolchain/src/bin/check-imports.ts",
-    "verify": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run check:imports && pnpm run migrate check && pnpm run test"
+    "check:manifests": "node --conditions=@gx/source packages/toolchain/src/bin/check-manifests.ts",
+    "verify": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run check:imports && pnpm run check:manifests && pnpm run migrate check && pnpm run test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

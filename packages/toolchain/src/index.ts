@@ -16,6 +16,15 @@ export {
 } from './import-graph.ts';
 export { findImports, type ImportReference } from './imports.ts';
 export {
+  manifestSchema,
+  validateManifests,
+  type Layer,
+  type Manifest,
+  type ManifestInput,
+  type ManifestProblem,
+} from './manifest.ts';
+export { MANIFEST_FILE, checkManifests, type ManifestCheckResult } from './manifest-check.ts';
+export {
   parseRegister,
   type Register,
   type RegisterEntry,

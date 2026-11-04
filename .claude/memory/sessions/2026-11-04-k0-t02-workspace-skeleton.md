@@ -38,3 +38,9 @@ Root configs, README.md, pnpm-lock.yaml, packages/**, docs/architecture/system-d
 - Verified: `pnpm verify` → 175 tests, 0 import violations; 9 core mutations each turn a test red; a config mutation (Data API back on) turns a test red.
 - Not verified: hosted Supabase and Vercel (not created); local `supabase start` (no Docker daemon in the container); research sources (network policy blocks the hosts).
 - Next: close the K0-T03 review; then K0-T07 manifest validator and K0-T09 API diff; then S3 tasks K0-T14 and K0-T04 with threat models.
+
+## Continued: K0-T05 and K0-T07
+- Done: @gx/migrate (K0-T05). Its review found that expand migrations could disable RLS, alter policies or hide work in DO blocks; rebuilt as an allow-list with a security-review directive, plus runner fixes (timeouts, session pinning, reset, dirty state, grandfathering, versioned ledger). K0-T07 manifest validator with 10 module manifests.
+- Verified: verify → 321 unit tests; test:db → 23 of 23 on Postgres 16.15; mutations turn tests red, except one equivalent mutation, covered by a fault-injection test.
+- Not verified: Postgres 17 (CI, K0-T10), transaction-pooler refusal (no pooler locally), and the K0-T05 re-review and K0-T07 review (in progress).
+- Next: close both reviews; K0-T09 API diff; K0-T14 and K0-T04 (S3, threat model first); K0-T06 test kit.

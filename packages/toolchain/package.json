@@ -13,7 +13,8 @@
     }
   },
   "bin": {
-    "gx-check-imports": "./dist/bin/check-imports.js"
+    "gx-check-imports": "./dist/bin/check-imports.js",
+    "gx-check-manifests": "./dist/bin/check-manifests.js"
   },
   "files": [
     "dist"

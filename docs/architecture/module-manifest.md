@@ -1,6 +1,6 @@
 # Module manifest (contract)
 
-Status: proposed, implements ADR-0001, 0004, 0005. Every module ships one manifest. The kernel reads manifests to wire permissions, events, AI tools, settings screens and entitlements. Adding a module must never mean editing the kernel.
+Status: implemented by K0-T07 (2026-11-04); implements ADR-0001, 0004, 0005. Every module ships one manifest, as `manifest.json` in its package. JSON rather than the YAML sketched below: no parser dependency, the same validation tools as `packages/register.json`. Validate with `pnpm check:manifests`; the schema is `manifestSchema` in `@gx/toolchain`. Fields added in the implementation: `table_prefix`, `extension_points`, `errors` (module error codes; colliding with core or another module fails), and `tools[].permission`. The kernel reads manifests to wire permissions, events, AI tools, settings screens and entitlements. Adding a module must never mean editing the kernel.
 
 ```yaml
 id: billing                  # S7 in module-catalog.md; lowercase, unique

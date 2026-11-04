@@ -911,7 +911,7 @@
     "packages/migrate/src/index.ts"
    ],
    "env": [],
-   "hash": "4c1cfbbc591c",
+   "hash": "f37a21062e3e",
    "imports": [
     "node:util",
     "../index.ts"
@@ -919,7 +919,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 99,
+   "loc": 133,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -963,7 +963,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "9f6488c6938b",
+   "hash": "2064750b2098",
    "imports": [
     "@gx/core",
     "./migrations.ts",
@@ -974,7 +974,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 36,
+   "loc": 41,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -992,7 +992,7 @@
     "packages/migrate/src/migrations.ts"
    ],
    "env": [],
-   "hash": "8575eb619b9e",
+   "hash": "ebf1a1daf754",
    "imports": [
     "node:fs",
     "node:os",
@@ -1003,7 +1003,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 169,
+   "loc": 214,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1019,7 +1019,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "032675d26053",
+   "hash": "c6a365b92b77",
    "imports": [
     "node:crypto",
     "node:fs",
@@ -1029,7 +1029,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 249,
+   "loc": 241,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1054,7 +1054,7 @@
     "packages/migrate/src/runner.ts"
    ],
    "env": [],
-   "hash": "c861c7941837",
+   "hash": "d2916ef3465b",
    "imports": [
     "node:child_process",
     "node:crypto",
@@ -1065,12 +1065,13 @@
     "pg",
     "vitest",
     "./migrations.ts",
-    "./runner.ts"
+    "./runner.ts",
+    "node:crypto"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 349,
+   "loc": 495,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1086,7 +1087,7 @@
     "packages/migrate/src/migrations.ts"
    ],
    "env": [],
-   "hash": "d7da7257f4f5",
+   "hash": "b119a9a488f1",
    "imports": [
     "@gx/core",
     "pg",
@@ -1095,18 +1096,20 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 211,
+   "loc": 394,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "MIGRATION_LOCK_KEY",
     "LEDGER_TABLE",
+    "LEDGER_VERSION",
     "MigrateOptions",
     "AppliedMigration",
     "MigrateReport",
     "MigrateFailure",
-    "migrate"
+    "migrate",
+    "forgetStarted"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -1146,7 +1149,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "7c9741a58554",
+   "hash": "ab0cda1d92b0",
    "imports": [
     "vitest",
     "./sql-scan.ts"
@@ -1154,7 +1157,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 108,
+   "loc": 201,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -1168,21 +1171,24 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "af3b68ecdf76",
+   "hash": "60364336ed1a",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 156,
+   "loc": 287,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
    "symbols": [
-    "StatementKind",
+    "Severity",
     "Finding",
     "blankCommentsAndStrings",
-    "findRiskyStatements",
-    "countStatements"
+    "Statement",
+    "splitStatements",
+    "countStatements",
+    "KNOWN_ROLES",
+    "findRiskyStatements"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -1252,6 +1258,30 @@
    "kind": [],
    "lang": "ts",
    "loc": 37,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/bin/check-manifests.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/index.ts"
+   ],
+   "env": [],
+   "hash": "092dfa158271",
+   "imports": [
+    "node:util",
+    "../index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 35,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -1457,25 +1487,122 @@
    "deps": [
     "packages/toolchain/src/import-graph.ts",
     "packages/toolchain/src/imports.ts",
+    "packages/toolchain/src/manifest-check.ts",
+    "packages/toolchain/src/manifest.ts",
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "c9503a47ee67",
+   "hash": "0de08f630638",
    "imports": [
     "@gx/core",
     "./import-graph.ts",
     "./imports.ts",
+    "./manifest.ts",
+    "./manifest-check.ts",
     "./register.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 27,
+   "loc": 36,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/manifest-check.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/import-graph.ts",
+    "packages/toolchain/src/manifest.ts",
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "9770f8fa439c",
+   "imports": [
+    "node:fs",
+    "node:path",
+    "./manifest.ts",
+    "./register.ts",
+    "./import-graph.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 56,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "MANIFEST_FILE",
+    "ManifestCheckResult",
+    "checkManifests"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/manifest.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/manifest-check.ts",
+    "packages/toolchain/src/manifest.ts"
+   ],
+   "env": [],
+   "hash": "6b6152078b5a",
+   "imports": [
+    "node:child_process",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url",
+    "vitest",
+    "./manifest-check.ts",
+    "./manifest.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 285,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/manifest.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "c5a02b4313b5",
+   "imports": [
+    "@gx/core",
+    "zod"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 208,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "Layer",
+    "manifestSchema",
+    "Manifest",
+    "ManifestProblem",
+    "ManifestInput",
+    "validateManifests"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -1787,8 +1914,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-04 18:51",
- "head": "b3c5a34",
+ "generated": "2026-11-04 19:06",
+ "head": "8d5955a",
  "root": "epc_dashboard",
  "version": 1
 }
