@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# STUB. Copy to scripts/watch.sh and implement. It fails closed on purpose.
+#   usage: watch.sh <env> <minutes>
+# Post-deploy watch: for <minutes>, poll your monitoring and exit non-zero if a guardrail is breached.
+# A breach triggers the same auto-revert as a failed acceptance test. Suggested guardrails (compare with the
+# 30 minutes BEFORE the deploy, not with a fixed number):
+#   - 5xx rate or unhandled-exception rate more than doubles, or exceeds an absolute ceiling
+#   - p95 latency of the hot endpoints up more than 50%
+#   - a key business event drops (bookings created, payments confirmed, logins) by more than 30%
+#   - queue depth or job failure rate climbing, webhook lag growing
+# Sources: your APM/log API, Supabase logs, Sentry issue count for the new release, a SQL count of business events.
+set -euo pipefail
+echo "scripts/watch.sh is not implemented for ${1:-?}" >&2
+exit 1

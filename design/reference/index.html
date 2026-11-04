@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GX UI reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-waffle" viewBox="0 0 24 24"><circle cx="5" cy="5" r="1.4"/><circle cx="12" cy="5" r="1.4"/><circle cx="19" cy="5" r="1.4"/><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/><circle cx="5" cy="19" r="1.4"/><circle cx="12" cy="19" r="1.4"/><circle cx="19" cy="19" r="1.4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3.3 7.5L12 12l8.7-4.5M12 22V12"/></symbol>
+    <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M6 4h12M6 9h12M9 4c6 0 6 9 0 9H6l8 7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v3a3 3 0 0 0 3 3h6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  </defs>
+</svg>
+
+<div class="ref-bar">
+  <strong>GX UI reference</strong><span>Sample data. Solar EPC pack shown on the vertical-free shell.</span>
+  <span class="gx-spacer"></span>
+  <div class="gx-btn-group" role="tablist" aria-label="Reference view">
+    <button class="gx-btn gx-btn--secondary gx-btn--sm" role="tab" data-view-btn="dashboard" aria-selected="true">Dashboard</button>
+    <button class="gx-btn gx-btn--secondary gx-btn--sm" role="tab" data-view-btn="components" aria-selected="false">Components</button>
+  </div>
+</div>
+
+<div class="ref-frame">
+<div class="gx-app" data-rail="expanded">
+
+  <!-- ============ global header ============ -->
+  <header class="gx-header">
+    <div class="gx-brand">
+      <button class="gx-btn gx-btn--chrome gx-btn--icon" data-action="rail" aria-label="Toggle navigation" aria-expanded="true"><svg class="gx-i"><use href="#i-panel"/></svg></button>
+      <span class="gx-brand-mark" aria-hidden="true">g</span>
+      <span class="gx-brand-name">gx</span><span class="gx-brand-app">Solar EPC</span>
+    </div>
+    <div class="gx-search" role="search">
+      <svg class="gx-i"><use href="#i-search"/></svg>
+      <input type="search" placeholder="Search leads, projects, invoices, people" aria-label="Global search">
+      <span class="gx-kbd" aria-hidden="true">Ctrl K</span>
+    </div>
+    <div class="gx-header-actions">
+      <div class="gx-menu-wrap">
+        <button class="gx-btn gx-btn--chrome gx-btn--icon" data-menu-for="m-quick" aria-haspopup="menu" aria-expanded="false" aria-label="Quick create"><svg class="gx-i"><use href="#i-plus"/></svg></button>
+        <div class="gx-menu gx-menu--end" id="m-quick" role="menu" aria-label="Quick create">
+          <div class="gx-menu-label">Create</div>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-target"/></svg>Lead<kbd>L</kbd></button>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-quote"/></svg>Quote<kbd>Q</kbd></button>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-briefcase"/></svg>Project</button>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-rupee"/></svg>Invoice</button>
+          <div class="gx-menu-sep"></div>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-map"/></svg>Site survey</button>
+        </div>
+      </div>
+      <button class="gx-btn gx-btn--chrome gx-btn--sm" aria-label="AI assistant"><svg class="gx-i"><use href="#i-sparkle"/></svg>Assistant</button>
+      <span class="gx-header-sep"></span>
+      <button class="gx-btn gx-btn--chrome gx-btn--icon" aria-label="Notifications, 4 unread" style="position:relative"><svg class="gx-i"><use href="#i-bell"/></svg><span class="gx-count" style="position:absolute;top:0;right:0;min-width:14px;height:14px;font-size:10px;padding:0 3px">4</span></button>
+      <button class="gx-btn gx-btn--chrome gx-btn--icon" aria-label="Help"><svg class="gx-i"><use href="#i-help"/></svg></button>
+      <button class="gx-btn gx-btn--chrome gx-btn--icon" data-action="theme" aria-pressed="false" aria-label="Switch to dark theme"><svg class="gx-i"><use href="#i-moon"/></svg></button>
+      <div class="gx-menu-wrap">
+        <button class="gx-btn gx-btn--chrome gx-btn--sm" data-menu-for="m-user" aria-haspopup="menu" aria-expanded="false"><span class="gx-avatar" aria-hidden="true">RS</span>Rohan S.<svg class="gx-i"><use href="#i-chev"/></svg></button>
+        <div class="gx-menu gx-menu--end" id="m-user" role="menu" aria-label="Account">
+          <div class="gx-menu-label">Workspace</div>
+          <button class="gx-menu-item" role="menuitemradio" aria-checked="true"><svg class="gx-i"><use href="#i-check"/></svg>Sunrise EPC Pvt Ltd</button>
+          <button class="gx-menu-item" role="menuitemradio" aria-checked="false"><svg class="gx-i" style="visibility:hidden"><use href="#i-check"/></svg>Sunrise Distribution</button>
+          <div class="gx-menu-sep"></div>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-users"/></svg>Profile and preferences</button>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-shield"/></svg>Security and sessions</button>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-link"/></svg>Connected AI clients</button>
+          <div class="gx-menu-sep"></div>
+          <button class="gx-menu-item gx-menu-item--danger" role="menuitem"><svg class="gx-i"><use href="#i-x"/></svg>Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ navigation rail ============ -->
+  <nav class="gx-rail" aria-label="Primary">
+    <div class="gx-rail-label">Workspace</div>
+    <a class="gx-rail-item" href="#" aria-current="page"><svg class="gx-i"><use href="#i-home"/></svg><span>Home</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-inbox"/></svg><span>Inbox</span><span class="gx-count gx-count--quiet">3</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-tasks"/></svg><span>My tasks</span></a>
+    <div class="gx-rail-label">Sales</div>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-target"/></svg><span>Leads</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-quote"/></svg><span>Quotes</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-users"/></svg><span>Customers</span></a>
+    <div class="gx-rail-label">Delivery</div>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-briefcase"/></svg><span>Projects</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-map"/></svg><span>Site surveys</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-box"/></svg><span>Inventory</span></a>
+    <div class="gx-rail-label">Finance</div>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-rupee"/></svg><span>Invoices</span><span class="gx-count">6</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-download"/></svg><span>Payments</span></a>
+    <div class="gx-rail-label">Pinned views</div>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-filter"/></svg><span>Delayed projects</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-filter"/></svg><span>Overdue invoices</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-filter"/></svg><span>Surveys this week</span></a>
+    <div class="gx-rail-label">Platform</div>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-chart"/></svg><span>Reports</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-flow"/></svg><span>Automations</span></a>
+    <a class="gx-rail-item" href="#"><svg class="gx-i"><use href="#i-shield"/></svg><span>Admin</span></a>
+    <div class="gx-rail-foot"><b>Sunrise EPC Pvt Ltd</b><span>Data stored in India</span><a href="#"><svg class="gx-i" style="width:14px;height:14px"><use href="#i-sparkle"/></svg>2 AI clients connected</a></div>
+  </nav>
+
+  <!-- ============ main ============ -->
+  <main class="gx-main">
+    <!-- ================= DASHBOARD VIEW ================= -->
+    <div data-view="dashboard" style="display:contents">
+    <div class="gx-tabbar" role="tablist" aria-label="Home sections">
+      <button class="gx-tab" role="tab" aria-selected="true">Overview</button>
+      <button class="gx-tab" role="tab" aria-selected="false">Sales</button>
+      <button class="gx-tab" role="tab" aria-selected="false">Delivery</button>
+      <button class="gx-tab" role="tab" aria-selected="false">Finance</button>
+      <button class="gx-tab" role="tab" aria-selected="false">Team</button>
+      <div class="gx-menu-wrap">
+        <button class="gx-tab" data-menu-for="m-more" aria-haspopup="menu" aria-expanded="false">More<svg class="gx-i"><use href="#i-chev"/></svg></button>
+        <div class="gx-menu" id="m-more" role="menu" aria-label="More views">
+          <button class="gx-menu-item" role="menuitem">Compliance</button>
+          <button class="gx-menu-item" role="menuitem">Subsidy tracker</button>
+          <div class="gx-menu-sep"></div>
+          <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-plus"/></svg>New view</button>
+        </div>
+      </div>
+    </div>
+
+      <div class="gx-pagehead">
+        <div>
+          <div class="gx-crumbs">Home</div>
+          <h1>Owner dashboard</h1>
+        </div>
+        <span class="gx-pagemeta">Updated 2 min ago</span>
+        <span class="gx-spacer"></span>
+        <div class="gx-menu-wrap">
+          <button class="gx-btn gx-btn--secondary" data-menu-for="m-range" aria-haspopup="menu" aria-expanded="false"><svg class="gx-i"><use href="#i-calendar"/></svg><span class="gx-menu-value">Last 30 days</span><svg class="gx-i"><use href="#i-chev"/></svg></button>
+          <div class="gx-menu gx-menu--end" id="m-range" role="menu" data-menu-select aria-label="Date range">
+            <button class="gx-menu-item" role="menuitemradio" aria-checked="false">Today</button>
+            <button class="gx-menu-item" role="menuitemradio" aria-checked="false">Last 7 days</button>
+            <button class="gx-menu-item" role="menuitemradio" aria-checked="true">Last 30 days</button>
+            <button class="gx-menu-item" role="menuitemradio" aria-checked="false">This quarter</button>
+            <button class="gx-menu-item" role="menuitemradio" aria-checked="false">Financial year</button>
+            <div class="gx-menu-sep"></div>
+            <button class="gx-menu-item" role="menuitem">Custom range</button>
+          </div>
+        </div>
+        <button class="gx-btn gx-btn--ghost gx-btn--icon" aria-label="Refresh"><svg class="gx-i"><use href="#i-refresh"/></svg></button>
+        <button class="gx-btn gx-btn--secondary"><svg class="gx-i"><use href="#i-download"/></svg>Export</button>
+        <div class="gx-menu-wrap">
+          <div class="gx-split">
+            <button class="gx-btn gx-btn--primary"><svg class="gx-i"><use href="#i-plus"/></svg>New quote</button>
+            <button class="gx-btn gx-btn--primary" data-menu-for="m-new" aria-haspopup="menu" aria-expanded="false" aria-label="More create options"><svg class="gx-i"><use href="#i-chev"/></svg></button>
+          </div>
+          <div class="gx-menu gx-menu--end" id="m-new" role="menu" aria-label="Create">
+            <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-target"/></svg>New lead</button>
+            <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-briefcase"/></svg>New project</button>
+            <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-rupee"/></svg>New invoice</button>
+            <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-map"/></svg>Schedule site survey</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gx-content">
+        <!-- KPI strip -->
+        <section class="gx-grid" aria-label="Key figures">
+          <div class="gx-kpi gx-span-2">
+            <span class="gx-kpi-label">Open pipeline</span>
+            <span class="gx-kpi-value">₹4.82 Cr</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--chart-1)" stroke-width="1.6" points="0,26 10,22 20,24 30,16 40,18 50,10 60,12 72,4"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--success"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-up"/></svg>8.4%</span>vs prior</span>
+          </div>
+          <div class="gx-kpi gx-span-2">
+            <span class="gx-kpi-label">Quotes awaiting reply</span>
+            <span class="gx-kpi-value">23</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--chart-1)" stroke-width="1.6" points="0,10 10,14 20,12 30,18 40,16 50,22 60,20 72,24"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--warning">5 expire in 3d</span></span>
+          </div>
+          <div class="gx-kpi gx-span-2">
+            <span class="gx-kpi-label">Projects in execution</span>
+            <span class="gx-kpi-value">17</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--chart-1)" stroke-width="1.6" points="0,20 10,18 20,18 30,14 40,16 50,12 60,14 72,12"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--danger">3 delayed</span></span>
+          </div>
+          <div class="gx-kpi gx-kpi--key gx-span-2">
+            <span class="gx-kpi-label">Collections due, 30 days</span>
+            <span class="gx-kpi-value">₹62.4 L</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="1.8" points="0,24 10,22 20,18 30,20 40,12 50,14 60,8 72,6"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--accent">₹18.1 L overdue</span></span>
+          </div>
+          <div class="gx-kpi gx-span-2">
+            <span class="gx-kpi-label">Installed this month</span>
+            <span class="gx-kpi-value">412 kW</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--chart-1)" stroke-width="1.6" points="0,26 10,24 20,20 30,22 40,14 50,16 60,10 72,8"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--success"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-up"/></svg>12%</span>vs last mo</span>
+          </div>
+          <div class="gx-kpi gx-span-2">
+            <span class="gx-kpi-label">Quote to win, median</span>
+            <span class="gx-kpi-value">21 days</span>
+            <svg class="gx-kpi-spark" viewBox="0 0 72 32" aria-hidden="true"><polyline fill="none" stroke="var(--chart-1)" stroke-width="1.6" points="0,8 10,10 20,8 30,14 40,12 50,16 60,14 72,18"/></svg>
+            <span class="gx-kpi-delta"><span class="gx-badge gx-badge--success"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-down"/></svg>3 days</span>faster</span>
+          </div>
+        </section>
+
+        <!-- row 2: pipeline, revenue, attention -->
+        <section class="gx-grid" aria-label="Pipeline and revenue">
+          <article class="gx-card gx-span-5">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Pipeline by stage</h2><span class="gx-card-sub">value, ₹ lakh</span><span class="gx-spacer"></span>
+              <button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Pipeline options"><svg class="gx-i"><use href="#i-more"/></svg></button></header>
+            <div class="gx-card-body">
+              <div class="pipe">
+                <div class="pipe-col"><span class="pipe-val">182</span><svg preserveAspectRatio="none" aria-hidden="true"><rect x="12%" y="0%" width="76%" height="100%" rx="2" fill="var(--chart-3)"/></svg><span class="pipe-lab">Lead<br>64</span></div>
+                <div class="pipe-col"><span class="pipe-val">141</span><svg preserveAspectRatio="none" aria-hidden="true"><rect x="12%" y="22%" width="76%" height="78%" rx="2" fill="var(--chart-2)"/></svg><span class="pipe-lab">Survey<br>41</span></div>
+                <div class="pipe-col"><span class="pipe-val">118</span><svg preserveAspectRatio="none" aria-hidden="true"><rect x="12%" y="35%" width="76%" height="65%" rx="2" fill="var(--accent)"/></svg><span class="pipe-lab"><b style="color:var(--text)">Quote</b><br>33</span></div>
+                <div class="pipe-col"><span class="pipe-val">64</span><svg preserveAspectRatio="none" aria-hidden="true"><rect x="12%" y="65%" width="76%" height="35%" rx="2" fill="var(--chart-1)"/></svg><span class="pipe-lab">Negotiation<br>19</span></div>
+                <div class="pipe-col"><span class="pipe-val">38</span><svg preserveAspectRatio="none" aria-hidden="true"><rect x="12%" y="79%" width="76%" height="21%" rx="2" fill="var(--chart-4)"/></svg><span class="pipe-lab">Won<br>12</span></div>
+              </div>
+            </div>
+            <footer class="gx-card-foot"><svg class="gx-i" style="width:14px;height:14px"><use href="#i-info"/></svg>Most value sits at Quote. Median age 9 days.<span class="gx-spacer"></span><a href="#">Open quotes</a></footer>
+          </article>
+
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Revenue vs target</h2><span class="gx-spacer"></span>
+              <div class="gx-legend"><span><i style="background:var(--chart-1)"></i>Actual</span><span><i style="background:var(--chart-5)"></i>Target</span></div></header>
+            <div class="gx-card-body" style="display:flex;flex-direction:column;gap:4px;padding-bottom:8px">
+              <svg class="gx-chart" viewBox="0 0 400 150" preserveAspectRatio="none" role="img" aria-label="Revenue rose from 41 to 74 lakh against a target of 60 to 70 lakh" style="flex:1;min-height:120px">
+                <g stroke="var(--chart-grid)" stroke-width="1" vector-effect="non-scaling-stroke"><line x1="0" y1="10" x2="400" y2="10"/><line x1="0" y1="50" x2="400" y2="50"/><line x1="0" y1="90" x2="400" y2="90"/><line x1="0" y1="130" x2="400" y2="130"/></g>
+                <polyline fill="none" stroke="var(--chart-5)" stroke-width="2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke" points="20,70 87,66 153,60 220,56 287,52 380,46"/>
+                <polyline fill="none" stroke="var(--chart-1)" stroke-width="2.4" vector-effect="non-scaling-stroke" points="20,104 87,92 153,98 220,70 287,62 380,32"/>
+              </svg>
+              <div class="gx-row" style="justify-content:space-between;padding:0 4px;font-size:var(--fs-xs);color:var(--text-muted)"><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span style="color:var(--accent-text);font-weight:700">Oct 74</span></div>
+            </div>
+            <footer class="gx-card-foot">₹ lakh, 6 months. Oct is 6% above target.<span class="gx-spacer"></span><a href="#">Revenue report</a></footer>
+          </article>
+
+          <article class="gx-card gx-span-3">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Needs you today</h2><span class="gx-spacer"></span><span class="gx-badge gx-badge--accent">30</span></header>
+            <ul class="gx-list" style="flex:1">
+              <li><svg class="gx-i" style="color:var(--accent-text)"><use href="#i-alert"/></svg><span class="gx-trunc" style="flex:1">Overdue invoices</span><span class="gx-count">6</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-quote"/></svg><span class="gx-trunc" style="flex:1">Quotes expiring in 3 days</span><span class="gx-count gx-count--quiet">5</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-check"/></svg><span class="gx-trunc" style="flex:1">Approvals waiting on you</span><span class="gx-count gx-count--quiet">3</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-briefcase"/></svg><span class="gx-trunc" style="flex:1">Delayed projects</span><span class="gx-count gx-count--quiet">3</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-map"/></svg><span class="gx-trunc" style="flex:1">Surveys without a surveyor</span><span class="gx-count gx-count--quiet">4</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-inbox"/></svg><span class="gx-trunc" style="flex:1">Customer replies unanswered</span><span class="gx-count gx-count--quiet">7</span></li>
+              <li><svg class="gx-i gx-muted"><use href="#i-shield"/></svg><span class="gx-trunc" style="flex:1">Subsidy documents pending</span><span class="gx-count gx-count--quiet">2</span></li>
+            </ul>
+            <footer class="gx-card-foot"><a href="#">Open inbox</a></footer>
+          </article>
+        </section>
+
+        <!-- row 3: projects table + invoices -->
+        <section class="gx-grid" aria-label="Projects and invoices">
+          <article class="gx-card gx-span-8">
+            <div class="gx-toolbar">
+              <div class="gx-menu-wrap">
+                <button class="gx-btn gx-btn--ghost" data-menu-for="m-view" aria-haspopup="menu" aria-expanded="false" style="font-weight:600"><span class="gx-menu-value">Active projects</span><svg class="gx-i"><use href="#i-chev"/></svg></button>
+                <div class="gx-menu" id="m-view" role="menu" data-menu-select aria-label="List view">
+                  <div class="gx-menu-label">List views</div>
+                  <button class="gx-menu-item" role="menuitemradio" aria-checked="true">Active projects</button>
+                  <button class="gx-menu-item" role="menuitemradio" aria-checked="false">Delayed</button>
+                  <button class="gx-menu-item" role="menuitemradio" aria-checked="false">Awaiting commissioning</button>
+                  <button class="gx-menu-item" role="menuitemradio" aria-checked="false">My projects</button>
+                  <div class="gx-menu-sep"></div>
+                  <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-plus"/></svg>Save current view</button>
+                </div>
+              </div>
+              <span class="gx-chip">Stage: Installation<button aria-label="Remove filter"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-x"/></svg></button></span>
+              <button class="gx-btn gx-btn--ghost gx-btn--sm"><svg class="gx-i"><use href="#i-filter"/></svg>Filter</button>
+              <span class="gx-spacer"></span>
+              <span class="gx-card-sub">9 of 17</span>
+              <button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Columns"><svg class="gx-i"><use href="#i-sort"/></svg></button>
+              <button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Export list"><svg class="gx-i"><use href="#i-download"/></svg></button>
+            </div>
+            <div class="gx-bulkbar" data-bulkbar="t-projects"><span><span data-bulk-count>0</span> selected</span><span class="gx-spacer"></span>
+              <button class="gx-btn gx-btn--secondary gx-btn--sm">Assign owner</button><button class="gx-btn gx-btn--secondary gx-btn--sm">Change stage</button><button class="gx-btn gx-btn--danger gx-btn--sm">Archive</button></div>
+            <div class="gx-table-wrap">
+              <table class="gx-table" id="t-projects">
+                <thead><tr><th class="gx-col-check"><input type="checkbox" data-all-check aria-label="Select all rows"></th><th aria-sort="ascending">Project<svg class="gx-i" style="width:12px;height:12px;vertical-align:-2px;margin-left:2px"><use href="#i-sort"/></svg></th><th>Stage</th><th>Status</th><th class="gx-num">Value</th><th>Progress</th><th>Owner</th><th class="gx-col-act"><span class="gx-sr-only">Actions</span></th></tr></thead>
+                <tbody>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">48 kW rooftop</a> <span class="gx-subtle">Shree Ganesh Cold Storage</span></td><td>Installation</td><td><span class="gx-badge gx-badge--success">On track</span></td><td class="gx-num">₹26.4 L</td><td><progress class="gx-progress" value="72" max="100" aria-label="72 percent"></progress></td><td><span class="gx-avatar" title="Asha K.">AK</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">120 kW ground mount</a> <span class="gx-subtle">Patil Agro Foods</span></td><td>Procurement</td><td><span class="gx-badge gx-badge--danger">Delayed</span></td><td class="gx-num">₹68.0 L</td><td><progress class="gx-progress" value="38" max="100" aria-label="38 percent"></progress></td><td><span class="gx-avatar" title="Rohan S.">RS</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">75 kW rooftop</a> <span class="gx-subtle">Navkar Plastics</span></td><td>Installation</td><td><span class="gx-badge gx-badge--warning">At risk</span></td><td class="gx-num">₹41.2 L</td><td><progress class="gx-progress" value="55" max="100" aria-label="55 percent"></progress></td><td><span class="gx-avatar" title="Meera P.">MP</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">30 kW rooftop</a> <span class="gx-subtle">Lotus Public School</span></td><td>Commissioning</td><td><span class="gx-badge gx-badge--success">On track</span></td><td class="gx-num">₹17.5 L</td><td><progress class="gx-progress" value="92" max="100" aria-label="92 percent"></progress></td><td><span class="gx-avatar" title="Asha K.">AK</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">210 kW carport</a> <span class="gx-subtle">Orion Hospital Annex</span></td><td>Design</td><td><span class="gx-badge gx-badge--success">On track</span></td><td class="gx-num">₹1.24 Cr</td><td><progress class="gx-progress" value="18" max="100" aria-label="18 percent"></progress></td><td><span class="gx-avatar" title="Sana D.">SD</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">55 kW rooftop</a> <span class="gx-subtle">Kadam Poultry</span></td><td>Installation</td><td><span class="gx-badge gx-badge--danger">Delayed</span></td><td class="gx-num">₹30.8 L</td><td><progress class="gx-progress" value="47" max="100" aria-label="47 percent"></progress></td><td><span class="gx-avatar" title="Rohan S.">RS</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">90 kW rooftop</a> <span class="gx-subtle">Bhairav Steel Works</span></td><td>Survey</td><td><span class="gx-badge gx-badge--success">On track</span></td><td class="gx-num">₹52.6 L</td><td><progress class="gx-progress" value="8" max="100" aria-label="8 percent"></progress></td><td><span class="gx-avatar" title="Meera P.">MP</span></td><td class="gx-col-act">
+                    <div class="gx-menu-wrap"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" data-menu-for="m-row" aria-haspopup="menu" aria-expanded="false" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button>
+                      <div class="gx-menu gx-menu--end" id="m-row" role="menu" aria-label="Project actions">
+                        <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-edit"/></svg>Edit<kbd>E</kbd></button>
+                        <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-copy"/></svg>Duplicate</button>
+                        <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-users"/></svg>Reassign owner</button>
+                        <div class="gx-menu-sep"></div>
+                        <button class="gx-menu-item gx-menu-item--danger" role="menuitem" data-open-modal="modal-archive"><svg class="gx-i"><use href="#i-trash"/></svg>Archive project</button>
+                      </div></div></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">65 kW rooftop</a> <span class="gx-subtle">Sahyadri Dairy</span></td><td>Design</td><td><span class="gx-badge gx-badge--success">On track</span></td><td class="gx-num">₹36.1 L</td><td><progress class="gx-progress" value="22" max="100" aria-label="22 percent"></progress></td><td><span class="gx-avatar" title="Vikram N.">VN</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                  <tr><td class="gx-col-check"><input type="checkbox" data-row-check aria-label="Select row"></td><td><a href="#">150 kW ground mount</a> <span class="gx-subtle">Kohinoor Cold Chain</span></td><td>Procurement</td><td><span class="gx-badge gx-badge--warning">At risk</span></td><td class="gx-num">₹84.5 L</td><td><progress class="gx-progress" value="41" max="100" aria-label="41 percent"></progress></td><td><span class="gx-avatar" title="Asha K.">AK</span></td><td class="gx-col-act"><button class="gx-btn gx-btn--ghost gx-btn--sm gx-btn--icon" aria-label="Row actions"><svg class="gx-i"><use href="#i-more"/></svg></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <footer class="gx-card-foot"><span>1 to 9 of 17</span><span class="gx-spacer"></span>
+              <div class="gx-pager"><button class="gx-btn gx-btn--ghost gx-btn--sm" disabled>Previous</button><button class="gx-btn gx-btn--secondary gx-btn--sm">Next</button></div></footer>
+          </article>
+
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Receivables aging</h2><span class="gx-card-sub">₹ lakh</span><span class="gx-spacer"></span><a href="#" style="font-size:var(--fs-sm)">All invoices</a></header>
+            <div style="padding:10px 12px 8px;border-bottom:1px solid var(--border)">
+              <svg viewBox="0 0 100 10" preserveAspectRatio="none" width="100%" height="12" role="img" aria-label="62 percent current, 21 percent 1 to 30 days, 11 percent 31 to 60, 6 percent over 60 days" style="display:block;border-radius:3px;overflow:hidden">
+                <rect x="0" width="62" height="10" fill="var(--chart-3)"/><rect x="62" width="21" height="10" fill="var(--chart-2)"/><rect x="83" width="11" height="10" fill="var(--chart-1)"/><rect x="94" width="6" height="10" fill="var(--accent)"/></svg>
+              <div class="gx-legend" style="margin-top:6px;justify-content:space-between"><span><i style="background:var(--chart-3)"></i>Current 38.7</span><span><i style="background:var(--chart-2)"></i>1-30 13.1</span><span><i style="background:var(--chart-1)"></i>31-60 6.9</span><span><i style="background:var(--accent)"></i>60+ 3.7</span></div>
+            </div>
+            <div class="gx-table-wrap">
+              <table class="gx-table">
+                <thead><tr><th>Invoice</th><th class="gx-num">Amount</th><th>Due</th></tr></thead>
+                <tbody>
+                  <tr><td><a href="#">INV-2291</a> <span class="gx-subtle">Patil Agro</span></td><td class="gx-num">₹6.8 L</td><td><span class="gx-badge gx-badge--danger">41d late</span></td></tr>
+                  <tr><td><a href="#">INV-2304</a> <span class="gx-subtle">Navkar</span></td><td class="gx-num">₹4.1 L</td><td><span class="gx-badge gx-badge--danger">33d late</span></td></tr>
+                  <tr><td><a href="#">INV-2318</a> <span class="gx-subtle">Kadam</span></td><td class="gx-num">₹3.1 L</td><td><span class="gx-badge gx-badge--warning">12d late</span></td></tr>
+                  <tr><td><a href="#">INV-2330</a> <span class="gx-subtle">Lotus School</span></td><td class="gx-num">₹5.9 L</td><td><span class="gx-badge">in 4d</span></td></tr>
+                  <tr><td><a href="#">INV-2334</a> <span class="gx-subtle">Orion</span></td><td class="gx-num">₹24.8 L</td><td><span class="gx-badge">in 11d</span></td></tr>
+                  <tr><td><a href="#">INV-2341</a> <span class="gx-subtle">Shree Ganesh</span></td><td class="gx-num">₹7.9 L</td><td><span class="gx-badge">in 18d</span></td></tr>
+                  <tr><td><a href="#">INV-2347</a> <span class="gx-subtle">Bhairav</span></td><td class="gx-num">₹9.8 L</td><td><span class="gx-badge">in 25d</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <footer class="gx-card-foot"><span>Reminders send via the approved template only.</span></footer>
+          </article>
+        </section>
+
+        <!-- row 4 -->
+        <section class="gx-grid" aria-label="Work and team">
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">My tasks</h2><span class="gx-spacer"></span><button class="gx-btn gx-btn--ghost gx-btn--sm"><svg class="gx-i"><use href="#i-plus"/></svg>Add</button></header>
+            <ul class="gx-list" style="flex:1">
+              <li><label class="gx-check"><input type="checkbox">Approve Orion design pack</label><span class="gx-spacer"></span><span class="gx-badge gx-badge--danger">Today</span></li>
+              <li><label class="gx-check"><input type="checkbox">Call Patil Agro on INV-2291</label><span class="gx-spacer"></span><span class="gx-badge gx-badge--danger">Today</span></li>
+              <li><label class="gx-check"><input type="checkbox">Sign off Navkar panel order</label><span class="gx-spacer"></span><span class="gx-badge">Tomorrow</span></li>
+              <li><label class="gx-check"><input type="checkbox">Review Q3 subsidy claims</label><span class="gx-spacer"></span><span class="gx-badge">Fri</span></li>
+              <li><label class="gx-check"><input type="checkbox" checked>Confirm Lotus commissioning date</label><span class="gx-spacer"></span><span class="gx-badge gx-badge--success">Done</span></li>
+            </ul>
+          </article>
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Recent activity</h2></header>
+            <ul class="gx-list" style="flex:1">
+              <li><span class="gx-avatar">AK</span><span class="gx-trunc" style="flex:1">Asha moved Lotus School to Commissioning</span><span class="gx-subtle">8m</span></li>
+              <li><span class="gx-avatar">RS</span><span class="gx-trunc" style="flex:1">Rohan sent quote Q-5521 to Bhairav Steel</span><span class="gx-subtle">31m</span></li>
+              <li><span class="gx-avatar">MP</span><span class="gx-trunc" style="flex:1">Meera uploaded 14 site photos, Navkar</span><span class="gx-subtle">1h</span></li>
+              <li><span class="gx-avatar">SD</span><span class="gx-trunc" style="flex:1">Sana raised a change request, Orion</span><span class="gx-subtle">2h</span></li>
+              <li><span class="gx-avatar" style="background:var(--bg-sunken);color:var(--text-muted)">SY</span><span class="gx-trunc" style="flex:1">Payment ₹7.9 L matched to INV-2341</span><span class="gx-subtle">3h</span></li>
+            </ul>
+          </article>
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Team load</h2><span class="gx-card-sub">open projects per owner</span></header>
+            <ul class="gx-list" style="flex:1">
+              <li><span class="gx-avatar">AK</span><span style="width:84px">Asha K.</span><progress class="gx-progress" style="flex:1;width:auto" value="6" max="8" aria-label="6 of 8"></progress><span class="gx-num" style="width:28px">6/8</span></li>
+              <li><span class="gx-avatar">RS</span><span style="width:84px">Rohan S.</span><progress class="gx-progress gx-progress--accent" style="flex:1;width:auto" value="8" max="8" aria-label="8 of 8, at capacity"></progress><span class="gx-num" style="width:28px">8/8</span></li>
+              <li><span class="gx-avatar">MP</span><span style="width:84px">Meera P.</span><progress class="gx-progress" style="flex:1;width:auto" value="5" max="8" aria-label="5 of 8"></progress><span class="gx-num" style="width:28px">5/8</span></li>
+              <li><span class="gx-avatar">SD</span><span style="width:84px">Sana D.</span><progress class="gx-progress" style="flex:1;width:auto" value="3" max="8" aria-label="3 of 8"></progress><span class="gx-num" style="width:28px">3/8</span></li>
+              <li><span class="gx-avatar">VN</span><span style="width:84px">Vikram N.</span><progress class="gx-progress" style="flex:1;width:auto" value="4" max="8" aria-label="4 of 8"></progress><span class="gx-num" style="width:28px">4/8</span></li>
+            </ul>
+          </article>
+        </section>
+      </div>
+    </div>
+
+    <!-- ================= COMPONENTS VIEW ================= -->
+    <div data-view="components" hidden style="display:contents">
+      <div class="gx-pagehead">
+        <div><div class="gx-crumbs">Design system</div><h1>Components</h1></div>
+        <span class="gx-spacer"></span>
+        <span class="gx-pagemeta">Every control below is the shipped class. Open menus are live.</span>
+      </div>
+      <div class="gx-content">
+        <section class="gx-grid">
+          <article class="gx-card gx-span-6">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Buttons</h2><span class="gx-card-sub">one primary per view</span></header>
+            <div class="gx-card-body">
+              <div class="demo-label">Hierarchy</div>
+              <div class="demo-stack">
+                <button class="gx-btn gx-btn--primary"><svg class="gx-i"><use href="#i-plus"/></svg>Primary</button>
+                <button class="gx-btn gx-btn--secondary">Secondary</button>
+                <button class="gx-btn gx-btn--ghost">Ghost</button>
+                <button class="gx-btn gx-btn--danger"><svg class="gx-i"><use href="#i-trash"/></svg>Danger</button>
+                <button class="gx-btn gx-btn--danger-solid">Delete forever</button>
+              </div>
+              <div class="demo-label">States</div>
+              <div class="demo-stack">
+                <button class="gx-btn gx-btn--primary" disabled>Disabled</button>
+                <button class="gx-btn gx-btn--secondary" disabled>Disabled</button>
+                <button class="gx-btn gx-btn--primary" aria-busy="true">Saving</button>
+                <button class="gx-btn gx-btn--secondary" aria-busy="true">Loading</button>
+              </div>
+              <div class="demo-label">Sizes and icon buttons</div>
+              <div class="demo-stack">
+                <button class="gx-btn gx-btn--secondary gx-btn--sm">Small 24</button>
+                <button class="gx-btn gx-btn--secondary">Default 28</button>
+                <button class="gx-btn gx-btn--secondary gx-btn--lg">Large 32</button>
+                <button class="gx-btn gx-btn--secondary gx-btn--icon" aria-label="Filter"><svg class="gx-i"><use href="#i-filter"/></svg></button>
+                <button class="gx-btn gx-btn--ghost gx-btn--icon" aria-label="Edit"><svg class="gx-i"><use href="#i-edit"/></svg></button>
+              </div>
+              <div class="demo-label">Group and split</div>
+              <div class="demo-stack">
+                <div class="gx-btn-group" role="group" aria-label="Density">
+                  <button class="gx-btn gx-btn--secondary" aria-pressed="true">Comfortable</button><button class="gx-btn gx-btn--secondary" aria-pressed="false">Compact</button>
+                </div>
+                <div class="gx-split"><button class="gx-btn gx-btn--secondary">Export</button><button class="gx-btn gx-btn--secondary" style="width:28px;padding:0" aria-label="Export options"><svg class="gx-i"><use href="#i-chev"/></svg></button></div>
+              </div>
+              <div class="demo-label">Placement</div>
+              <p class="gx-muted" style="font-size:var(--fs-sm)">Primary sits top right of the page header. Dialog actions are right aligned, Cancel before the action. Destructive actions are danger style and never the default focus.</p>
+            </div>
+          </article>
+
+          <article class="gx-card gx-span-6">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Dropdown menus</h2><span class="gx-card-sub">keyboard: arrows, Home, End, Esc</span></header>
+            <div class="gx-card-body">
+              <div class="gx-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+                <div>
+                  <div class="demo-label">Action menu</div>
+                  <div class="gx-menu gx-menu--static" role="menu" aria-label="Action menu example" style="border:1px solid var(--border)">
+                    <div class="gx-menu-label">Record</div>
+                    <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-edit"/></svg>Edit<kbd>E</kbd></button>
+                    <button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-copy"/></svg>Duplicate</button>
+                    <button class="gx-menu-item" role="menuitem" aria-disabled="true"><svg class="gx-i"><use href="#i-lock"/></svg>Merge</button>
+                    <div class="gx-menu-sep"></div>
+                    <button class="gx-menu-item gx-menu-item--danger" role="menuitem"><svg class="gx-i"><use href="#i-trash"/></svg>Archive</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="demo-label">Single select</div>
+                  <div class="gx-menu gx-menu--static" role="menu" aria-label="Select example" style="border:1px solid var(--border)">
+                    <button class="gx-menu-item" role="menuitemradio" aria-checked="false"><svg class="gx-i" style="visibility:hidden"><use href="#i-check"/></svg>Draft</button>
+                    <button class="gx-menu-item" role="menuitemradio" aria-checked="true"><svg class="gx-i"><use href="#i-check"/></svg>Sent</button>
+                    <button class="gx-menu-item" role="menuitemradio" aria-checked="false"><svg class="gx-i" style="visibility:hidden"><use href="#i-check"/></svg>Accepted</button>
+                    <button class="gx-menu-item" role="menuitemradio" aria-checked="false"><svg class="gx-i" style="visibility:hidden"><use href="#i-check"/></svg>Expired</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="demo-label">Searchable list</div>
+                  <div class="gx-menu gx-menu--static" role="menu" aria-label="Searchable example" style="border:1px solid var(--border)">
+                    <div class="gx-menu-search"><input class="gx-input" placeholder="Search owners" aria-label="Search owners"></div>
+                    <button class="gx-menu-item" role="menuitem"><span class="gx-avatar">AK</span>Asha K.</button>
+                    <button class="gx-menu-item" role="menuitem"><span class="gx-avatar">MP</span>Meera P.</button>
+                    <button class="gx-menu-item" role="menuitem"><span class="gx-avatar">RS</span>Rohan S.</button>
+                    <button class="gx-menu-item" role="menuitem"><span class="gx-avatar">SD</span>Sana D.</button>
+                  </div>
+                </div>
+              </div>
+              <div class="demo-label">Live triggers</div>
+              <div class="demo-stack">
+                <div class="gx-menu-wrap"><button class="gx-btn gx-btn--secondary" data-menu-for="m-act" aria-haspopup="menu" aria-expanded="false">Actions<svg class="gx-i"><use href="#i-chev"/></svg></button>
+                  <div class="gx-menu" id="m-act" role="menu" aria-label="Actions"><button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-download"/></svg>Export CSV</button><button class="gx-menu-item" role="menuitem"><svg class="gx-i"><use href="#i-copy"/></svg>Copy link</button><div class="gx-menu-sep"></div><button class="gx-menu-item gx-menu-item--danger" role="menuitem"><svg class="gx-i"><use href="#i-trash"/></svg>Delete selected</button></div></div>
+                <div class="gx-menu-wrap"><button class="gx-btn gx-btn--ghost" data-menu-for="m-own" aria-haspopup="menu" aria-expanded="false"><svg class="gx-i"><use href="#i-users"/></svg>Owner: <span class="gx-menu-value">Anyone</span><svg class="gx-i"><use href="#i-chev"/></svg></button>
+                  <div class="gx-menu" id="m-own" role="menu" data-menu-select aria-label="Owner filter"><button class="gx-menu-item" role="menuitemradio" aria-checked="true">Anyone</button><button class="gx-menu-item" role="menuitemradio" aria-checked="false">Me</button><button class="gx-menu-item" role="menuitemradio" aria-checked="false">My team</button></div></div>
+              </div>
+              <div class="demo-label">Placement</div>
+              <p class="gx-muted" style="font-size:var(--fs-sm)">Opens below its trigger and aligns left. In a toolbar or page header at the right edge, use <code>gx-menu--end</code>. Row actions always sit in the last column. More than 8 items scroll at 320px and gain a search field.</p>
+            </div>
+          </article>
+
+          <article class="gx-card gx-span-6">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Form controls</h2><span class="gx-card-sub">two columns, label above</span></header>
+            <div class="gx-card-body">
+              <div class="gx-form-grid">
+                <div class="gx-field"><label class="gx-label" for="f1">Customer name <span class="req">*</span></label><input id="f1" class="gx-input" value="Patil Agro Foods"></div>
+                <div class="gx-field"><label class="gx-label" for="f2">Site capacity (kW)</label><input id="f2" class="gx-input gx-num" value="120"><span class="gx-hint">DC capacity at the site</span></div>
+                <div class="gx-field"><label class="gx-label" for="f3">Contact phone</label><input id="f3" class="gx-input" value="98xxx" aria-invalid="true" aria-describedby="f3e"><span class="gx-error" id="f3e"><svg class="gx-i" style="width:12px;height:12px"><use href="#i-alert"/></svg>Enter a 10 digit number</span></div>
+                <div class="gx-field"><label class="gx-label" for="f4">Subsidy scheme</label><input id="f4" class="gx-input" value="Not applicable" disabled></div>
+                <div class="gx-field"><label class="gx-label" for="f5">Stage</label>
+                  <div class="gx-menu-wrap" style="display:flex"><button id="f5" class="gx-select" data-menu-for="m-stage" aria-haspopup="menu" aria-expanded="false"><span class="gx-menu-value">Survey</span><svg class="gx-i"><use href="#i-chev"/></svg></button>
+                    <div class="gx-menu" id="m-stage" role="menu" data-menu-select style="min-width:100%"><button class="gx-menu-item" role="menuitemradio" aria-checked="true">Survey</button><button class="gx-menu-item" role="menuitemradio" aria-checked="false">Design</button><button class="gx-menu-item" role="menuitemradio" aria-checked="false">Procurement</button><button class="gx-menu-item" role="menuitemradio" aria-checked="false">Installation</button></div></div></div>
+                <div class="gx-field"><span class="gx-label">Options</span><div class="gx-row" style="gap:16px;height:28px"><label class="gx-check"><input type="checkbox" checked>Net metering</label><label class="gx-switch"><input type="checkbox" role="switch" checked><i></i>Notify customer</label></div></div>
+                <div class="gx-field" style="grid-column:1/-1"><label class="gx-label" for="f6">Internal note</label><textarea id="f6" class="gx-textarea" style="min-height:120px" placeholder="Visible to staff only"></textarea></div>
+              </div>
+            </div>
+            <footer class="gx-card-foot" style="height:44px;justify-content:flex-end"><button class="gx-btn gx-btn--secondary">Cancel</button><button class="gx-btn gx-btn--primary">Save project</button></footer>
+          </article>
+
+          <article class="gx-card gx-span-6">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Feedback and overlays</h2></header>
+            <div class="gx-card-body">
+              <div class="demo-label">Badges</div>
+              <div class="demo-stack"><span class="gx-badge">Neutral</span><span class="gx-badge gx-badge--success"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-check"/></svg>On track</span><span class="gx-badge gx-badge--warning"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-alert"/></svg>At risk</span><span class="gx-badge gx-badge--danger"><svg class="gx-i" style="width:10px;height:10px"><use href="#i-alert"/></svg>Delayed</span><span class="gx-badge gx-badge--info">Info</span><span class="gx-badge gx-badge--accent">Needs you</span><span class="gx-count">6</span><span class="gx-count gx-count--quiet" style="background:var(--bg-sunken);color:var(--text-muted)">3</span></div>
+              <div class="demo-label">Banners</div>
+              <div style="display:grid;gap:6px">
+                <div class="gx-banner gx-banner--attention"><svg class="gx-i"><use href="#i-alert"/></svg><span><b>6 invoices</b> are more than 30 days overdue, ₹18.1 L.</span><span class="gx-spacer"></span><button class="gx-btn gx-btn--secondary gx-btn--sm">Review</button></div>
+                <div class="gx-banner gx-banner--info"><svg class="gx-i"><use href="#i-info"/></svg><span>Your trial ends in 5 days. Data stays read-only after that.</span></div>
+                <div class="gx-banner gx-banner--danger"><svg class="gx-i"><use href="#i-lock"/></svg><span>Sign-in from a new device was blocked.</span></div>
+              </div>
+              <div class="demo-label">Toast and modal</div>
+              <div class="demo-stack">
+                <div class="gx-toast"><svg class="gx-i" style="color:var(--success)"><use href="#i-check"/></svg>Quote Q-5521 sent<button class="gx-btn gx-btn--chrome gx-btn--sm">Undo</button></div>
+                <button class="gx-btn gx-btn--secondary" data-open-modal="modal-archive">Open confirm dialog</button>
+              </div>
+              <div class="demo-label">Empty state</div>
+              <div class="gx-empty" style="border:1px dashed var(--border-strong);border-radius:var(--r-md)"><b style="color:var(--text)">No site surveys this week</b><span>Schedule one from a lead or a project.</span><button class="gx-btn gx-btn--secondary gx-btn--sm"><svg class="gx-i"><use href="#i-plus"/></svg>Schedule survey</button></div>
+            </div>
+          </article>
+
+          <article class="gx-card gx-span-8">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Color budget</h2><span class="gx-card-sub">80% midnight family, 20% orange at most</span></header>
+            <div class="gx-card-body">
+              <div class="budget" role="img" aria-label="Budget bar: 80 percent midnight family, 20 percent orange"><svg viewBox="0 0 100 10" preserveAspectRatio="none"><rect width="80" height="10" fill="var(--brand-midnight)"/><rect x="80" width="20" height="10" fill="var(--brand-orange)"/></svg></div>
+              <div class="demo-label">Midnight family</div>
+              <div class="swatch-grid">
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--bg-app)"/></svg><div><b>bg-app</b>canvas</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--bg-surface)"/></svg><div><b>bg-surface</b>cards</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--bg-subtle)"/></svg><div><b>bg-subtle</b>table head</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--bg-chrome)"/></svg><div><b>bg-chrome</b>header, rail</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--select-bg)"/></svg><div><b>select-bg</b>selection</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--text)"/></svg><div><b>text</b>primary text</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--link)"/></svg><div><b>link</b>links, focus</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--chart-1)"/></svg><div><b>chart-1</b>series 1</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--bg-sunken)"/></svg><div><b>bg-sunken</b>tracks, wells</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--border)"/></svg><div><b>border</b>dividers</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--text-muted)"/></svg><div><b>text-muted</b>secondary text</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--border-strong)"/></svg><div><b>border-strong</b>control edges</div></div>
+              </div>
+              <div class="demo-label">Orange, 20% and only here</div>
+              <div class="swatch-grid">
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--accent)"/></svg><div><b>accent</b>primary button, active marker</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--accent-text)"/></svg><div><b>accent-text</b>orange as text or icon</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--accent-tint)"/></svg><div><b>accent-tint</b>attention banner</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--accent-hover)"/></svg><div><b>accent-hover</b>hover state</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--accent-active)"/></svg><div><b>accent-active</b>pressed state</div></div>
+                <div class="swatch"><svg><rect width="100%" height="100%" fill="var(--on-accent)"/></svg><div><b>on-accent</b>text on orange</div></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="gx-card gx-span-4">
+            <header class="gx-card-head"><h2 class="gx-card-title" style="font-size:var(--fs-md)">Type scale</h2><span class="gx-card-sub">Syne display, DM Sans UI</span></header>
+            <div class="gx-card-body">
+              <div class="type-row"><span>Page title 20</span><span style="font:700 20px var(--font-display)">Owner dashboard</span></div>
+              <div class="type-row"><span>KPI 22</span><span style="font:600 22px var(--font-ui)">₹4.82 Cr</span></div>
+              <div class="type-row"><span>Section 15</span><span style="font:600 15px var(--font-ui)">Receivables aging</span></div>
+              <div class="type-row"><span>Body 13</span><span>Quote sent to customer</span></div>
+              <div class="type-row"><span>Small 12</span><span style="font-size:12px">Updated 2 min ago</span></div>
+              <div class="type-row"><span>Badge 11</span><span style="font-size:11px;font-weight:600">ON TRACK</span></div>
+              <div class="type-row"><span>Numerals</span><span style="font-variant-numeric:tabular-nums">₹1,24,000.50 · 412 kW · INV-2291</span></div>
+              <div class="type-row"><span>Link</span><a href="#">Open quotes</a></div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="gx-utility">
+    <button><svg class="gx-i" style="width:14px;height:14px"><use href="#i-tasks"/></svg>Notes</button>
+    <button><svg class="gx-i" style="width:14px;height:14px"><use href="#i-refresh"/></svg>History</button>
+    <span class="gx-spacer"></span>
+    <span>Sunrise EPC Pvt Ltd</span><span>Synced 2 min ago</span><span>Ctrl K to search</span>
+  </footer>
+</div>
+</div>
+
+<!-- confirm dialog -->
+<div class="gx-backdrop" id="modal-archive" role="dialog" aria-modal="true" aria-labelledby="ma-t">
+  <div class="gx-modal">
+    <div class="gx-modal-head" id="ma-t">Archive this project?</div>
+    <div class="gx-modal-body"><p>Bhairav Steel Works, 90 kW rooftop will be hidden from active lists. Files and history are kept, and you can restore it for 30 days.</p></div>
+    <div class="gx-modal-foot"><button class="gx-btn gx-btn--secondary" data-close-modal data-autofocus>Cancel</button><button class="gx-btn gx-btn--danger-solid" data-close-modal>Archive project</button></div>
+  </div>
+</div>
+
+<script src="../gx.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# STUB. Copy to scripts/acceptance.sh and implement. It fails closed on purpose.
+#   usage: acceptance.sh <env>
+# Runs against the environment that was just deployed. Keep it short (under ~5 minutes) and safe on production:
+#   - Synthetic tenant/account only; read-only or self-cleaning writes; never real customer data or live payments.
+#   - Cover the money and trust journeys: sign in, load the main screen, create-and-cancel a booking, API health,
+#     a webhook round trip, a background job tick.
+#   - Exits non-zero on the first failure, with the failing step in the output.
+# Example: BASE_URL="$(./scripts/url-for.sh "$1")" npx playwright test --grep @smoke
+set -euo pipefail
+echo "scripts/acceptance.sh is not implemented for ${1:-?}" >&2
+exit 1

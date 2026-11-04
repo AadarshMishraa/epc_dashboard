@@ -1,0 +1,187 @@
+# GX deploy template: ships a commit that CI already proved releasable. Adapt, then copy to .github/workflows/deploy.yml
+# and the helper scripts from templates/scripts/ to scripts/ci/ (deploy.sh, acceptance.sh, watch.sh to scripts/).
+#
+# Flow: CI green on main -> guard -> deploy to staging -> acceptance -> tag good/staging/<ts>
+#       manual dispatch for production -> guard (freeze, bad build, staging-proven, window) -> approval
+#       -> deploy -> acceptance -> watch -> tag good/production/<ts>
+# Any failure after a deploy starts -> mark the commit bad -> redeploy the last good build -> re-run acceptance -> open an issue.
+#
+# One-time setup (details in SKILL.md): GitHub Environments "staging" and "production" (production: required reviewers),
+# repo variables DEPLOY_FREEZE=false, optional DEPLOY_TZ / DEPLOY_DAYS / DEPLOY_START_HOUR / DEPLOY_END_HOUR /
+# DEPLOY_BLOCKED_DATES / AUTO_REVERT / WATCH_MINUTES. Pin third-party actions to commit SHAs in real use.
+name: deploy
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
+      sha:
+        description: Commit to deploy (production requires that it already passed staging)
+        type: string
+        required: true
+      override_window:
+        description: Deploy outside the allowed window (hotfix). Needs a reason; production approval still applies.
+        type: boolean
+        default: false
+      override_reason:
+        description: Reason for the window override (ticket or incident link)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.ctx.outputs.sha }}
+      target: ${{ steps.ctx.outputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: git fetch --tags --force
+      - id: ctx
+        name: Resolve what is being deployed
+        env:
+          EVENT: ${{ github.event_name }}
+          IN_TARGET: ${{ inputs.target }}
+          IN_SHA: ${{ inputs.sha }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ]; then
+            TARGET="$IN_TARGET"; SHA="$(git rev-parse "$IN_SHA^{commit}")"
+          else
+            TARGET=staging; SHA="$RUN_SHA"
+          fi
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "### Deploy request: \`${SHA:0:12}\` -> **$TARGET**" >> "$GITHUB_STEP_SUMMARY"
+
+      # Control 3: emergency stop
+      - name: Deploys are not frozen
+        env:
+          FREEZE: ${{ vars.DEPLOY_FREEZE }}
+          REASON: ${{ vars.DEPLOY_FREEZE_REASON }}
+        run: |
+          if [ "$FREEZE" = "true" ]; then echo "::error::Deploys are frozen: ${REASON:-no reason recorded}. Unfreeze via the release-controls workflow."; exit 1; fi
+
+      # Control 2: mark bad build
+      - name: Commit is not marked bad
+        env: { SHA: "${{ steps.ctx.outputs.sha }}" }
+        run: |
+          if git rev-parse -q --verify "refs/tags/bad/$SHA" >/dev/null; then
+            echo "::error::$SHA is marked bad: $(git tag -l --format='%(contents:subject)' "bad/$SHA")"; exit 1
+          fi
+
+      - name: Commit is on main
+        env: { SHA: "${{ steps.ctx.outputs.sha }}" }
+        run: git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+
+      - name: Production only deploys what already passed staging
+        if: steps.ctx.outputs.target == 'production'
+        env: { SHA: "${{ steps.ctx.outputs.sha }}" }
+        run: |
+          git tag -l 'good/staging/*' --points-at "$SHA" | grep -q . || { echo "::error::$SHA has no good/staging/* tag. Deploy it to staging first."; exit 1; }
+
+      # Control 4: deploy window
+      - name: Inside the production deploy window
+        if: steps.ctx.outputs.target == 'production'
+        env:
+          OVERRIDE: ${{ inputs.override_window }}
+          OVERRIDE_REASON: ${{ inputs.override_reason }}
+          DEPLOY_TZ: ${{ vars.DEPLOY_TZ }}
+          DEPLOY_DAYS: ${{ vars.DEPLOY_DAYS }}
+          DEPLOY_START_HOUR: ${{ vars.DEPLOY_START_HOUR }}
+          DEPLOY_END_HOUR: ${{ vars.DEPLOY_END_HOUR }}
+          DEPLOY_BLOCKED_DATES: ${{ vars.DEPLOY_BLOCKED_DATES }}
+        run: |
+          if bash scripts/ci/deploy-window.sh; then exit 0; fi
+          if [ "$OVERRIDE" = "true" ] && [ -n "$OVERRIDE_REASON" ]; then
+            echo "::warning::Window overridden: $OVERRIDE_REASON"
+            echo "**Window override** by ${{ github.actor }}: $OVERRIDE_REASON" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "::error::Outside the deploy window. Re-run inside it, or dispatch with override_window=true and a reason."; exit 1
+
+  deploy:
+    needs: guard
+    runs-on: ubuntu-latest
+    environment: ${{ needs.guard.outputs.target }}   # production has required reviewers: the human approval gate
+    concurrency:
+      group: deploy-${{ needs.guard.outputs.target }}
+      cancel-in-progress: false
+    permissions:
+      contents: write   # tags good/* and bad/*
+      issues: write     # incident issue on revert
+    env:
+      SHA: ${{ needs.guard.outputs.sha }}
+      TARGET: ${{ needs.guard.outputs.target }}
+      GH_TOKEN: ${{ github.token }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ needs.guard.outputs.sha }}", fetch-depth: 0 }
+      - run: |
+          git fetch --tags --force
+          git config user.name "gx-release-bot"
+          git config user.email "gx-release-bot@users.noreply.github.com"
+
+      - id: prev
+        name: Find the last good build (revert target)
+        run: echo "sha=$(bash scripts/ci/last-good.sh "$TARGET" "$SHA")" >> "$GITHUB_OUTPUT"
+
+      - id: deploy
+        name: Deploy
+        run: bash scripts/deploy.sh "$TARGET" "$SHA"
+
+      # Acceptance tests are the auto-revert trigger. Keep them fast and safe to run on production.
+      - id: accept
+        name: Acceptance tests
+        run: bash scripts/acceptance.sh "$TARGET"
+
+      - name: Watch error rate, latency and business events
+        if: needs.guard.outputs.target == 'production'
+        run: bash scripts/watch.sh "$TARGET" "${{ vars.WATCH_MINUTES || 30 }}"
+
+      - name: Record this build as good
+        run: |
+          TAG="good/$TARGET/$(date -u +%Y%m%dT%H%M%SZ)"
+          git tag -a "$TAG" -m "passed acceptance on $TARGET ($RUN_URL)" "$SHA"
+          git push origin "refs/tags/$TAG"
+
+      # Control 1: auto-revert. Runs only if a step failed after the deploy began.
+      - name: Mark bad, revert to last good, alert
+        if: failure() && steps.deploy.outcome != 'skipped'
+        env:
+          PREV: ${{ steps.prev.outputs.sha }}
+          AUTO_REVERT: ${{ vars.AUTO_REVERT }}
+        run: |
+          set +e
+          git tag -a "bad/$SHA" -m "auto: failed on $TARGET (deploy=${{ steps.deploy.outcome }}, acceptance=${{ steps.accept.outcome }}) $RUN_URL" "$SHA"
+          git push origin "refs/tags/bad/$SHA"
+
+          title="[release] $TARGET: ${SHA:0:12} failed"
+          if [ "$AUTO_REVERT" = "false" ]; then
+            gh issue create --title "$title (auto-revert disabled)" --body "Build \`$SHA\` failed on **$TARGET** and was marked bad. AUTO_REVERT=false, so nothing was reverted. Decide now: forward-fix or redeploy a good build. Run: $RUN_URL"
+            exit 1
+          fi
+          if [ -z "$PREV" ]; then
+            gh issue create --title "$title: NO REVERT TARGET" --body "Build \`$SHA\` failed on **$TARGET** and was marked bad, but there is no earlier good/$TARGET/* build to return to. Fix forward or restore manually. Run: $RUN_URL"
+            exit 1
+          fi
+          if bash scripts/deploy.sh "$TARGET" "$PREV" && bash scripts/acceptance.sh "$TARGET"; then
+            gh issue create --title "$title: auto-reverted to ${PREV:0:12}" --body "Build \`$SHA\` failed on **$TARGET**, was marked bad (tag \`bad/$SHA\`) and **$TARGET was reverted to \`$PREV\`**, which passed acceptance again. Code was reverted; database migrations were NOT. Find the cause, fix forward on a new commit. Run: $RUN_URL"
+          else
+            gh issue create --title "$title: REVERT FAILED" --body "Build \`$SHA\` failed on **$TARGET**; redeploying \`$PREV\` also failed. **$TARGET may be broken. Act now.** Consider the emergency stop (release-controls: freeze) and your app-level kill switches. Run: $RUN_URL"
+          fi
+          exit 1

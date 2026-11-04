@@ -1,0 +1,10 @@
+{
+  "test_nudge": true,
+  "checkpoint_every_edits": 8,
+  "brief_state_lines": 80,
+  "auto_map": true,
+  "module_depth": 2,
+  "modules": {},
+  "exclude": [],
+  "map_dir": ".claude/map"
+}

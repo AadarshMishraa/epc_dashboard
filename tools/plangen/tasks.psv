@@ -1,0 +1,119 @@
+K0-T01 | Decide stack and repo layout (ADR-0006) | - | S | ADR accepted by Aadarsh: language, framework, Postgres version, queue approach, package manager, monorepo layout | review only
+K0-T02 | Workspace skeleton: one package per module with public-API file, register entry, README, changelog | K0-T01 | M | Workspace builds; every package imports only core | build and import-graph check
+K0-T03 | Core types: Context, ordered ids, error codes, Result, Clock | K0-T02 | M | Context carries tenant, actor, correlation id; error catalogue published; no I/O in core | unit tests; property tests for ids
+K0-T14 | Core ports with in-memory fakes: EventPublisher, AuditSink, Authorizer, EntitlementGate, QuotaProvider, ClassificationLookup, SecretsProvider, MessageSender, EraserRegistry | K0-T03 | M | Each port has an interface, a fake and a contract test suite | contract suites pass on fakes
+K0-T04 | Structured logging with redaction by classification and correlation propagation | K0-T03 | S | Phone, email and ID patterns are masked in logs; correlation id on every line | log-redaction test with seeded personal data
+K0-T05 | Migration framework: package-namespaced, forward-only, expand then contract, dependency-ordered | K0-T02 | M | Empty database reaches head; a destructive step without a contract marker is rejected | migrate-from-empty; destructive-step rejection test
+K0-T06 | Test kit: tenant matrix runner, adapter contract harness, frozen clock, fixtures, pool-leak helper | K0-T03, K0-T05 | M | Runner discovers tables and fails on a table without a policy | runner self-test on a deliberately bad table
+K0-T07 | Manifest schema and validator CLI per docs/architecture/module-manifest.md | K0-T02 | M | Valid sample passes; undeclared event, tool without mode or missing permission fails | validator tests with good and bad manifests
+K0-T08 | Boundary lint: no upward imports, no cross-package internals, table ownership, no industry words | K0-T02, K0-T07 | M | Seeded violations of each kind fail CI | one failing fixture per rule
+K0-T09 | Public-API diff and semver gate | K0-T02 | S | Removing an exported symbol without a major bump fails CI | fixture package with a breaking change
+K0-T10 | CI pipeline: lint, unit, contract, tenant matrix, migrate-from-previous, boundary lint, privacycheck, dependency scan | K0-T06, K0-T08, K0-T09 | M | Required checks block merge; pipeline green on main | deliberately broken branch is blocked
+K0-T11 | One-command local environment: database, object-storage emulator, mail sink, seed | K0-T01 | S | New developer boots with one documented command | smoke script in CI
+K0-T12 | Sandbox host app: composition root that boots from the foundation alone; health endpoint; lists registered modules | K0-T02, K0-T14 | M | Boots with only foundation packages; health ok | boot test in CI
+K0-T13 | Observability baseline: metrics and tracing hooks, readiness and liveness, request correlation middleware | K0-T04, K0-T12 | S | Metrics scrape works locally; every request has a correlation id | integration test
+K1-T01 | Tenant data model: tenant, tenant_domain, tenant_setting; states active, suspended, archived, deleting | K0-T05 | S | Migration applies; invalid state transitions are rejected | unit tests of the state machine
+K1-T02 | Tenant context: withTenant, requireTenant; propagation across request, job and event | K0-T03 | M | Data layer without a context throws; context survives HTTP, job and event stubs | propagation tests; missing-context test
+K1-T03 | Database roles and RLS helper: non-owner app role, tenant table creator with forced restrictive policy and composite foreign keys, tenant set per transaction | K1-T01, K1-T02, K0-T05 | M | A table made with the helper isolates tenants; the owner without context sees zero rows | cross-tenant read and write attempts fail
+K1-T04 | Tenant matrix and pool-leak test wired into CI | K1-T03, K0-T06 | S | A table without tenant_id or policy fails CI; tenant A then B on one connection never leaks | seeded bad table; pool-leak test
+K1-T05 | Tenant resolver: subdomain, custom domain, token claim; cache; unknown tenant gets a generic 404 | K1-T01 | M | Each strategy resolves; a spoofed header is ignored | unit and integration tests
+K1-T06 | Silo routing: connection router for shared pool or dedicated database and region; per-target migrations | K1-T05, K0-T05 | M | Two tenants on two databases by configuration only; migrations apply to both | integration test with two databases
+K1-T07 | Tenant lifecycle: provision with defaults, suspend, reactivate, archive, scheduled delete; events through the core port | K1-T01, K0-T14 | M | Suspended tenants cannot sign in or run jobs; every transition emits an event | lifecycle tests with fake publisher
+K1-T08 | Organisation units: company, branch, team hierarchy; scope resolver for own, team, branch, tenant | K1-T03 | M | Resolver returns the right sets, including after a unit moves | scope-matrix tests
+K1-T09 | Typed tenant settings: region, timezone, currency, locale, fiscal-year start, branding tokens | K1-T01 | S | Settings validate and emit change events | validation tests
+K1-T10 | Quota and rate-limit enforcement points using the core QuotaProvider | K1-T02, K0-T14 | S | With a fake provider, limits are enforced; defaults are safe | unit tests
+K1-T11 | Support access sessions: time-boxed, reasoned, consented, audited | K1-T02, K0-T14 | M | Session expires; actions tagged as support; scope cannot exceed the grant | expiry and escalation tests
+K1-T12 | Demo tenant seeding and reset | K1-T07 | S | One command creates a deterministic demo tenant and resets it | seed idempotency test
+K6-T01 | Event envelope and type registry; compatibility check | K0-T07, K0-T14 | M | Registry loads from manifests; removing or renaming a field fails CI | compat-check fixtures
+K6-T02 | Outbox write API implementing core EventPublisher in the current transaction | K6-T01, K1-T03 | S | Rollback discards the event; commit keeps it | transaction tests
+K6-T03 | Dispatcher: ordered per entity, safe multi-worker claiming, at-least-once relay | K6-T02 | M | Two workers never claim the same row; a killed worker loses nothing | concurrency and kill tests
+K6-T04 | Subscription registry from manifests; idempotent consumers with a processed-event table | K6-T03 | M | Duplicate delivery produces one effect | duplicate-delivery test
+K6-T05 | Retry with backoff and jitter; dead-letter queue; inspect and replay | K6-T04 | M | A poison message dead-letters after the max attempts; replay works and is idempotent | poison and replay tests
+K6-T06 | Job queue: tenant context, priority, delay, timeout, cancel | K1-T02, K0-T14 | M | Job runs with the right tenant; timeout stops it; cancel works | integration tests
+K6-T07 | Per-tenant fairness and concurrency caps | K6-T06, K1-T10 | M | A flooding tenant does not delay others beyond the bound | fairness load test
+K6-T08 | Scheduler: cron and one-off; tenant timezone; single fire; missed-run policy | K6-T06 | M | A schedule fires once across multiple workers; missed runs follow policy | multi-worker and DST tests
+K6-T09 | Broker port, database-backed default adapter, contract tests | K6-T03, K6-T06 | S | Default adapter and an in-memory adapter both pass the contract suite | contract suite
+K6-T10 | Metrics and alerts: lag, depth, retries, DLQ size, job duration | K6-T05, K0-T13 | S | Dashboards show the metrics; a synthetic lag fires the alert | alert-fire test
+K6-T11 | Chaos and soak tests: kill mid-dispatch, duplicates, skew, poison, failover | K6-T05, K6-T08 | M | All scenarios pass in the nightly job | nightly suite
+K7-T01 | Audit event model and in-transaction record implementing core AuditSink | K1-T03, K0-T14 | M | Audit row commits or rolls back with the change | transaction tests
+K7-T02 | Actor model: user, service account, AI client (user via client), system; correlation ids | K7-T01 | S | Every record names an actor type and a correlation id | unit tests
+K7-T03 | Change diffs for configured entities, masked by classification | K7-T01 | M | Before and after captured; classified fields masked | seeded-PII masking test
+K7-T04 | Hash chain per tenant, verifier job, tamper detection | K7-T01 | M | A modified row is detected and raises audit.chain_broken | tamper test
+K7-T05 | Critical-action policy: fail closed if the audit write fails; others queue and alert | K7-T01 | S | A critical action rolls back when the audit write fails | fault-injection test
+K7-T06 | Sensitive-read logging decorator for classified reads and file downloads | K7-T01 | S | Reads of classified data produce audit rows | unit tests
+K7-T07 | Audit query and export API with permission checks | K7-T01, K0-T14 | M | Requires audit.read; exports are themselves logged; paginated | authorisation tests
+K7-T08 | Monthly partitioning, retention (default at least 1 year), legal hold, archive | K7-T01, K6-T08 | M | Old partitions archive; legal hold blocks deletion | retention tests
+K4-T01 | Config schema registry and scoped values: default, pack, tenant, branch, user | K1-T03, K0-T07 | M | Modules declare typed keys; resolution order is fixed and tested | resolution-order tests
+K4-T02 | Config versioning, audit, rollback, change events | K4-T01, K6-T02 | M | Every change is versioned and audited; rollback restores the previous value | rollback tests
+K4-T03 | Labels and vocabulary layer with locale fallback and missing-key report | K4-T01 | S | Label lookup falls back by scope and locale; missing keys are reported | fallback tests
+K4-T04 | Lookup lists: tenant-managed enums with ordering, deactivation, translations | K4-T01 | S | Deactivated items stay valid on old records and vanish from pickers | unit tests
+K4-T05 | Custom field definitions: types, validation, required and conditional, classification tag, host registration | K4-T01 | M | A field with an unclassified tag is rejected; hosts register entities | validation tests
+K4-T06 | Custom field value storage with write-time validation (decision recorded in an ADR) | K4-T05 | M | Values validate on write; a wrong type is rejected; adding a field needs no migration | validation and performance tests
+K4-T07 | Field indexing registry with filter and sort API, capped per entity | K4-T06 | M | Only indexable fields filter; the cap is enforced | query-plan checks
+K4-T08 | Condition language (expr): closed grammar, sandboxed evaluator, versioned | K0-T03 | M | Hostile input cannot loop or reach data outside its scope | property and fuzz tests
+K4-T09 | Computed fields on expr with dependency order and cycle detection | K4-T08, K4-T06 | M | Cycles are rejected at definition time; values recompute in order | cycle and ordering tests
+K4-T10 | Form layout definitions as data with visibility rules | K4-T05, K4-T08 | S | Layout validates against defined fields | validation tests
+K4-T11 | Field lifecycle: deprecate, hide, forbid type change once data exists | K4-T06 | S | Type change after data is refused; deprecated fields stay readable | lifecycle tests
+K4-T12 | Config bundle import and export with dry-run diff, idempotent re-apply, version pinning | K4-T02, K4-T05 | M | Applying twice changes nothing; dry-run shows the diff | idempotency test
+K2-T01 | Identity model: global user and per-tenant membership | K1-T03 | S | One person can belong to several tenants with separate roles | unit tests
+K2-T02 | Credential storage: memory-hard hashing, versioned parameters, rehash on login, pepper through SecretsProvider | K2-T01 | S | Hash parameters can be upgraded without forcing resets | rehash test
+K2-T03 | Password policy per NIST SP 800-63B-4: 15 characters minimum as sole factor, allow 64 or more, no composition rules, no forced rotation, blocklist screening | K2-T02, K4-T01 | S | Policy matches the rules; blocklist rejects breached passwords | policy tests
+K2-T04 | IdentityProvider port and built-in provider: password and one-time code via MessageSender | K2-T02, K0-T14 | M | Sign-in works with the fake sender; port has a contract suite | contract and integration tests
+K2-T05 | Sessions: short access tokens, rotating refresh tokens with reuse detection, device list, revoke, idle and absolute timeouts | K2-T04 | M | Reusing a refresh token revokes the whole family | token-theft test
+K2-T06 | MFA: TOTP, recovery codes, step-up hook for sensitive actions | K2-T05 | M | Step-up is required where a module declares it | enrolment and step-up tests
+K2-T07 | Invitations and onboarding: role and scope, expiry, single use | K2-T01, K2-T09 | M | Expired and reused invitations are rejected | invitation tests
+K2-T08 | Recovery and abuse protection: reset, lockout, rate limits, uniform responses | K2-T04, K1-T10 | M | Responses and timing do not reveal whether an account exists | enumeration and brute-force tests
+K2-T09 | Permission registry from manifests, roles as data, grants with scopes | K1-T08, K0-T07 | M | Permissions come only from manifests; roles are bundles of them | registry tests
+K2-T10 | Authorizer: can(subject, action, resource), deny by default, reasons, cache invalidated on role change; implements core Authorizer | K2-T09, K6-T04 | M | An ungranted action is refused with a reason; role change takes effect within the TTL or on event | matrix and invalidation tests
+K2-T11 | Attribute conditions (amount caps, discount limits) using expr | K2-T10, K4-T08 | S | A condition can deny an otherwise allowed action | condition tests
+K2-T12 | Role administration guards: no escalation, last-admin protection | K2-T10 | S | A user cannot grant above their own level; the last admin cannot be removed | escalation tests
+K2-T13 | Service accounts and API keys: scoped, hashed, shown once, rotation, expiry, last-used | K2-T10 | M | The key is visible once; revoked keys fail at once | key lifecycle tests
+K2-T14 | OIDC adapter and claim-to-role mapping; SSO gated by the core EntitlementGate | K2-T04, K0-T14 | M | A tenant with SSO enabled signs in through its provider | integration test with a mock provider
+K2-T15 | Authorization server decision (build or delegate, ADR) and authorization code with PKCE S256 | K2-T05, K2-T10 | M | Code flow works with S256 only; plain PKCE is refused | flow and negative tests
+K2-T16 | Client registration (DCR and CIMD), discovery metadata, refresh rotation; Claude and ChatGPT connector conformance checks | K2-T15 | M | A custom connector completes sign-in in a test harness; endpoints answer well under 10 seconds | conformance and latency tests
+K2-T17 | Auth events and anomaly signals: failures, new device | K2-T05, K7-T01 | S | Events are audited and published | event tests
+K2-T18 | Permission-engine property and escalation test pack | K2-T12 | M | No role ever gains a permission it was not granted | property tests
+K3-T01 | Module registry: installed modules, versions, dependency check at boot | K0-T07, K1-T03 | M | Boot fails with a clear error on a missing or cyclic dependency | boot tests
+K3-T02 | Per-tenant module enablement applied to routes, menus, AI tools and jobs through one check | K3-T01 | M | A disabled module is unreachable everywhere | gating tests
+K3-T03 | Plans and entitlements: boolean, limit, metered; per-tenant overrides with expiry | K3-T01 | M | Plan plus override resolves to the expected value | resolution tests
+K3-T04 | Entitlement check API with cache, event invalidation and per-key failure policy; implements core EntitlementGate and QuotaProvider | K3-T03, K6-T04 | M | A downgrade takes effect within the TTL or on event; failure policy is honoured | cache and fault tests
+K3-T05 | Usage metering: idempotent record, windows, limit-reached events | K3-T03, K6-T04 | M | Replaying a record counts once | idempotency test
+K3-T06 | Feature flags: tenant list, percentage, attribute rules using expr; kill switch | K4-T08, K3-T04 | M | The kill switch overrides everything | rule tests
+K3-T07 | Trial, expiry and grace lifecycle with read-only degradation | K3-T03, K6-T08 | S | An expired tenant becomes read-only, not locked out | lifecycle tests
+K3-T08 | Subscription provider port and stub adapter | K3-T03 | S | Stub drives plan changes through the port | contract suite
+K3-T09 | Signed licence file for silo and custom deployments, offline verification | K3-T03 | M | A tampered or expired licence is refused | tamper and expiry tests
+K3-T10 | Pack pinning and upgrade orchestration with dry-run and rollback | K3-T02, K4-T12 | M | Upgrade shows the diff first and can roll back | upgrade tests
+K3-T11 | Headless admin API for plans, overrides, usage | K3-T05 | S | Authorised callers can read and change entitlements; changes are audited | API tests
+K5-T01 | Workflow definitions and versions: states, transitions, immutable published versions | K1-T03, K4-T01 | M | A published version cannot be edited; a new version is created instead | immutability tests
+K5-T02 | Instances and transition API: any entity reference, optimistic concurrency, history | K5-T01, K6-T02 | M | Two simultaneous transitions: one wins, one gets a conflict; history records actor and reason | concurrency tests
+K5-T03 | Guards: declarative (expr) and named code guards registered by modules | K5-T02, K4-T08 | M | A failing guard blocks the transition and says why | guard tests
+K5-T04 | Stage requirements: required fields and documents before a transition | K5-T03, K4-T06 | S | Missing fields or documents block the transition with a list | requirement tests
+K5-T05 | Actions registry: emit event, set field, create task (port); loop guard | K5-T02 | M | An action cycle stops at the max depth with an error | loop test
+K5-T06 | SLA timers: business calendar, pause and resume, breach events, escalation | K5-T02, K6-T08 | M | Breach fires once at the right time, including across weekends and holidays | calendar and DST tests
+K5-T07 | Approvals: multi-step, any-of and all-of, delegation, expiry | K5-T03, K0-T14 | M | Approval requires the right people; delegation and expiry work | approval tests
+K5-T08 | Hold and blocked overlay; reopen rules | K5-T02 | S | A held instance rejects transitions until released | unit tests
+K5-T09 | Definition validator and dry-run simulator | K5-T03 | M | Dead ends and unreachable states are reported; a sample path simulates | validator tests
+K5-T10 | Version migration of running instances with preview | K5-T01 | M | Instances map to new states; preview shows the effect | migration tests
+K5-T11 | Read APIs: graph export, history timeline, why-blocked explanation | K5-T03 | S | UI can draw the graph and explain a block | API tests
+K5-T12 | Pack workflow templates through K4 bundles | K5-T01, K4-T12 | S | A pack applies a workflow idempotently | bundle test
+K5-T13 | Stuck-instance sweeper, metrics, alerts | K5-T06, K6-T08 | S | An instance with a due timer and no progress raises workflow.stuck | sweeper test
+K7-T09 | Notice registry: versioned notices per purpose and language | K4-T01 | S | A consent always points to a notice version | unit tests
+K7-T10 | Consent model and API: grant, withdraw, check, evidence, history | K7-T09, K6-T02 | M | check() reflects withdrawal immediately; history is complete | consent lifecycle tests
+K7-T11 | Data-request desk on the workflow engine: access, correction, erasure, grievance, nominee; SLA timers; tenant-admin routing | K5-T02, K5-T06 | M | Each request has an owner and a due date; overdue ones escalate | SLA tests
+K7-T12 | Retention engine: policy per data class, scheduled delete or anonymise, advance-notice event, legal hold | K6-T08, K4-T05 | M | An expired record is removed after the notice event; a hold prevents deletion | retention tests
+K7-T13 | Eraser and exporter orchestration over the core EraserRegistry, with statutory-hold exceptions | K7-T11 | M | Every module's handler runs; statutory tables are skipped with the reason recorded | erasure drill on a seeded subject
+K7-T14 | Tenant export and exit: full export, then deletion with a deletion record | K7-T13 | M | A seeded tenant exports completely and deletes cleanly | export and delete drill
+K7-T15 | Incident log and breach clocks (6-hour and 72-hour) with checklist | K5-T06 | S | An incident starts both timers and lists the notifications due | timer tests
+K7-T16 | Data inventory report generated from field classification tags | K4-T05 | S | Report lists every classified field with purpose and retention | report test
+K8-T01 | BlobStore port with S3-compatible and local-disk adapters | K0-T06 | M | Both adapters pass the contract suite | contract suite
+K8-T02 | File model: metadata, hash, versions, entity links, document type | K1-T03 | M | Versions are immutable; links reference entities by id | unit tests
+K8-T03 | Upload flow: signed direct upload, limits, content sniffing, checksum, resumable sessions | K8-T01, K8-T02 | M | An interrupted upload resumes; a wrong type or oversize file is refused | upload tests
+K8-T04 | Access classes and signed short-lived download URLs with permission check; no public bucket | K8-T02, K0-T14 | M | A URL expires and is bound to its audience; a public bucket fails the startup check | access tests
+K8-T05 | Document type registry from packs: required metadata, expiry dates that raise events | K8-T02, K4-T05 | S | An expiring document raises file.expiring on time | event test
+K8-T06 | Malware scan port with quarantine state | K8-T03 | S | A flagged file is quarantined and not downloadable | fake-scanner test
+K8-T07 | Derivatives (thumbnails, previews) through jobs; metadata stripping policy | K8-T03, K6-T06 | M | Derivatives appear after upload; stripping follows the document type policy | job and policy tests
+K8-T08 | Storage quotas and accounting through entitlements | K8-T02, K3-T05 | S | Over-quota uploads are refused with a clear message | quota tests
+K8-T09 | Orphan garbage collection and integrity verification | K8-T02, K6-T08 | S | Orphans are removed after the grace period; checksum mismatches are reported | gc and integrity tests
+K8-T10 | Export and erase handlers for K7b through the core EraserRegistry | K8-T02, K0-T14 | S | A subject's files export and erase through the registry | drill test
+K8-T11 | Tenant-prefixed keys, path-traversal and cross-tenant access tests | K8-T03 | S | No input can address another tenant's object | negative tests
+K8-T12 | Sensitive access logging through K7a | K8-T04, K7-T06 | S | Every restricted download is audited | audit test

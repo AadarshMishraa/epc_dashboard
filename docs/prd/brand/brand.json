@@ -1,0 +1,13 @@
+{
+  "name": "GarunaCDX",
+  "note": "Design tokens live in design/tokens.css (single source). Do not run brandtokens.py: it would create a second token source.",
+  "colors": {
+    "primary": "#F4600C",
+    "background": "#EEF1F7",
+    "foreground": "#0A0F1E",
+    "secondary": "#E6EAF2",
+    "accent": "#2F4BB8"
+  },
+  "fonts": { "heading": "Syne", "body": "DM Sans", "mono": "ui-monospace" },
+  "radius": "4px"
+}

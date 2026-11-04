@@ -1,0 +1,114 @@
+# GX release controls: the manual levers. Copy to .github/workflows/release-controls.yml.
+#   freeze / unfreeze   emergency stop for all deploys (sets repo variable DEPLOY_FREEZE)
+#   mark-bad / unmark-bad   flag a commit so it can never be deployed or used as a revert target (tag bad/<sha>)
+#
+# Needs a secret RELEASE_ADMIN_TOKEN: a fine-grained personal access token or GitHub App token limited to this repo with
+# "Variables: read and write" and "Actions: write". The built-in GITHUB_TOKEN cannot write repository variables.
+# Fallback if you have no token: set DEPLOY_FREEZE=true by hand in Settings > Secrets and variables > Actions > Variables.
+# Restrict who can run this workflow (repo admins / on-call) with environment "release-admin" + required reviewers if you wish.
+name: release-controls
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do
+        type: choice
+        options: [freeze, unfreeze, mark-bad, unmark-bad]
+        required: true
+      reason:
+        description: Why (incident or ticket link). Recorded in the variable, the tag and the run summary.
+        type: string
+        required: true
+      sha:
+        description: "mark-bad / unmark-bad only: commit SHA (full or short)"
+        type: string
+        default: ""
+      cancel_running:
+        description: "freeze only: also cancel deploys that are already running (queued and waiting ones are always cancelled)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  freeze:
+    if: inputs.action == 'freeze'
+    runs-on: ubuntu-latest
+    env:
+      REASON: ${{ inputs.reason }}
+      CANCEL_RUNNING: ${{ inputs.cancel_running }}
+      FREEZE_TOKEN: ${{ secrets.RELEASE_ADMIN_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Freeze all deploys
+        run: |
+          [ -n "$FREEZE_TOKEN" ] || { echo "::error::Secret RELEASE_ADMIN_TOKEN is missing. Set DEPLOY_FREEZE=true by hand in repo variables."; exit 1; }
+          GH_TOKEN="$FREEZE_TOKEN" gh variable set DEPLOY_FREEZE --body true
+          GH_TOKEN="$FREEZE_TOKEN" gh variable set DEPLOY_FREEZE_REASON --body "${REASON} (by ${{ github.actor }}, $(date -u +%FT%TZ))"
+      - name: Cancel deploys that have not finished the guard yet
+        run: |
+          for status in queued waiting; do
+            gh run list --workflow deploy.yml --status "$status" --json databaseId --jq '.[].databaseId' | xargs -r -n1 gh run cancel
+          done
+          if [ "$CANCEL_RUNNING" = "true" ]; then
+            gh run list --workflow deploy.yml --status in_progress --json databaseId --jq '.[].databaseId' | xargs -r -n1 gh run cancel
+          fi
+      - name: App-level kill switches (optional hook)
+        run: |
+          if [ -f scripts/emergency-stop.sh ]; then bash scripts/emergency-stop.sh "$REASON"; else echo "No scripts/emergency-stop.sh: only deploys are frozen."; fi
+      - name: Summary
+        run: |
+          {
+            echo "### Deploys FROZEN"
+            echo "Reason: $REASON"
+            if [ "$CANCEL_RUNNING" = true ]; then RUNNING="cancelled"; else RUNNING="left to finish (they can still auto-revert)"; fi
+            echo "Queued and waiting deploys cancelled. Running deploys: $RUNNING."
+            echo "Unfreeze with this workflow, action=unfreeze."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  unfreeze:
+    if: inputs.action == 'unfreeze'
+    runs-on: ubuntu-latest
+    env:
+      FREEZE_TOKEN: ${{ secrets.RELEASE_ADMIN_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - run: |
+          [ -n "$FREEZE_TOKEN" ] || { echo "::error::Secret RELEASE_ADMIN_TOKEN is missing. Set DEPLOY_FREEZE=false by hand."; exit 1; }
+          GH_TOKEN="$FREEZE_TOKEN" gh variable set DEPLOY_FREEZE --body false
+          GH_TOKEN="$FREEZE_TOKEN" gh variable set DEPLOY_FREEZE_REASON --body ""
+          echo "### Deploys unfrozen by ${{ github.actor }}: ${{ inputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
+
+  mark-bad:
+    if: inputs.action == 'mark-bad' || inputs.action == 'unmark-bad'
+    runs-on: ubuntu-latest
+    env:
+      ACTION: ${{ inputs.action }}
+      IN_SHA: ${{ inputs.sha }}
+      REASON: ${{ inputs.reason }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: |
+          git fetch --tags --force
+          git config user.name "gx-release-bot"
+          git config user.email "gx-release-bot@users.noreply.github.com"
+      - name: Apply
+        run: |
+          [ -n "$IN_SHA" ] || { echo "::error::sha is required"; exit 1; }
+          SHA="$(git rev-parse "$IN_SHA^{commit}")"
+          if [ "$ACTION" = "mark-bad" ]; then
+            git tag -a "bad/$SHA" -m "$REASON (marked by ${{ github.actor }})" "$SHA"
+            git push origin "refs/tags/bad/$SHA"
+            echo "### Marked bad: \`$SHA\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "It can no longer be deployed or chosen as a revert target." >> "$GITHUB_STEP_SUMMARY"
+            echo "If it is live now, redeploy a good build: \`$(bash scripts/ci/last-good.sh production "$SHA")\` (production) via the deploy workflow." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git push origin ":refs/tags/bad/$SHA"
+            echo "### Unmarked: \`$SHA\` ($REASON)" >> "$GITHUB_STEP_SUMMARY"
+          fi

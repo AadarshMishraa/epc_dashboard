@@ -1,0 +1,12 @@
+{
+  "name": "Example Co",
+  "colors": {
+    "primary": "#F4600C",
+    "background": "#FFFFFF",
+    "foreground": "#0A0F1E",
+    "secondary": "#F1F5F9",
+    "accent": "#7C3AED"
+  },
+  "fonts": { "heading": "Syne", "body": "Space Grotesk", "mono": "Geist Mono" },
+  "radius": "8px"
+}

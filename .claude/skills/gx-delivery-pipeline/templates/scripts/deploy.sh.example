@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# STUB. Copy to scripts/deploy.sh and implement for your host. It fails closed on purpose.
+#   usage: deploy.sh <env> <sha>
+# Contract the pipeline relies on:
+#   - Deploys the artifact already built and tested for <sha>. Do not rebuild from source.
+#   - Idempotent: running it twice for the same <env> and <sha> is safe.
+#   - Used for both a normal release and an auto-revert, so it must accept any previously good <sha>
+#     (keep the last N artifacts, or be able to rebuild them reproducibly).
+#   - Applies additive migrations only. Never rolls a migration back automatically.
+#   - Exits non-zero if the deploy did not complete.
+# Examples: `vercel promote <deployment-url-for-sha>`, `flyctl deploy --image <registry>/app:<sha>`,
+#           `supabase functions deploy` + `supabase db push`, `eas update --branch <env>`.
+set -euo pipefail
+echo "scripts/deploy.sh is not implemented for ${1:-?} ${2:-?}" >&2
+exit 1

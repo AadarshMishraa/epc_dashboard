@@ -1,0 +1,207 @@
+# E3 Exceptions, owner home, approvals and tasks
+
+Rules and evaluator, lifecycle, ranking, portfolio widgets, approval queue, tasks and reminders, digest.
+
+- **Lane:** `packs/epc/epc-control`
+- **Tasks:** 17
+- **Foundation waves needed:** 0, 1, 2, 3, 4
+
+Tick a task when its done-when and tests pass and the definition of done in [the playbook](README.md) holds. Scope and acceptance criteria live in [the pack PRD](../prd/01-prd.md).
+
+## Features delivered
+
+- **F-18** Exception rules and evaluator (Must, 5 acceptance criteria)
+- **F-19** Exception lifecycle (Must, 3 acceptance criteria)
+- **F-20** Owner home: ranked exceptions and pulse strip (Must, 4 acceptance criteria)
+- **F-21** Portfolio widgets, drill-down and freshness (Must, 4 acceptance criteria)
+- **F-22** Approval queue (Must, 4 acceptance criteria)
+- **F-26** Backlog against crew capacity (Should, 0 acceptance criteria)
+- **F-27** Daily and weekly digest (Should, 0 acceptance criteria)
+- **F-28** Owner mobile view (Should, 0 acceptance criteria)
+- **F-23** Tasks and reminders (Must, 3 acceptance criteria)
+- **F-24** Record timeline (Should, 0 acceptance criteria)
+- **F-25** In-app notices (Should, 0 acceptance criteria)
+
+## Security baseline for this module
+
+Applies to every task below, on top of the repository [security guidelines](../../../../docs/guidelines/security-guidelines.md).
+
+- Every pack table has a tenant, forced row-level security and a negative cross-tenant test; the app role is not the owner.
+- Every new action is a declared permission with a negative test (caller without it is denied); the server decides, the interface only hides.
+- Every new field has a data class; personal data is masked in logs and audit diffs and has an erase and export handler.
+- Amounts are integer paise; issued invoice and receipt records are never edited, only corrected by linked records.
+- Files, links and imports are untrusted input: type, size and content checks, signed short-lived access, no personal data in URLs.
+
+## Tasks
+
+- [ ] **E3-T01** (T-032) Definitions of stuck, cash blocked, forecast margin, material due and overdue (S)
+  - Feature: F-18 | Milestone: M-04 | Pack wave: A | Level: 0 | Lane: epc-control
+  - Needs: none
+  - Foundation features used (public APIs only): none (needs foundation wave 0)
+  - Agents: build Aadarsh decides, then gx-implementer | tests - | review module gate
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S1. Module security baseline applies.
+  - Done when: written definitions agreed with the design partner, stored in docs/pack and used by the rules
+  - Tests: review recorded; each definition has a worked example with numbers
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+  - Human gate: Decide Q-02 (design partner). Aadarsh and the design partner agree the five definitions in writing before any rule is coded.
+- [ ] **E3-T02** (T-033) Exception rule model (M)
+  - Feature: F-18 | Milestone: M-04 | Pack wave: B | Level: 2 | Lane: epc-control
+  - Needs: E3-T01 (T-032), E0-T07 (T-007)
+  - Foundation features used (public APIs only): F-23, F-27 (needs foundation wave 3)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: rules as data with condition, threshold, owner, message and cause key, validated at save
+  - Tests: hostile expression rejected; threshold edit audited
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T03** (T-034) Exception evaluator with cause dedupe (M)
+  - Feature: F-18 | Milestone: M-04 | Pack wave: B | Level: 3 | Lane: epc-control
+  - Needs: E3-T02 (T-033)
+  - Foundation features used (public APIs only): F-14, F-27 (needs foundation wave 3)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S2. Module security baseline applies.
+  - Done when: one cause raises one exception listing affected records; repeat runs add 0
+  - Tests: property test on cause keys; 6 jobs under 1 delivery gives 1 exception
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T04** (T-035) Exception lifecycle (M)
+  - Feature: F-19 | Milestone: M-04 | Pack wave: C | Level: 4 | Lane: epc-control
+  - Needs: E3-T03 (T-034)
+  - Foundation features used (public APIs only): F-46, F-47 (needs foundation wave 4)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S2. Module security baseline applies.
+  - Done when: six states, out-of-order moves refused, reopen needs a reason, time to resolve measured
+  - Tests: transition table tests; reopen count; metric by category
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T05** (T-036) Evaluation jobs (M)
+  - Feature: F-18 | Milestone: M-04 | Pack wave: B | Level: 4 | Lane: epc-control
+  - Needs: E3-T03 (T-034)
+  - Foundation features used (public APIs only): F-15, F-16, F-17 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-high-concurrency
+  - Security: S2. Module security baseline applies.
+  - Done when: event-driven and nightly evaluation per company with fairness and idempotence
+  - Tests: 30 seconds or less for 40 projects; kill-and-retry gives no duplicates; tenant fairness test
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T06** (T-037) Impact ranking and why-line (S)
+  - Feature: F-20 | Milestone: M-04 | Pack wave: B | Level: 4 | Lane: epc-control
+  - Needs: E3-T03 (T-034)
+  - Foundation features used (public APIs only): none (needs foundation wave 0)
+  - Agents: build gx-implementer | tests - | review module gate
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S1. Module security baseline applies.
+  - Done when: ranking by cash blocked, margin at risk and days of delay; each card shows the rule, threshold and value
+  - Tests: ranking determinism test; why-line for every rule
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T07** (T-038) Portfolio read models (M)
+  - Feature: F-21 | Milestone: M-04 | Pack wave: C | Level: 10 | Lane: epc-control
+  - Needs: E3-T05 (T-036), E2-T08 (T-030)
+  - Foundation features used (public APIs only): F-08 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: pulse numbers and 7 widget queries with row filters in the data layer
+  - Tests: tenant matrix; p95 list query within NF-01; scope filter test
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T08** (T-039) Owner home (M)
+  - Feature: F-20 | Milestone: M-04 | Pack wave: C | Level: 11 | Lane: epc-control
+  - Needs: E3-T06 (T-037), E3-T07 (T-038)
+  - Foundation features used (public APIs only): F-64, F-65 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests - | review gx-ux-reviewer, gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: home view from the design-system dashboard template, one primary action, light and dark
+  - Tests: contrast and colour-budget gates; 1280 px no horizontal scroll; screenshot diff; keyboard test
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T09** (T-040) Drill-down, explanation and freshness labels (M)
+  - Feature: F-21 | Milestone: M-04 | Pack wave: C | Level: 11 | Lane: epc-control
+  - Needs: E3-T07 (T-038)
+  - Foundation features used (public APIs only): F-65 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests - | review gx-ux-reviewer, gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S2. Module security baseline applies.
+  - Done when: every figure opens its records, explains its calculation and shows live, estimated, stale or manual with last update
+  - Tests: label test for each source type; drill reaches 1 step; empty states
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T10** (T-041) Approval queue (M)
+  - Feature: F-22 | Milestone: M-04 | Pack wave: C | Level: 5 | Lane: epc-control
+  - Needs: E3-T04 (T-035), E0-T06 (T-006)
+  - Foundation features used (public APIs only): F-49, F-34 (needs foundation wave 4)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S3. Threat: requester approves own request; approval lost in a half-applied change. Control: server-side separation, decision and state change in one transaction, audit actor.
+  - Done when: one queue for orders, changes, expenses and overrides with context; requester cannot approve
+  - Tests: negative: self-approval refused; decision and state change in one transaction; audit actor
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T11** (T-042) Backlog against crew capacity (S)
+  - Feature: F-26 | Milestone: M-07 | Pack wave: C | Level: 11 | Lane: epc-control
+  - Needs: E3-T07 (T-038)
+  - Foundation features used (public APIs only): F-16 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-ux-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: signed uninstalled jobs by age against capacity with a 60-day warning
+  - Tests: boundary test at 59, 60 and 61 days
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T12** (T-043) Daily and weekly digest (S)
+  - Feature: F-27 | Milestone: M-07 | Pack wave: C | Level: 11 | Lane: epc-control
+  - Needs: E3-T07 (T-038), E9-T01 (T-091)
+  - Foundation features used (public APIs only): F-17 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-compliance, epc-compliance-privacy
+  - Security: S2. Module security baseline applies.
+  - Done when: email digest of top exceptions, cash blocked and margin movers; unsubscribe link
+  - Tests: schedule test; no personal data in subject; one send per run
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T13** (T-044) Owner mobile view (S)
+  - Feature: F-28 | Milestone: M-07 | Pack wave: C | Level: 12 | Lane: epc-control
+  - Needs: E3-T08 (T-039)
+  - Foundation features used (public APIs only): F-65 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests - | review gx-ux-reviewer
+  - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature
+  - Security: S1. Module security baseline applies.
+  - Done when: exceptions, approvals and cash blocked first on phone widths
+  - Tests: 360 px layout test; touch targets 24 px or more
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T14** (T-045) Task model (M)
+  - Feature: F-23 | Milestone: M-03 | Pack wave: A | Level: 7 | Lane: epc-control
+  - Needs: E1-T07 (T-020)
+  - Foundation features used (public APIs only): F-08, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S2. Module security baseline applies.
+  - Done when: one task entity linked to any record with assignee, due date and status
+  - Tests: tenant matrix; scope filter; audit of reassign
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T15** (T-046) Reminders (S)
+  - Feature: F-23 | Milestone: M-03 | Pack wave: A | Level: 8 | Lane: epc-control
+  - Needs: E3-T14 (T-045), E9-T01 (T-091)
+  - Foundation features used (public APIs only): F-16, F-17 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: reminder job sends one reminder per task per rule and closes with the task
+  - Tests: retry sends once; no reminder after completion
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T16** (T-047) Record timeline (M)
+  - Feature: F-24 | Milestone: M-04 | Pack wave: A | Level: 7 | Lane: epc-control
+  - Needs: E1-T07 (T-020)
+  - Foundation features used (public APIs only): F-14, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design, gx-compliance, epc-compliance-privacy
+  - Security: S2. Module security baseline applies.
+  - Done when: time-ordered history per project, customer and supplier built from events and audit entries, filtered by the viewer's permissions
+  - Tests: scope filter test; ordering and paging on 5,000 entries; masked personal data
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E3-T17** (T-048) In-app notices (S)
+  - Feature: F-25 | Milestone: M-03 | Pack wave: A | Level: 8 | Lane: epc-control
+  - Needs: E3-T14 (T-045)
+  - Foundation features used (public APIs only): F-64, F-65 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests - | review gx-ux-reviewer
+  - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature
+  - Security: S1. Module security baseline applies.
+  - Done when: notice store, unread count and list in the shell for tasks, approvals and exceptions
+  - Tests: unread count test; notice for a task in another branch not shown
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.

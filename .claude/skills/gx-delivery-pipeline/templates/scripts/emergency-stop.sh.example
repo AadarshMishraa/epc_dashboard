@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# OPTIONAL. Copy to scripts/emergency-stop.sh. release-controls.yml runs it after it freezes deploys.
+#   usage: emergency-stop.sh <reason>
+# Freezing deploys stops NEW releases. This hook is for stopping harm from what is ALREADY live, using the
+# app-level kill switches you built (see gx-ops-readiness), for example:
+#   - flip the global feature flags off (new booking flow, new payment path, bulk messaging)
+#   - set maintenance / read-only mode for the affected module
+#   - pause queues and schedulers that send money, SMS, WhatsApp or email
+# Keep each action idempotent and reversible, and log who did it and why.
+set -euo pipefail
+echo "emergency stop requested: ${1:-no reason given}"

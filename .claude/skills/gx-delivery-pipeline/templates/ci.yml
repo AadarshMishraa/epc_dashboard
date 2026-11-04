@@ -1,0 +1,123 @@
+# GX CI template: GitHub Actions for a Next.js + Supabase monorepo. Adapt paths and commands.
+# CI proves a commit is releasable. Shipping it is deploy.yml (guard, deploy, acceptance, auto-revert, watch);
+# the manual levers (emergency stop, mark bad build) are release-controls.yml. deploy.yml starts when this
+# workflow succeeds on main, so keep the workflow name below as `ci`.
+# Pin third-party actions to full commit SHAs in real use (tags shown here for readability).
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - name: Code map is current
+        run: python3 .claude/gx/bin/codemap.py check
+
+  unit:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test -- --coverage
+
+  integration:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with: { version: latest }
+      - run: supabase db start
+      - name: Migrations apply cleanly
+        run: supabase db reset
+      - name: Database tests (RLS, tenant isolation, constraints)
+        run: supabase test db
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run test:integration
+
+  security:
+    needs: static
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm audit --audit-level=critical
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript-typescript }
+      - uses: github/codeql-action/analyze@v3
+
+  build:
+    needs: [unit, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+
+  e2e-smoke:
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Smoke the money and trust journeys against the preview URL
+        run: npx playwright test --grep @smoke
+        env:
+          BASE_URL: ${{ vars.PREVIEW_URL }}
+
+  # Release controls are safety code: test them like product code. Copy templates/scripts/* to scripts/ci/ first.
+  release-controls:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Shell syntax
+        run: for f in scripts/ci/*.sh; do bash -n "$f"; done
+      - name: Deploy window logic (2026-11-02 is a Monday, 2026-11-07 a Saturday)
+        run: |
+          set -u
+          export DEPLOY_TZ=Asia/Kolkata DEPLOY_DAYS=Mon,Tue,Wed,Thu DEPLOY_START_HOUR=10 DEPLOY_END_HOUR=17
+          ok()  { DEPLOY_NOW="$1" bash scripts/ci/deploy-window.sh >/dev/null || { echo "expected inside window: $1"; exit 1; }; }
+          bad() { if DEPLOY_NOW="$1" bash scripts/ci/deploy-window.sh >/dev/null; then echo "expected outside window: $1"; exit 1; fi; }
+          ok  "2026-11-02 11:00 +0530"   # Mon 11:00 IST
+          bad "2026-11-02 09:59 +0530"   # before opening
+          bad "2026-11-02 17:00 +0530"   # at close
+          bad "2026-11-07 11:00 +0530"   # Saturday
+          DEPLOY_BLOCKED_DATES=2026-11-03 bad "2026-11-03 11:00 +0530"   # blocked date
+      - name: Release scripts exist and the deploy workflow keeps its guard
+        run: |
+          for f in deploy.sh acceptance.sh watch.sh; do test -f "scripts/$f" || { echo "::error::scripts/$f is missing (copy the .example stub and implement it)"; exit 1; }; done
+          grep -q 'refs/tags/bad/' .github/workflows/deploy.yml
+          grep -q 'DEPLOY_FREEZE' .github/workflows/deploy.yml
+          grep -q 'deploy-window.sh' .github/workflows/deploy.yml

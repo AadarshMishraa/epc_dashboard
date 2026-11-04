@@ -1,0 +1,174 @@
+# E4 BOM, suppliers and procurement
+
+Supplier master, BOM and quantity states, quotation requests, comparison, purchase orders, promises, returns and change control.
+
+- **Lane:** `packs/epc/epc-materials`
+- **Tasks:** 14
+- **Foundation waves needed:** 0, 1, 2, 4, 5
+
+Tick a task when its done-when and tests pass and the definition of done in [the playbook](README.md) holds. Scope and acceptance criteria live in [the pack PRD](../prd/01-prd.md).
+
+## Features delivered
+
+- **F-29** Supplier master (Must, 3 acceptance criteria)
+- **F-30** BOM lines and quantity states (Must, 4 acceptance criteria)
+- **F-31** Request for quotation and supplier quote link (Must, 4 acceptance criteria)
+- **F-32** Quote capture, comparison and landed cost (Must, 4 acceptance criteria)
+- **F-33** Purchase orders and approvals (Must, 4 acceptance criteria)
+- **F-34** Supplier promises and ETAs (Must, 3 acceptance criteria)
+- **F-35** Returns and claims (Should, 0 acceptance criteria)
+- **F-36** BOM revision impact and change requests (Should, 0 acceptance criteria)
+- **F-07** Document generation (Must, 4 acceptance criteria)
+
+## Security baseline for this module
+
+Applies to every task below, on top of the repository [security guidelines](../../../../docs/guidelines/security-guidelines.md).
+
+- Every pack table has a tenant, forced row-level security and a negative cross-tenant test; the app role is not the owner.
+- Every new action is a declared permission with a negative test (caller without it is denied); the server decides, the interface only hides.
+- Every new field has a data class; personal data is masked in logs and audit diffs and has an erase and export handler.
+- Amounts are integer paise; issued invoice and receipt records are never edited, only corrected by linked records.
+- Files, links and imports are untrusted input: type, size and content checks, signed short-lived access, no personal data in URLs.
+
+## Tasks
+
+- [ ] **E4-T01** (T-049) Supplier master (M)
+  - Feature: F-29 | Milestone: M-05 | Pack wave: A | Level: 2 | Lane: epc-materials
+  - Needs: E0-T04 (T-004)
+  - Foundation features used (public APIs only): F-08, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: suppliers with GSTIN check, terms, credit limit, service area and delivery history
+  - Tests: GSTIN test; duplicate warning; on-time rate calculation
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T02** (T-050) BOM with revisions (M)
+  - Feature: F-30 | Milestone: M-05 | Pack wave: A | Level: 7 | Lane: epc-materials
+  - Needs: E1-T07 (T-020)
+  - Foundation features used (public APIs only): F-08, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: BOM and lines with spec, unit, quantity, wastage, alternatives, required-by date and flags; edits create revisions
+  - Tests: revision history test; tenant matrix
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T03** (T-051) Quantity state machine (M)
+  - Feature: F-30 | Milestone: M-05 | Pack wave: A | Level: 8 | Lane: epc-materials
+  - Needs: E4-T02 (T-050)
+  - Foundation features used (public APIs only): F-14 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-high-concurrency
+  - Security: S2. Module security baseline applies.
+  - Done when: planned, approved, ordered, received, reserved, issued, installed, returned and variance kept consistent
+  - Tests: property: 10,000 random sequences leave no negative or inconsistent quantity
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T04** (T-052) Request for quotation (M)
+  - Feature: F-31 | Milestone: M-05 | Pack wave: A | Level: 9 | Lane: epc-materials
+  - Needs: E4-T03 (T-051), E4-T01 (T-049), E9-T01 (T-091)
+  - Foundation features used (public APIs only): F-14 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: select lines, choose suppliers, send, track responses and validity
+  - Tests: each supplier sees only its lines; response count 2 of 3
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T05** (T-053) Supplier quote link (M)
+  - Feature: F-31 | Milestone: M-05 | Pack wave: A | Level: 10 | Lane: epc-materials
+  - Needs: E4-T04 (T-052)
+  - Foundation features used (public APIs only): none (needs foundation wave 0)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-compliance, epc-compliance-privacy
+  - Security: S3. Threat: guessed or leaked supplier link, data exposure to the wrong supplier. Control: 128-bit random token, expiry, per-link scope, rate limit, minimal data, no personal data in the URL (CMP-15).
+  - Done when: private link with a 128-bit token, expiry, rate limit, minimal data and a validated quote entry form (file upload follows in E4-T13)
+  - Tests: enumeration returns not found; expired link shows nothing; no personal data in the URL
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T06** (T-054) Quote capture, comparison and landed cost (M)
+  - Feature: F-32 | Milestone: M-05 | Pack wave: A | Level: 11 | Lane: epc-materials
+  - Needs: E4-T05 (T-053)
+  - Foundation features used (public APIs only): F-65 (needs foundation wave 1)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: quotes against the request compared on price, GST, freight, delivery, warranty and terms; incomplete flagged
+  - Tests: 100,000 / 98,000 / 99,500 case gives the stated order; partial flag
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T07** (T-055) Purchase order (M)
+  - Feature: F-33 | Milestone: M-05 | Pack wave: A | Level: 12 | Lane: epc-materials
+  - Needs: E4-T06 (T-054), E0-T02 (T-002)
+  - Foundation features used (public APIs only): F-14, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: order from the chosen quote with duplicate-number and duplicate-line guards and BOM links; sent orders change only by revision
+  - Tests: duplicate refused; edit after send refused; ordered quantity updates in the same transaction
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T08** (T-056) Purchase order approval (M)
+  - Feature: F-33 | Milestone: M-05 | Pack wave: C | Level: 13 | Lane: epc-materials
+  - Needs: E4-T07 (T-055), E0-T06 (T-006)
+  - Foundation features used (public APIs only): F-49, F-34 (needs foundation wave 4)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S3. Threat: one person raises and approves their own order. Control: separation of duties by threshold enforced on the server; denied attempts audited.
+  - Done when: approval by threshold with separation of duties; blocks sending until approved
+  - Tests: self-approval refused; threshold boundary tests; audit actor and time
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T09** (T-057) Supplier promises and ETAs (M)
+  - Feature: F-34 | Milestone: M-05 | Pack wave: A | Level: 13 | Lane: epc-materials
+  - Needs: E4-T07 (T-055)
+  - Foundation features used (public APIs only): F-16, F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: acknowledgement, promised dates and change log with the dependent jobs listed
+  - Tests: change log holds old and new; delay exception raised 2 days out
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T10** (T-058) Returns and claims (M)
+  - Feature: F-35 | Milestone: M-07 | Pack wave: D | Level: 15 | Lane: epc-materials
+  - Needs: E5-T02 (T-064)
+  - Foundation features used (public APIs only): F-19 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: damaged, short and warranty claims with credit notes and open-claim tracking
+  - Tests: claim states; open-claim count
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T11** (T-059) BOM revision impact (M)
+  - Feature: F-36 | Milestone: M-07 | Pack wave: A | Level: 13 | Lane: epc-materials
+  - Needs: E4-T02 (T-050), E4-T07 (T-055)
+  - Foundation features used (public APIs only): F-14 (needs foundation wave 2)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: compare revisions and list affected orders, reservations, cost and schedule before applying
+  - Tests: diff on 40 lines; affected-order list complete
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T12** (T-060) Change requests and superseded lock (M)
+  - Feature: F-36 | Milestone: M-07 | Pack wave: C | Level: 14 | Lane: epc-materials
+  - Needs: E4-T11 (T-059), E3-T10 (T-041)
+  - Foundation features used (public APIs only): F-49 (needs foundation wave 4)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design, gx-compliance, epc-compliance-privacy
+  - Security: S2. Module security baseline applies.
+  - Done when: reason, cost and schedule effect, internal and customer approval, new revision on approval; old revisions cannot drive new orders
+  - Tests: locked revision refused; override recorded
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T13** (T-061) Quote document attachments (M)
+  - Feature: F-31 | Milestone: M-05 | Pack wave: D | Level: 11 | Lane: epc-materials
+  - Needs: E4-T05 (T-053)
+  - Foundation features used (public APIs only): F-57, F-58 (needs foundation wave 5)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S3. Module security baseline applies.
+  - Done when: suppliers attach quote PDFs through the private link under the secure-upload rules; files are checked, stored privately and shown to staff by signed access
+  - Tests: oversize, spoofed type and traversal names refused; link scope test; scan state respected
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E4-T14** (T-062) Purchase order document (S)
+  - Feature: F-07 | Milestone: M-05 | Pack wave: D | Level: 14 | Lane: epc-materials
+  - Needs: E4-T08 (T-056), E0-T13 (T-013)
+  - Foundation features used (public APIs only): F-58 (needs foundation wave 5)
+  - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: approved orders render to a PDF and go to the supplier by email with the private link
+  - Tests: PDF totals equal order total; only approved orders render
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.

@@ -1,0 +1,4 @@
+# GX kit: per-session hook state (machine-local)
+.claude/gx/state/
+
+__pycache__/
