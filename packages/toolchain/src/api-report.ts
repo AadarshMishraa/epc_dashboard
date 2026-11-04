@@ -1,4 +1,4 @@
-import { basename } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import ts from 'typescript';
 
 /**
@@ -72,7 +72,7 @@ export function extractApi(options: {
 
   // Declaration output per source file, parsed, keyed by the source file name.
   const emitted = new Map<string, ts.SourceFile>();
-  program.emit(
+  const emit = program.emit(
     undefined,
     (fileName, text, _bom, _onError, sourceFiles) => {
       const from = sourceFiles?.[0]?.fileName;
@@ -86,26 +86,28 @@ export function extractApi(options: {
     undefined,
     true,
   );
+  const problems: string[] = emit.diagnostics.map(
+    (d) => `declaration output failed: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
+  );
 
   const moduleSymbol = checker.getSymbolAtLocation(source);
-  if (moduleSymbol === undefined) return { exports: [], problems: [] };
+  if (moduleSymbol === undefined) return { exports: [], problems };
   const exportSymbols = checker.getExportsOfModule(moduleSymbol);
-  const exportedTargets = new Set(exportSymbols.map((s) => resolve(checker, s)));
-  const problems: string[] = [];
+  const exported = exportedKeys(checker, exportSymbols);
 
-  const exports = exportSymbols.map((exported) => {
-    const target = resolve(checker, exported);
-    const declarations = describeDeclarations(checker, target, emitted);
-    for (const text of declarations) {
-      if (/\bany\b/.test(text)) {
-        problems.push(`${exported.name} exposes \`any\` in the public API: ${oneLine(text)}`);
-      }
+  const exports = exportSymbols.map((symbol) => {
+    const target = resolve(checker, symbol);
+    const { texts, nodes } = describeDeclarations(checker, target, emitted);
+    if (texts.length === 0) {
+      problems.push(
+        `${symbol.name} cannot be described from the declaration output, so its changes would be invisible`,
+      );
     }
-    problems.push(...forgottenExports(checker, target, exportedTargets, program, exported.name));
+    problems.push(...inspectDeclarations(symbol.name, nodes, emitted, exported));
     return {
-      name: exported.name,
-      meanings: meaningsOf(checker, exported),
-      declarations: declarations.sort(byText),
+      name: symbol.name,
+      meanings: meaningsOf(checker, symbol),
+      declarations: texts.sort(byText),
     };
   });
   return {
@@ -116,6 +118,24 @@ export function extractApi(options: {
 
 function resolve(checker: ts.TypeChecker, symbol: ts.Symbol): ts.Symbol {
   return (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? checker.getAliasedSymbol(symbol) : symbol;
+}
+
+/** `file#name` for every declaration reachable as an export, including `export * as ns` members. */
+function exportedKeys(checker: ts.TypeChecker, exports: readonly ts.Symbol[]): Set<string> {
+  const keys = new Set<string>();
+  for (const symbol of exports) {
+    const target = resolve(checker, symbol);
+    for (const declaration of target.declarations ?? []) {
+      if (ts.isSourceFile(declaration)) {
+        const moduleSymbol = checker.getSymbolAtLocation(declaration);
+        const members = moduleSymbol === undefined ? [] : checker.getExportsOfModule(moduleSymbol);
+        for (const member of exportedKeys(checker, members)) keys.add(member);
+      } else {
+        keys.add(`${declaration.getSourceFile().fileName}#${target.name}`);
+      }
+    }
+  }
+  return keys;
 }
 
 /** Meanings as seen by an importer, so `export type { x }` of a value is type-only. */
@@ -134,26 +154,32 @@ function meaningsOf(checker: ts.TypeChecker, exported: ts.Symbol): Meaning[] {
   return meanings;
 }
 
+interface EmittedNode {
+  readonly statement: ts.Statement;
+  readonly sourceFileName: string;
+}
+
 /** The emitted .d.ts statements that declare `target`, printed without comments. */
 function describeDeclarations(
   checker: ts.TypeChecker,
   target: ts.Symbol,
   emitted: ReadonlyMap<string, ts.SourceFile>,
-): string[] {
+): { texts: string[]; nodes: EmittedNode[] } {
   const texts: string[] = [];
+  const nodes: EmittedNode[] = [];
   for (const declaration of target.declarations ?? []) {
-    const dts = emitted.get(declaration.getSourceFile().fileName);
+    const sourceFileName = declaration.getSourceFile().fileName;
+    const dts = emitted.get(sourceFileName);
     if (ts.isSourceFile(declaration)) {
       // `export * as ns from './x.ts'`: the namespace is that module's whole surface.
-      texts.push(
-        dts === undefined
-          ? 'namespace (external)'
-          : `namespace {\n${print(dts.statements, dts)}\n}`,
-      );
+      if (dts !== undefined) {
+        texts.push(`namespace {\n${print(dts.statements, dts)}\n}`);
+        nodes.push(...dts.statements.map((statement) => ({ statement, sourceFileName })));
+      }
       continue;
     }
     if (dts === undefined) {
-      // Re-exported from another package: record the type, which names the package's own types.
+      // Re-exported from another package: record the type, which names that package's types.
       const type = checker.getTypeOfSymbolAtLocation(target, declaration);
       texts.push(
         `(external) ${checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)}`,
@@ -161,12 +187,31 @@ function describeDeclarations(
       continue;
     }
     const matches = dts.statements.filter((statement) => declares(statement, target.name));
-    if (matches.length > 0) texts.push(print(matches, dts));
+    if (matches.length > 0) {
+      texts.push(print(matches, dts));
+      nodes.push(...matches.map((statement) => ({ statement, sourceFileName })));
+    }
   }
-  return [...new Set(texts)];
+  return { texts: [...new Set(texts)], nodes };
 }
 
+const hasModifier = (node: ts.Node, kind: ts.SyntaxKind): boolean =>
+  (ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined)?.some((m) => m.kind === kind) ===
+  true;
+
 function declares(statement: ts.Statement, name: string): boolean {
+  if (name === 'default') {
+    // `export default function (...)`, `export default class {}`, and
+    // `declare const _default: ...; export default _default;` for expressions.
+    if (ts.isExportAssignment(statement)) return true;
+    if (hasModifier(statement, ts.SyntaxKind.DefaultKeyword)) return true;
+    if (ts.isVariableStatement(statement)) {
+      return statement.declarationList.declarations.some(
+        (d) => ts.isIdentifier(d.name) && d.name.text === '_default',
+      );
+    }
+    return false;
+  }
   if (ts.isVariableStatement(statement)) {
     return statement.declarationList.declarations.some(
       (d) => ts.isIdentifier(d.name) && d.name.text === name,
@@ -202,72 +247,110 @@ function print(statements: readonly ts.Statement[], file: ts.SourceFile): string
 }
 
 /**
- * A type used by an exported declaration but declared in this package and not exported
- * is a "forgotten export": consumers depend on it, but its changes would be invisible.
+ * Walks the emitted declarations, where inferred types are written out:
+ * `any` anywhere is a problem, and so is a "forgotten export", a type declared in this
+ * package but not exported, whose changes consumers depend on but would never see.
  */
-function forgottenExports(
-  checker: ts.TypeChecker,
-  target: ts.Symbol,
-  exportedTargets: ReadonlySet<ts.Symbol>,
-  program: ts.Program,
+function inspectDeclarations(
   exportName: string,
+  nodes: readonly EmittedNode[],
+  emitted: ReadonlyMap<string, ts.SourceFile>,
+  exported: ReadonlySet<string>,
 ): string[] {
   const problems: string[] = [];
-  const visit = (node: ts.Node): void => {
-    let nameNode: ts.Node | undefined;
-    if (ts.isTypeReferenceNode(node)) nameNode = node.typeName;
-    else if (ts.isExpressionWithTypeArguments(node)) nameNode = node.expression;
-    if (nameNode !== undefined) {
-      const symbol = checker.getSymbolAtLocation(
-        ts.isQualifiedName(nameNode) ? nameNode.left : nameNode,
-      );
-      const referenced = symbol === undefined ? undefined : resolve(checker, symbol);
-      const declaration = referenced?.declarations?.[0];
-      const file = declaration?.getSourceFile();
-      if (
-        referenced !== undefined &&
-        file !== undefined &&
-        !exportedTargets.has(referenced) &&
-        (referenced.flags & ts.SymbolFlags.TypeParameter) === 0 &&
-        !program.isSourceFileFromExternalLibrary(file) &&
-        !program.isSourceFileDefaultLibrary(file) &&
-        !file.fileName.includes('/node_modules/')
-      ) {
+  for (const { statement, sourceFileName } of nodes) {
+    const dts = emitted.get(sourceFileName);
+    if (dts === undefined) continue;
+    const visit = (node: ts.Node): void => {
+      if (node.kind === ts.SyntaxKind.AnyKeyword) {
+        problems.push(`${exportName} exposes \`any\` in the public API`);
+      }
+      // A private class member's type is not part of the API.
+      if (ts.isPropertyDeclaration(node) && hasModifier(node, ts.SyntaxKind.PrivateKeyword)) return;
+      const referenced = referencedDeclaration(node, sourceFileName, dts, emitted);
+      if (referenced !== undefined && !exported.has(referenced.key)) {
         problems.push(
           `${exportName} uses ${referenced.name}, which is declared in this package but not exported; export it so its changes are tracked`,
         );
       }
-    }
-    ts.forEachChild(node, visit);
-  };
-  for (const declaration of target.declarations ?? []) {
-    if (!ts.isSourceFile(declaration)) typePositions(declaration).forEach(visit);
+      ts.forEachChild(node, visit);
+    };
+    visit(statement);
   }
   return problems;
 }
 
-/** The type positions of a declaration, never function bodies or initialisers. */
-function typePositions(declaration: ts.Node): ts.Node[] {
-  const nodes: ts.Node[] = [];
-  const fromSignature = (d: ts.SignatureDeclaration): void => {
-    d.typeParameters?.forEach((p) => nodes.push(p));
-    for (const p of d.parameters) if (p.type !== undefined) nodes.push(p.type);
-    if (d.type !== undefined) nodes.push(d.type);
-  };
-  if (ts.isFunctionDeclaration(declaration)) fromSignature(declaration);
-  else if (ts.isVariableDeclaration(declaration)) {
-    if (declaration.type !== undefined) nodes.push(declaration.type);
-  } else if (ts.isClassDeclaration(declaration)) {
-    declaration.heritageClauses?.forEach((h) => nodes.push(h));
-    for (const member of declaration.members) {
-      const modifiers = ts.canHaveModifiers(member) ? ts.getModifiers(member) : undefined;
-      if (modifiers?.some((m) => m.kind === ts.SyntaxKind.PrivateKeyword) === true) continue;
-      if (ts.isPropertyDeclaration(member) && member.type !== undefined) nodes.push(member.type);
-      if (ts.isMethodDeclaration(member) || ts.isConstructorDeclaration(member))
-        fromSignature(member);
-    }
-  } else nodes.push(declaration);
-  return nodes;
+/** The package declaration a type reference in emitted .d.ts points at, if any. */
+function referencedDeclaration(
+  node: ts.Node,
+  sourceFileName: string,
+  dts: ts.SourceFile,
+  emitted: ReadonlyMap<string, ts.SourceFile>,
+): { key: string; name: string } | undefined {
+  if (ts.isImportTypeNode(node)) {
+    const literal = ts.isLiteralTypeNode(node.argument) ? node.argument.literal : undefined;
+    const name = node.qualifier === undefined ? undefined : leftmost(node.qualifier);
+    if (literal === undefined || !ts.isStringLiteral(literal) || name === undefined)
+      return undefined;
+    return inPackage(relativeSource(sourceFileName, literal.text, emitted), name, emitted);
+  }
+  let nameNode: ts.EntityName | ts.Expression | undefined;
+  if (ts.isTypeReferenceNode(node)) nameNode = node.typeName;
+  else if (ts.isExpressionWithTypeArguments(node)) nameNode = node.expression;
+  if (nameNode === undefined) return undefined;
+  const name = ts.isIdentifier(nameNode)
+    ? nameNode.text
+    : ts.isQualifiedName(nameNode)
+      ? leftmost(nameNode)
+      : undefined;
+  if (name === undefined) return undefined;
+  if (dts.statements.some((statement) => declares(statement, name))) {
+    return { key: `${sourceFileName}#${name}`, name };
+  }
+  for (const statement of dts.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+      continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings === undefined || !ts.isNamedImports(bindings)) continue;
+    const element = bindings.elements.find((e) => e.name.text === name);
+    if (element === undefined) continue;
+    const original = element.propertyName?.text ?? name;
+    return inPackage(
+      relativeSource(sourceFileName, statement.moduleSpecifier.text, emitted),
+      original,
+      emitted,
+    );
+  }
+  return undefined;
+}
+
+function leftmost(name: ts.EntityName): string {
+  return ts.isIdentifier(name) ? name.text : leftmost(name.left);
+}
+
+/** The package source file a relative specifier in a .d.ts refers to, or undefined. */
+function relativeSource(
+  from: string,
+  specifier: string,
+  emitted: ReadonlyMap<string, ts.SourceFile>,
+): string | undefined {
+  if (!specifier.startsWith('.')) return undefined;
+  const base = join(dirname(from), specifier).replace(/\.(?:d\.ts|js|ts)$/, '');
+  return [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find((candidate) =>
+    emitted.has(candidate),
+  );
+}
+
+function inPackage(
+  file: string | undefined,
+  name: string,
+  emitted: ReadonlyMap<string, ts.SourceFile>,
+): { key: string; name: string } | undefined {
+  if (file === undefined) return undefined;
+  const dts = emitted.get(file);
+  return dts?.statements.some((statement) => declares(statement, name)) === true
+    ? { key: `${file}#${name}`, name }
+    : undefined;
 }
 
 function oneLine(text: string): string {
@@ -360,7 +443,8 @@ function interfaceParts(text: string): InterfaceParts | undefined {
     header: text.slice(0, text.indexOf('{')),
     members: statement.members.map((m) => ({
       text: printer.printNode(ts.EmitHint.Unspecified, m, file),
-      optional: ts.isPropertySignature(m) && m.questionToken !== undefined,
+      optional:
+        (ts.isPropertySignature(m) || ts.isMethodSignature(m)) && m.questionToken !== undefined,
     })),
   };
 }

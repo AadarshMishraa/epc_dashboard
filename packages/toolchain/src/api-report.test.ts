@@ -247,6 +247,73 @@ describe('fail-closed extraction rules', () => {
   });
 });
 
+describe('second review findings', () => {
+  it.each([
+    [
+      'an anonymous default function',
+      'export default function (a: string): void {}',
+      'export default function (a: number): void {}',
+    ],
+    [
+      'an anonymous default class',
+      'export default class { size = 1; }',
+      'export default class { size = "1"; }',
+    ],
+    ['a default object', 'export default { a: 1 };', "export default { a: 'x' };"],
+  ])('describes and diffs %s', (_label, before, after) => {
+    const { exports, problems } = extract(workspace(before));
+    expect(problems).toEqual([]);
+    expect(exports[0]?.declarations.length).toBeGreaterThan(0);
+    expect(diff(before, after).map((c) => c.breaking)).toEqual([true]);
+  });
+
+  it.each([
+    [
+      'a const from a factory',
+      "import { mk } from './h.ts';\nexport const x = mk();",
+      {
+        'h.ts':
+          'export interface Hidden { a: number }\nexport function mk(): Hidden { return { a: 1 }; }\n',
+      },
+    ],
+    [
+      'an inferred return type',
+      "import { mk } from './h.ts';\nexport function f() { return mk(); }",
+      {
+        'h.ts':
+          'export interface Hidden { a: number }\nexport function mk(): Hidden { return { a: 1 }; }\n',
+      },
+    ],
+    [
+      'a getter',
+      "import type { Hidden } from './h.ts';\nexport class Box { get h(): Hidden { return { a: 1 }; } }",
+      { 'h.ts': 'export interface Hidden { a: number }\n' },
+    ],
+    [
+      'a type in the same file',
+      'interface Hidden { a: number }\nexport function f(): Hidden { return { a: 1 }; }',
+      {},
+    ],
+  ])('reports a forgotten export through %s', (_label, source, extra) => {
+    const { problems } = extract(workspace(source, '1.0.0', extra));
+    expect(problems.join()).toContain(
+      'uses Hidden, which is declared in this package but not exported',
+    );
+  });
+
+  it('does not mistake the string "any" for the any type', () => {
+    expect(
+      extract(workspace("export const MODE = 'any';\nexport type Mode = 'any' | 'none';")).problems,
+    ).toEqual([]);
+  });
+
+  it('treats a new optional method as widening', () => {
+    expect(
+      diff('export interface I { a(): void }', 'export interface I { a(): void; b?(): void }')[0],
+    ).toMatchObject({ kind: 'widened', breaking: false });
+  });
+});
+
 describe('diffApi', () => {
   it('finds nothing when only comments changed', () => {
     expect(diff('/** a */\nexport const A = 1;', '/** b */\nexport const A = 1;')).toEqual([]);
