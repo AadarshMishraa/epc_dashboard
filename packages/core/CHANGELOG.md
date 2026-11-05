@@ -16,6 +16,11 @@ Notable changes to `@gx/core`. Versions follow semver over the public API in `sr
   - Errors and `cause` values are summarised by type and code (`summariseError`), never by message, detail or stack. `Secret` prints `[secret]`.
   - The walker never calls getters, `toJSON` or `toString`. It caps depth, breadth, cause chains and string length (`REDACTION_LIMITS`) and marks cycles.
   - The logger never throws. A line it cannot build becomes a fallback line with the ids and `redaction_failed: true`, and sink and lookup failures go to `onFailure`.
+  - After the security review: values are normalised first (NFKC, other-script digits, no-break spaces, typographic dashes); digit patterns accept dots, slashes and parentheses as separators; PAN and GSTIN match in any case; numbers of 9 or more digits are backstopped unless their key ends in a unit (`amount_paise`, `_millis`); values under personal keys (`isPersonalKey`: name, phone, email, address, account number and others, by whole words) are masked; error-shaped plain objects are summarised; connection-string credentials, cookies, header arrays and provider key shapes are removed; one node and character budget (`RedactOptions`) bounds the whole walk; C1 controls and bidirectional marks are escaped; event keys must not hold maskable values.
+
+### Changed
+
+- `parseCorrelationId` also rejects an id the log backstop would change (a phone number, a long number), so correlation ids stay readable and unique in logs; the caller mints a fresh one.
 
 ### Fixed
 

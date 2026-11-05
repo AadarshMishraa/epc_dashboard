@@ -729,7 +729,7 @@
         "value"
       ],
       "declarations": [
-        "declare const LIMITS: Readonly<{\n    string: 2048;\n    depth: 6;\n    breadth: 50;\n    causes: 3;\n}>;"
+        "declare const LIMITS: Readonly<{\n    string: 2048;\n    depth: 6;\n    breadth: 50;\n    causes: 3;\n    nodes: 2000;\n    chars: 16384;\n    message: 256;\n}>;"
       ]
     },
     {
@@ -739,6 +739,15 @@
       ],
       "declarations": [
         "type RandomBytes = (target: Uint8Array) => void;"
+      ]
+    },
+    {
+      "name": "RedactOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface RedactOptions {\n    readonly maxNodes?: number;\n    readonly maxChars?: number;\n    readonly classifiedKeys?: ReadonlySet<string>;\n}"
       ]
     },
     {
@@ -1040,6 +1049,15 @@
       ]
     },
     {
+      "name": "isPersonalKey",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isPersonalKey(key: string): boolean;"
+      ]
+    },
+    {
       "name": "isQuotaAmount",
       "meanings": [
         "value"
@@ -1171,7 +1189,7 @@
         "value"
       ],
       "declarations": [
-        "declare function redactValue(value: unknown, depth?: number, seen?: WeakSet<object>): unknown;"
+        "declare function redactValue(value: unknown, options?: RedactOptions): unknown;"
       ]
     },
     {

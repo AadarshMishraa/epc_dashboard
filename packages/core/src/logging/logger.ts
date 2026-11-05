@@ -45,8 +45,15 @@ export interface LoggerOptions {
 /** Dotted snake_case event keys, such as `invoice.issue_failed`. */
 const EVENT = /^[a-z0-9_]{1,40}(?:\.[a-z0-9_]{1,40}){0,4}$/;
 const INVALID_EVENT = 'log.invalid_event';
+
+/** An event key must be dotted snake_case and hold nothing the backstop would mask. */
+function eventKey(event: string): string {
+  return EVENT.test(event) && redactString(event) === event ? event : INVALID_EVENT;
+}
 const DEFAULT_MAX_LINE_CHARS = 16_384;
 const MIN_LINE_CHARS = 1_024;
+/** Room kept for `"fields":{}`, `fields_omitted` and JSON escapes the walk cannot see. */
+const FIELDS_OVERHEAD = 256;
 const RANK: Readonly<Record<LogLevel, number>> = { debug: 0, info: 1, warn: 2, error: 3 };
 const MASK: Readonly<Partial<Record<Classification, string>>> = {
   personal: '[personal]',
@@ -80,14 +87,25 @@ function describeActor(actor: Actor): Record<string, unknown> {
   }
 }
 
-/** U+2028 and U+2029 are valid in JSON but end a line in some viewers; escape them too. */
-const LINE_SEPARATOR = new RegExp(String.fromCharCode(0x2028), 'g');
-const PARAGRAPH_SEPARATOR = new RegExp(String.fromCharCode(0x2029), 'g');
+const cp = (code: number): string => String.fromCodePoint(code);
+const span = (from: number, to: number): string => `${cp(from)}-${cp(to)}`;
+/**
+ * Characters JSON leaves raw that a log viewer may act on: DEL and C1 controls (CSI starts a
+ * terminal sequence), the line and paragraph separators, zero-width and bidirectional marks
+ * (an override can make a line read backwards), and the byte-order mark.
+ */
+const UNSAFE = new RegExp(
+  `[${span(0x7f, 0x9f)}${cp(0x061c)}${span(0x200b, 0x200f)}${span(0x2028, 0x202e)}${span(0x2066, 0x2069)}${cp(0xfeff)}]`,
+  'g',
+);
 
+function escapeUnsafe(char: string): string {
+  return `\\u${(char.codePointAt(0) ?? 0).toString(16).padStart(4, '0')}`;
+}
+
+/** One JSON line; JSON escapes C0 controls, and every other unsafe character is escaped too. */
 function oneLine(record: Record<string, unknown>): string {
-  return JSON.stringify(record)
-    .replace(LINE_SEPARATOR, '\\u2028')
-    .replace(PARAGRAPH_SEPARATOR, '\\u2029');
+  return JSON.stringify(record).replace(UNSAFE, escapeUnsafe);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -134,7 +152,7 @@ export function createLogger(context: Context, options: LoggerOptions): Logger {
   const header = (level: LogLevel, event: string): Record<string, unknown> => ({
     ts: new Date(context.clock.nowMillis()).toISOString(),
     level,
-    event: EVENT.test(event) ? event : INVALID_EVENT,
+    event: eventKey(event),
     ...ids(),
     actor: describeActor(context.actor),
     ...(context.initiatedBy === undefined
@@ -154,14 +172,17 @@ export function createLogger(context: Context, options: LoggerOptions): Logger {
     entity: string | undefined,
   ): {
     shaped: Record<string, unknown>;
+    classified: ReadonlySet<string>;
     omitted: number;
   } => {
-    if (fields === undefined) return { shaped: {}, omitted: 0 };
+    const classified = new Set<string>();
+    if (fields === undefined) return { shaped: {}, classified, omitted: 0 };
     // An Error, class instance or array passed as fields is one value, never a field map.
-    if (!isPlainObject(fields)) return { shaped: { value: fields }, omitted: 0 };
+    if (!isPlainObject(fields)) return { shaped: { value: fields }, classified, omitted: 0 };
     const keys = Object.keys(fields);
     const shaped: Record<string, unknown> = {};
     for (const key of keys.slice(0, LIMITS.breadth)) {
+      if (entity !== undefined) classified.add(key);
       const mask = entity === undefined ? undefined : MASK[classification(entity, key)];
       if (mask !== undefined) {
         setOwn(shaped, key, mask);
@@ -174,19 +195,29 @@ export function createLogger(context: Context, options: LoggerOptions): Logger {
         descriptor !== undefined && 'value' in descriptor ? descriptor.value : '[getter]',
       );
     }
-    return { shaped, omitted: Math.max(keys.length - LIMITS.breadth, 0) };
+    return { shaped, classified, omitted: Math.max(keys.length - LIMITS.breadth, 0) };
+  };
+
+  const timestamp = (): Record<string, unknown> => {
+    try {
+      return { ts: new Date(context.clock.nowMillis()).toISOString() };
+    } catch {
+      return {};
+    }
   };
 
   const fallback = (level: LogLevel, event: string): string => {
     try {
       return oneLine({
+        ...timestamp(),
         level,
-        event: EVENT.test(event) ? event : INVALID_EVENT,
+        event: eventKey(event),
         ...ids(),
         redaction_failed: true,
       });
     } catch {
-      return '{"event":"log.redaction_failed","redaction_failed":true}';
+      // The context itself is broken: say so with constants only. `level` is one of ours.
+      return `{"level":"${level}","event":"log.redaction_failed","redaction_failed":true}`;
     }
   };
 
@@ -195,8 +226,11 @@ export function createLogger(context: Context, options: LoggerOptions): Logger {
     let line: string;
     try {
       const head = header(level, event);
-      const { shaped, omitted } = shape(fields, call?.entity);
-      const body: Record<string, unknown> = { ...head, fields: redactValue(shaped) ?? {} };
+      const { shaped, classified, omitted } = shape(fields, call?.entity);
+      // The walk stops at the room the header leaves, so a huge value costs no more than a line.
+      const room = Math.max(maxChars - oneLine(head).length - FIELDS_OVERHEAD, 0);
+      const redacted = redactValue(shaped, { maxChars: room, classifiedKeys: classified });
+      const body: Record<string, unknown> = { ...head, fields: redacted ?? {} };
       if (omitted > 0) body['fields_omitted'] = omitted;
       line = oneLine(body);
       if (line.length > maxChars) {

@@ -2,6 +2,7 @@ import type { Clock } from './clock.ts';
 import { coreError, type AppError } from './errors.ts';
 import { isId, type Id } from './ids.ts';
 import { err, ok, type Result } from './result.ts';
+import { redactString } from './logging/redact.ts';
 
 declare const correlationIdBrand: unique symbol;
 declare const tenantIdBrand: unique symbol;
@@ -25,10 +26,14 @@ const AI_CLIENT_ID_PATTERN = /^[A-Za-z0-9._:/?#&=%~+-]{1,256}$/;
 
 /**
  * Accepts a correlation id from an untrusted source (a header, a queued job) only if it is
- * 1 to 128 characters of letters, digits and `._:-`, so it cannot inject log lines or markup.
+ * 1 to 128 characters of letters, digits and `._:-`, so it cannot inject log lines or markup,
+ * and holds nothing the log backstop would mask (a phone number, a long number), so it stays
+ * readable and unique in logs. A rejected id means the caller mints a fresh one.
  */
 export function parseCorrelationId(value: unknown): CorrelationId | undefined {
-  return typeof value === 'string' && CORRELATION_ID_PATTERN.test(value)
+  return typeof value === 'string' &&
+    CORRELATION_ID_PATTERN.test(value) &&
+    redactString(value) === value
     ? (value as CorrelationId)
     : undefined;
 }

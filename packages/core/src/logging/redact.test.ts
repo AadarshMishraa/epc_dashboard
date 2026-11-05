@@ -159,7 +159,7 @@ describe('summariseError', () => {
     expect(summary).toEqual({
       type: 'DatabaseError',
       code: '23505',
-      cause: { type: 'TypeError', code: 'ERR_INVALID_ARG' },
+      cause: { type: 'TypeError', code: 'ERR_INVALID_ARG', message: 'row [email]' },
     });
     expect(JSON.stringify(summary)).not.toMatch(/9876543210|ravi/);
   });
@@ -285,7 +285,7 @@ describe('redactValue', () => {
     expect(
       redactValue({
         map: new Map<unknown, unknown>([
-          ['phone', '9876543210'],
+          ['note', '9876543210'],
           [7, 'seven'],
         ]),
         set: new Set(['ravi@example.com']),
@@ -295,7 +295,7 @@ describe('redactValue', () => {
         nullProto: Object.assign(Object.create(null) as object, { a: 1 }),
       }),
     ).toEqual({
-      map: { phone: '[phone]', 7: 'seven' },
+      map: { note: '[phone]', 7: 'seven' },
       set: ['[email]'],
       date: '1970-01-01T00:00:00.000Z',
       bad: '[invalid date]',
@@ -313,9 +313,9 @@ describe('redactValue', () => {
   });
 
   it('marks cycles and caps depth and breadth', () => {
-    const cycle: Record<string, unknown> = { name: 'a' };
+    const cycle: Record<string, unknown> = { label: 'a' };
     cycle['self'] = cycle;
-    expect(redactValue(cycle)).toEqual({ name: 'a', self: '[circular]' });
+    expect(redactValue(cycle)).toEqual({ label: 'a', self: '[circular]' });
 
     let deep: unknown = '9876543210';
     for (let index = 0; index < LIMITS.depth + 2; index += 1) deep = { next: deep };
@@ -409,5 +409,381 @@ describe('redactValue', () => {
         expect(JSON.stringify(redactValue(value))).not.toMatch(leaks);
       }),
     );
+  });
+});
+
+// Security review of K0-T04 (2026-11-05): one block per finding.
+describe('review H1: numbers are personal data too', () => {
+  it('backstops integers of 9 or more digits and keeps smaller ones', () => {
+    expect(
+      redactValue({
+        contact: 9876543210,
+        ref: 234567890123,
+        account: 123456789012345,
+        big: 9876543210n,
+        invoice: 1042,
+        largest: 99_999_999,
+      }),
+    ).toEqual({
+      contact: '[phone]',
+      ref: NATIONAL_ID_TOKEN,
+      account: '[number]',
+      big: '[phone]',
+      invoice: 1042,
+      largest: 99_999_999,
+    });
+  });
+
+  it('keeps numbers under a key that ends in a unit, so amounts and times stay readable', () => {
+    expect(
+      redactValue({
+        amount_paise: 9_876_543_210,
+        totalPaise: 12_345_678_901n,
+        started_at_millis: 1_762_300_000_000,
+        grand_total: '125000000000',
+        size_bytes: 234_567_890_123,
+      }),
+    ).toEqual({
+      amount_paise: 9_876_543_210,
+      totalPaise: '12345678901',
+      started_at_millis: 1_762_300_000_000,
+      grand_total: '125000000000',
+      size_bytes: 234_567_890_123,
+    });
+  });
+
+  it('still backstops a non-numeric string under a unit key', () => {
+    expect(redactValue({ amount: 'paid by 9876543210' })).toEqual({ amount: 'paid by [phone]' });
+  });
+});
+
+describe('review H2: real-world formats', () => {
+  const nbsp = String.fromCharCode(0xa0);
+  const enDash = String.fromCharCode(0x2013);
+  const devanagari = Array.from('9876543210', (d) => String.fromCharCode(0x966 + Number(d))).join(
+    '',
+  );
+  const fullwidth = Array.from('9876543210', (d) => String.fromCharCode(0xff10 + Number(d))).join(
+    '',
+  );
+
+  it.each([
+    ['dotted id', '2345.6789.0123', NATIONAL_ID_TOKEN],
+    ['slashed id', '2345/6789/0123', NATIONAL_ID_TOKEN],
+    ['double-spaced id', '2345  6789  0123', NATIONAL_ID_TOKEN],
+    ['id with no-break spaces', `2345${nbsp}6789${nbsp}0123`, NATIONAL_ID_TOKEN],
+    ['id grouped 2-4-6', '23 4567 890123', NATIONAL_ID_TOKEN],
+    ['dotted +91', '+91.98765.43210', '[phone]'],
+    ['3-3-4 phone', '987.654.3210', '[phone]'],
+    ['en-dash phone', `98765${enDash}43210`, '[phone]'],
+    ['Devanagari digits', devanagari, '[phone]'],
+    ['fullwidth digits', fullwidth, '[phone]'],
+    ['lowercase PAN', 'abcpk1234f', '[pan]'],
+    ['lowercase GSTIN', '27abcpk1234f1z5', '[gstin]'],
+    ['Devanagari email', 'रवि@example.com', '[email]'],
+  ])('masks a %s', (_label, seed, token) => {
+    expect(redactString(`x ${seed} y`)).toBe(`x ${token} y`);
+  });
+
+  it('masks a bracketed phone and an account number glued to letters, leaving no digits', () => {
+    expect(redactString('(98765) 43210')).not.toMatch(/\d/);
+    expect(redactString('AC12345678901')).toBe('AC[number]');
+  });
+
+  it('keeps a hex token whose digits run into letters', () => {
+    expect(redactString('etag a1234567890b')).toBe('etag a1234567890b');
+  });
+});
+
+describe('review M1: credentials', () => {
+  it('removes credentials from connection strings', () => {
+    expect(redactString('postgres://app:S3cretPw@10.0.0.5:5432/epc')).toBe(
+      'postgres://[redacted]@10.0.0.5:5432/epc',
+    );
+    expect(redactString('redis://:hunter2hunter2@10.0.0.1:6379')).toBe(
+      'redis://[redacted]@10.0.0.1:6379',
+    );
+  });
+
+  it('removes every value of a cookie string, the first one included', () => {
+    expect(redactString('sid=abc123secretvalue; theme=dark')).toBe(
+      'sid=[redacted]; theme=[redacted]',
+    );
+  });
+
+  it('removes the value after a secret-looking name in a header array', () => {
+    expect(
+      redactValue([
+        'Cookie',
+        'sid=abc123secret',
+        'X-Api-Key',
+        'opaque-key-value',
+        'Accept',
+        'json',
+      ]),
+    ).toEqual(['Cookie', '[redacted]', 'X-Api-Key', '[redacted]', 'Accept', 'json']);
+  });
+
+  it('masks provider key shapes and Token credentials', () => {
+    // Built at run time so secret scanners do not flag the fixtures.
+    const keys = [
+      ['gh', 'p_', 'a'.repeat(36)],
+      ['AK', 'IA', 'B'.repeat(16)],
+      ['sk_', 'live_', 'x'.repeat(24)],
+      ['rzp_', 'test_', 'y'.repeat(14)],
+      ['xo', 'xb-', '1'.repeat(12), '-abcdefghij'],
+      ['sb_', 'secret_', 'z'.repeat(20)],
+    ].map((parts) => parts.join(''));
+    for (const key of keys) expect(redactString(`key ${key} end`)).toBe('key [secret] end');
+    expect(redactString('Token abcdefghijklmnop')).toBe('Token [secret]');
+  });
+
+  it.each([
+    'mpin',
+    'upi_pin',
+    'cvv', // privacycheck:ignore (a key name the backstop removes)
+    'auth',
+    'jwt',
+    'dsn',
+    'connectionString',
+    'refreshToken',
+    'stripe-signature',
+  ])('treats %s as a secret key', (key) => {
+    expect(isSecretKey(key)).toBe(true);
+  });
+
+  it.each(['prompt_tokens', 'passengers', 'footprint', 'author', 'pincode', 'shipping', 'compass'])(
+    'does not treat %s as a secret key',
+    (key) => {
+      expect(isSecretKey(key)).toBe(false);
+    },
+  );
+});
+
+describe('review M2: one budget for the whole walk', () => {
+  /** A tree of shared children: tiny to build, 50^depth nodes to walk without a budget. */
+  function sharedTree(depth: number): unknown {
+    let node: unknown = 'leaf';
+    for (let level = 0; level < depth; level += 1) node = Array.from({ length: 50 }, () => node);
+    return node;
+  }
+
+  it('stops a wide and deep tree at the budget and says so', () => {
+    const started = performance.now();
+    const out = JSON.stringify(redactValue(sharedTree(5)));
+    expect(performance.now() - started).toBeLessThan(100);
+    expect(out).toContain('[budget exceeded]');
+    expect(out.length).toBeLessThan(LIMITS.chars * 2);
+  });
+
+  it('honours a smaller node or character budget', () => {
+    const nodes = JSON.stringify(redactValue(sharedTree(2), { maxNodes: 10 }));
+    expect(nodes.match(/leaf/g)?.length ?? 0).toBeLessThanOrEqual(10);
+    const chars = JSON.stringify(
+      redactValue({ a: 'x'.repeat(500), b: 'y'.repeat(500) }, { maxChars: 600 }),
+    );
+    expect(chars).toContain('[budget exceeded]');
+  });
+
+  it('walks a shared reference each time instead of calling it circular', () => {
+    const shared = { a: 1 };
+    expect(redactValue({ x: shared, y: [shared] })).toEqual({ x: { a: 1 }, y: [{ a: 1 }] });
+  });
+});
+
+describe('review M3: personal keys and error-shaped objects', () => {
+  it('masks values under personal keys, whatever they hold', () => {
+    expect(
+      redactValue({
+        name: 'Ravi Kumar',
+        customerName: 'Ravi Kumar',
+        phone_number: 'n/a',
+        email_address: 'hidden',
+        account_number: 'AC-1',
+        lat: 18.52,
+        has_phone: true,
+        dob: null,
+      }),
+    ).toEqual({
+      name: '[personal]',
+      customerName: '[personal]',
+      phone_number: '[personal]',
+      email_address: '[personal]',
+      account_number: '[personal]',
+      lat: '[personal]',
+      has_phone: true,
+      dob: null,
+    });
+  });
+
+  it('leaves technical keys that contain a personal word alone', () => {
+    expect(
+      redactValue({
+        file_name: 'invoice.pdf',
+        event_name: 'lead.created',
+        tenant_name: 'Suryakiran Solar',
+        email_template: 'welcome',
+        phone_verified: 'yes',
+      }),
+    ).toEqual({
+      file_name: 'invoice.pdf',
+      event_name: 'lead.created',
+      tenant_name: 'Suryakiran Solar',
+      email_template: 'welcome',
+      phone_verified: 'yes',
+    });
+  });
+
+  it('skips the personal-key check only for top-level keys a classification decided', () => {
+    expect(
+      redactValue(
+        { name: 'Panel 540W', nested: { name: 'Ravi' } },
+        { classifiedKeys: new Set(['name']) },
+      ),
+    ).toEqual({ name: 'Panel 540W', nested: { name: '[personal]' } });
+  });
+
+  it('summarises a PostgREST-style error under any key', () => {
+    const error = {
+      code: '23505',
+      message: 'duplicate key value',
+      details: 'Key (name)=(Ravi Kumar) already exists.',
+      hint: null,
+    };
+    expect(redactValue({ error, list: [error] })).toEqual({
+      error: { type: 'Object', code: '23505' },
+      list: [{ type: 'Object', code: '23505' }],
+    });
+  });
+
+  it('keeps redacted messages for programmer errors only', () => {
+    expect(
+      summariseError(new TypeError("Cannot read properties of undefined (reading 'phone')")),
+    ).toEqual({
+      type: 'TypeError',
+      message: "Cannot read properties of undefined (reading 'phone')",
+    });
+    let syntax: unknown;
+    try {
+      JSON.parse('Ravi 9876543210');
+    } catch (error) {
+      syntax = error;
+    }
+    expect(summariseError(syntax)).toEqual({ type: 'SyntaxError' });
+  });
+});
+
+describe('review L1: truncation leaves no partial value', () => {
+  it.each([
+    ['a national id', ' 2345 6789 0123'],
+    ['a phone', ' 98765 43210'],
+    ['an email', ' ravi.kumar@example.com'],
+  ])('masks %s that straddles the cut', (_label, seed) => {
+    for (const offset of [-12, -6, -3, 0]) {
+      const text = 'x'.repeat(LIMITS.string + offset) + seed + ' tail';
+      const out = redactString(text);
+      expect(out.replace(/\[truncated \d+ chars\]$/, '')).not.toMatch(/\d{2,}|ravi/);
+    }
+  });
+});
+
+describe('review: property test over more shapes and number leaves', () => {
+  it('never lets a seeded value through', () => {
+    const hidden = Symbol('hidden');
+    class Holder {
+      readonly value: unknown;
+      constructor(value: unknown) {
+        this.value = value;
+      }
+    }
+    const leaks = /9876543210|98765.43210|234567890123|ravi|ABCPK1234F|leakme/i;
+    const seeds: unknown[] = [
+      9876543210,
+      234567890123,
+      9876543210n,
+      '98765.43210',
+      `2345${String.fromCharCode(0xa0)}6789${String.fromCharCode(0xa0)}0123`,
+      'RAVI@example.com',
+      'abcpk1234f',
+      'postgres://u:leakme@db/x',
+    ];
+    const wrappers: ((value: unknown) => unknown)[] = [
+      (v) => ({ field: v }),
+      (v) => [v],
+      (v) => new Map([['field', v]]),
+      (v) => new Set([v]),
+      (v) => Object.defineProperty({}, 'field', { get: () => v, enumerable: true }),
+      (v) => ({ toJSON: () => v, field: 1 }),
+      (v) => ({ [hidden]: v }),
+      (v) => new Holder(v),
+      (v) => ({ code: 'X1', message: String(v), details: v }),
+      (v) => ({ cause: v }),
+      (v) => ({ name: v, phone: v }),
+    ];
+    fc.assert(
+      fc.property(
+        fc.constantFrom(...seeds),
+        fc.array(fc.integer({ min: 0, max: wrappers.length - 1 }), { maxLength: 6 }),
+        (seed, path) => {
+          let value = seed;
+          for (const index of path) value = wrappers[index]?.(value) ?? value;
+          expect(JSON.stringify(redactValue(value))).not.toMatch(leaks);
+        },
+      ),
+    );
+  });
+
+  it('handles 64 KB of no-break spaces and other-script digits inside the budget', () => {
+    const nbsp = String.fromCharCode(0xa0);
+    for (const input of [`9${nbsp}`.repeat(32_000), String.fromCharCode(0x96f).repeat(65_536)]) {
+      const started = performance.now();
+      redactString(input);
+      expect(performance.now() - started).toBeLessThan(100);
+    }
+  });
+});
+
+describe('review: normalisation and cut details', () => {
+  const fullwidth = (text: string): string =>
+    Array.from(text, (char) => String.fromCharCode(char.charCodeAt(0) + 0xfee0)).join('');
+
+  it('folds fullwidth letters and the fullwidth @ before matching', () => {
+    expect(redactString(fullwidth('ABCPK1234F'))).toBe('[pan]');
+    expect(redactString(fullwidth('ravi@example.com'))).toBe('[email]');
+  });
+
+  it('treats tabs and spaces NFKC leaves alone as separators', () => {
+    const ogham = String.fromCharCode(0x1680);
+    expect(redactString('2345\t6789\t0123')).toBe(NATIONAL_ID_TOKEN);
+    expect(redactString(`98765${ogham}43210`)).toBe('[phone]');
+  });
+
+  it('never ends a clipped string with part of a token', () => {
+    for (let offset = 1; offset < 8; offset += 1) {
+      const out = redactString(
+        `${'x'.repeat(LIMITS.string - offset)} 9876543210 ${'y'.repeat(100)}`,
+      );
+      expect(out).toMatch(/(?:x|\[phone\]) ?…\[truncated \d+ chars\]$/);
+    }
+  });
+
+  it('stops filling an object once the budget is spent and marks where', () => {
+    const wide = Object.fromEntries(
+      Array.from({ length: 50 }, (_, index) => [`k${String(index)}`, 'v'.repeat(40)]),
+    );
+    const out = redactValue(wide, { maxChars: 400 }) as Record<string, unknown>;
+    expect(out['[truncated]']).toBe('[budget exceeded]');
+    expect(Object.keys(out).length).toBeLessThan(15);
+  });
+});
+
+describe('review: any cause is summarised, not only error-shaped ones', () => {
+  it('summarises a string or a shapeless object under cause', () => {
+    expect(
+      redactValue({
+        a: { cause: 'Ravi Kumar of Pune' },
+        b: { cause: { details: 'Ravi Kumar of Pune', hint: 'retry' } },
+      }),
+    ).toEqual({ a: { cause: { type: 'string' } }, b: { cause: { type: 'Object' } } });
   });
 });

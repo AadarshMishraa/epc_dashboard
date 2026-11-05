@@ -157,10 +157,12 @@ export {
 } from './logging/logger.ts';
 export {
   LIMITS as REDACTION_LIMITS,
+  isPersonalKey,
   isSecretKey,
   redactString,
   redactValue,
   summariseError,
+  type RedactOptions,
 } from './logging/redact.ts';
 
 /** This package's id in packages/register.json. */

@@ -64,6 +64,7 @@ describe('@gx/core public API', () => {
       'isId',
       'isIdempotencyKey',
       'isModuleId',
+      'isPersonalKey',
       'isQuotaAmount',
       'isSecretKey',
       'maskRecipient',

@@ -510,14 +510,14 @@
     "packages/core/src/ports/secret.ts"
    ],
    "env": [],
-   "hash": "35cfe3d3f697",
+   "hash": "195a6fdceb52",
    "imports": [
     "../ports/secret.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 290,
+   "loc": 651,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -525,7 +525,9 @@
     "LIMITS",
     "redactString",
     "isSecretKey",
+    "isPersonalKey",
     "summariseError",
+    "RedactOptions",
     "redactValue"
    ],
    "table_refs": {},
@@ -3105,8 +3107,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-05 04:05",
- "head": "8a14b53",
+ "generated": "2026-11-05 04:21",
+ "head": "dd430b3",
  "root": "epc_dashboard",
  "version": 1
 }

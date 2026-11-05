@@ -131,8 +131,9 @@ describe('createLogger: line shape', () => {
     });
   });
 
-  it('backstops a correlation id taken from a request header', () => {
-    const phoneShaped = parseCorrelationId('9876543210') as CorrelationId;
+  it('backstops a correlation id that bypassed parseCorrelationId', () => {
+    expect(parseCorrelationId('9876543210')).toBeUndefined();
+    const phoneShaped = '9876543210' as CorrelationId;
     const { sink, logger } = setup({}, context({ correlationId: phoneShaped }));
     logger.info('a.b');
     expect(sink.last()['correlation_id']).toBe('[phone]');
@@ -198,7 +199,7 @@ describe('createLogger: F-02-AC3 masking', () => {
     const { sink, logger } = setup();
     logger.error('lead.import_failed', {
       note: 'customer Ravi +91 98765 43210 wrote from ravi@example.com', // privacycheck:ignore
-      row: { pan: 'ABCPK1234F', contact: ['9876543210'] },
+      row: { reference: 'ABCPK1234F', contact: ['9876543210'] },
       'ravi@example.com': 'as a key',
       error: coreError('VALIDATION_FAILED', {
         detail: 'row 4 has 9876543210',
@@ -346,9 +347,13 @@ describe('createLogger: tampering', () => {
 describe('createLogger: limits', () => {
   it('drops fields from a line that is too long and says so', () => {
     const { sink, logger } = setup({ maxLineChars: 2_000 });
+    // The walk stops at the budget first; a line can still be too long through JSON escapes.
+    const control = String.fromCharCode(1);
     logger.info(
       'a.b',
-      Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`k${String(i)}`, 'x'.repeat(500)])),
+      Object.fromEntries(
+        Array.from({ length: 4 }, (_, i) => [`k${String(i)}`, control.repeat(300)]),
+      ),
     );
     expect(sink.last()).toMatchObject({
       fields: {},
@@ -384,7 +389,7 @@ describe('createLogger: limits', () => {
 describe('createLogger: failures never throw and never lose the line', () => {
   it('writes [getter] for a top-level getter without invoking it', () => {
     let calls = 0;
-    const fields = Object.defineProperty({}, 'phone', {
+    const fields = Object.defineProperty({}, 'note', {
       enumerable: true,
       get: () => {
         calls += 1;
@@ -394,7 +399,7 @@ describe('createLogger: failures never throw and never lose the line', () => {
     const { sink, logger } = setup();
     logger.info('a.b', fields);
     expect(calls).toBe(0);
-    expect(sink.last()['fields']).toEqual({ phone: '[getter]' });
+    expect(sink.last()['fields']).toEqual({ note: '[getter]' });
   });
 
   it('writes a fallback line with ids and no payload when the fields are a revoked Proxy', () => {
@@ -403,6 +408,7 @@ describe('createLogger: failures never throw and never lose the line', () => {
     const { sink, failures, logger } = setup();
     logger.error('lead.failed', { nested: proxy });
     expect(sink.last()).toEqual({
+      ts: '2026-11-05T06:30:00.000Z',
       level: 'error',
       event: 'lead.failed',
       tenant_id: TENANT,
@@ -504,6 +510,78 @@ describe('createLogger: cost and inputs', () => {
     const { sink, logger } = setup();
     logger.info('a.b', fields);
     expect(JSON.stringify(fields)).toBe(before);
-    expect(sink.last()['fields']).toEqual({ note: 'call [phone]', nested: { email: '[email]' } });
+    expect(sink.last()['fields']).toEqual({
+      note: 'call [phone]',
+      nested: { email: '[personal]' },
+    });
+  });
+});
+
+// Security review of K0-T04 (2026-11-05).
+describe('createLogger: review findings', () => {
+  it('rejects an event key that holds a value the backstop would mask (L3)', () => {
+    const { sink, logger } = setup();
+    logger.info('lead.9876543210');
+    logger.info('job.12345678901');
+    expect(sink.records().map((record) => record['event'])).toEqual([
+      'log.invalid_event',
+      'log.invalid_event',
+    ]);
+  });
+
+  it('escapes C1 controls, bidirectional overrides and zero-width marks (L4)', () => {
+    const unsafe = [0x7f, 0x9b, 0x061c, 0x200b, 0x200e, 0x202e, 0x2066, 0x2069, 0xfeff].map(
+      (code) => String.fromCharCode(code),
+    );
+    const { sink, logger } = setup();
+    logger.info('a.b', { note: `ok${unsafe.join('')}done` });
+    const line = sink.lines[0] ?? '';
+    for (const char of unsafe) expect(line).not.toContain(char);
+    expect(line).toContain('\\u202e');
+    expect(sink.last()['fields']).toEqual({ note: `ok${unsafe.join('')}done` });
+  });
+
+  it('writes a constant last-resort line with the level when the context itself throws (L5)', () => {
+    const broken = {
+      ...context(),
+      get correlationId(): CorrelationId {
+        throw new Error('broken context');
+      },
+    } as Context;
+    const { sink, failures, logger } = setup({}, broken);
+    logger.warn('a.b', { contact: '9876543210' });
+    expect(sink.lines).toEqual([
+      '{"level":"warn","event":"log.redaction_failed","redaction_failed":true}',
+    ]);
+    expect(failures).toHaveLength(1);
+  });
+
+  it('honours a classification over the personal-key backstop at the top level', () => {
+    const { sink, logger } = setup({ classification: lookup({ 'product.name': 'public' }) });
+    logger.info('product.updated', { name: 'Panel 540W' }, { entity: 'product' });
+    logger.info('product.updated', { name: 'Panel 540W' });
+    expect(sink.records().map((record) => record['fields'])).toEqual([
+      { name: 'Panel 540W' },
+      { name: '[personal]' },
+    ]);
+  });
+
+  it('logs numbers that look like a phone or national id masked (H1)', () => {
+    const { sink, logger } = setup();
+    logger.info('lead.imported', { contact: 9876543210, amount_paise: 9876543210 });
+    expect(sink.last()['fields']).toEqual({ contact: '[phone]', amount_paise: 9876543210 });
+  });
+
+  it('stops a huge nested payload at the line budget instead of walking all of it (M2)', () => {
+    let node: unknown = 'leaf';
+    for (let level = 0; level < 5; level += 1) node = Array.from({ length: 50 }, () => node);
+    const { sink, logger } = setup();
+    const started = performance.now();
+    logger.info('request.received', { payload: node });
+    expect(performance.now() - started).toBeLessThan(200);
+    const line = sink.lines[0] ?? '';
+    expect(line.length).toBeLessThanOrEqual(16_384);
+    expect(line).toContain('[budget exceeded]');
+    expect(sink.last()).not.toHaveProperty('fields_dropped');
   });
 });

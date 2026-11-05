@@ -140,6 +140,7 @@ describe('parseCorrelationId', () => {
     '0190f3e2-7a1b-7c3d-8e4f-0123456789ab',
     'trace:span.1_2',
     'x'.repeat(128),
+    'bom1::iad1::8n2xq-1762300000000-5d4a6f3c1b2e',
   ])('accepts %s', (value) => {
     expect(parseCorrelationId(value)).toBe(value);
   });
@@ -152,6 +153,9 @@ describe('parseCorrelationId', () => {
     ['markup', '<script>'],
     ['non-ASCII', 'réq'],
     ['not a string', 42],
+    ['a phone number, which logs would mask', '9876543210'],
+    ['a long number', '1762300000000'],
+    ['an embedded national id', 'req-2345-6789-0123'],
   ])('rejects %s', (_label, value) => {
     expect(parseCorrelationId(value)).toBeUndefined();
   });
