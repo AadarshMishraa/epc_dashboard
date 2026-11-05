@@ -328,7 +328,8 @@ describe('createLogger: tampering', () => {
     const line = sink.lines[0] ?? '';
     expect(line).not.toContain(String.fromCharCode(0x2028));
     expect(line).not.toContain(String.fromCharCode(0x2029));
-    expect(sink.last()['fields']).toEqual({ note: separators });
+    // The backstop folds every whitespace character to a plain space before matching.
+    expect(sink.last()['fields']).toEqual({ note: ' x ' });
   });
 
   it('never reads a polluted Object.prototype into a line', () => {
@@ -537,8 +538,9 @@ describe('createLogger: review findings', () => {
     logger.info('a.b', { note: `ok${unsafe.join('')}done` });
     const line = sink.lines[0] ?? '';
     for (const char of unsafe) expect(line).not.toContain(char);
-    expect(line).toContain('\\u202e');
-    expect(sink.last()['fields']).toEqual({ note: `ok${unsafe.join('')}done` });
+    // Format characters are removed by the backstop; DEL and C1 controls are escaped.
+    expect(line).toContain('\\u009b');
+    expect(sink.last()['fields']).toEqual({ note: `ok${unsafe.slice(0, 2).join('')}done` });
   });
 
   it('writes a constant last-resort line with the level when the context itself throws (L5)', () => {

@@ -48,11 +48,10 @@ const TOKENS = Object.freeze({
 const cp = (code: number): string => String.fromCodePoint(code);
 const span = (from: number, to: number): string => `${cp(from)}-${cp(to)}`;
 
-/** No-break and typographic spaces, and tabs, all become a plain space before matching. */
-const SPACES = new RegExp(
-  `[\t${cp(0xa0)}${cp(0x1680)}${span(0x2000, 0x200a)}${cp(0x202f)}${cp(0x205f)}${cp(0x3000)}]`,
-  'g',
-);
+/** Middle dots and bullets become a dot before matching (`98765·43210`). */
+const DOTS = new RegExp(`[${cp(0xb7)}${cp(0x2022)}${cp(0x2027)}${cp(0x30fb)}]`, 'g');
+/** Format characters (zero-width spaces, joiners, soft hyphens, bidi marks) are removed. */
+const FORMAT = /\p{Cf}/gu;
 /** Typographic dashes and the minus sign become a hyphen before matching. */
 const DASHES = new RegExp(`[${span(0x2010, 0x2015)}${cp(0x2212)}${cp(0xfe58)}${cp(0xfe63)}]`, 'g');
 const NON_ASCII_DIGIT = /(?![0-9])\p{Nd}/gu;
@@ -66,25 +65,36 @@ function asciiDigit(digit: string): string {
   return String(code - zero);
 }
 
-/** Fullwidth forms, other scripts' digits, odd spaces and dashes, folded so patterns see them. */
+/**
+ * Fullwidth forms, other scripts' digits, format characters, every kind of whitespace (runs
+ * become one space), dashes and dots, folded so patterns see them.
+ */
 function normalise(text: string): string {
   return text
     .normalize('NFKC')
+    .replace(FORMAT, '')
     .replace(NON_ASCII_DIGIT, asciiDigit)
-    .replace(SPACES, ' ')
-    .replace(DASHES, '-');
+    .replace(/\s+/g, ' ')
+    .replace(DASHES, '-')
+    .replace(DOTS, '.');
 }
 
 /**
  * Credentials and personal data, most specific first. Each pattern matches a given text one
  * way only (a separator class never matches a digit), so matching stays linear; inputs are
  * clipped first. Digit patterns allow up to three separators (space, dot, slash, hyphen,
- * parentheses) between digits, and their boundaries skip separators too, so no group of a
+ * underscore, parentheses; commas too for phones and ids) between digits, and their boundaries skip separators too, so no group of a
  * longer number is left behind.
  */
 const PATTERNS: readonly (readonly [RegExp, string])[] = [
   // Credentials in a URL: scheme://user:password@host.
-  [/\b([A-Za-z][A-Za-z0-9+.-]{1,30}:\/\/)[^\s/?#@]{1,256}@/g, `$1${TOKENS.redacted}@`],
+  // Up to the last @ of the run, so an unencoded / or # in the password is taken too.
+  [/\b([A-Za-z][A-Za-z0-9+.-]{1,30}:\/\/)\S{1,256}@/g, `$1${TOKENS.redacted}@`],
+  // `Password: x`, `Authorization: Bearer x`: a secret-looking label, a colon, then the value.
+  [
+    /\b(password|passwd|passcode|pwd|secret|token|api[_-]?key|authorization|cookie|otp)( ?: ?)(?:(?:Bearer|Basic|Token) )?\S{1,2048}/gi,
+    `$1$2${TOKENS.redacted}`,
+  ],
   [/\beyJ[A-Za-z0-9_-]{4,2048}\.[A-Za-z0-9_-]{4,2048}\.[A-Za-z0-9_-]{0,2048}/g, TOKENS.secret],
   [/\b(Bearer|Basic|Token) [A-Za-z0-9._~+/=-]{8,2048}/gi, `$1 ${TOKENS.secret}`],
   // Provider key shapes: GitHub, AWS, Stripe, Razorpay, Slack, Supabase.
@@ -94,7 +104,10 @@ const PATTERNS: readonly (readonly [RegExp, string])[] = [
   ],
   // name=value pairs: URL queries and fragments, cookies, `key=value` in free text. After
   // the credential shapes, whose base64 padding is `=`.
-  [/(^|[?&#;,\s])([^\s=&#;,?"'<>]{1,128})=[^\s&#;,"'<>]{0,2048}/g, `$1$2=${TOKENS.redacted}`],
+  [
+    /(^|[?&#;,\s])([^\s=&#;,?"'<>]{1,128})=(?:\([^)]{0,256}\)|[^\s&#;,"'<>]{0,2048})/g,
+    `$1$2=${TOKENS.redacted}`,
+  ],
   [
     /[\p{L}\p{M}\p{N}._%+-]{1,64}@[\p{L}\p{M}\p{N}-]{1,63}(?:\.[\p{L}\p{M}\p{N}-]{1,63}){0,8}\.\p{L}{2,24}/gu,
     TOKENS.email,
@@ -112,19 +125,22 @@ const PATTERNS: readonly (readonly [RegExp, string])[] = [
   ],
   // A +91 number first: written without separators it is also 12 digits starting 9.
   [
-    /(?<!\d[ ./()-]{0,3})\+ ?\(?91\)?[ ./()-]{0,3}[6-9](?:[ ./()-]{0,3}\d){9}(?![ ./()-]{0,3}\d)/g,
+    /(?<!\d[ ,./()_-]{0,3})\+ ?\(?91\)?[ ,./()_-]{0,3}[6-9](?:[ ,./()_-]{0,3}\d){9}(?![ ,./()_-]{0,3}\d)/g,
     TOKENS.phone,
   ],
   // The national id (UIDAI): 12 digits, first 2 to 9, in any grouping. Removed whole (CMP-03).
-  [/(?<!\d[ ./()-]{0,3})[2-9](?:[ ./()-]{0,3}\d){11}(?![ ./()-]{0,3}\d)/g, TOKENS.nationalId],
+  [/(?<!\d[ ,./()_-]{0,3})[2-9](?:[ ,./()_-]{0,3}\d){11}(?![ ,./()_-]{0,3}\d)/g, TOKENS.nationalId],
   // Indian mobile numbers: optional 0, then 10 digits starting 6 to 9.
   [
-    /(?<!\d[ ./()-]{0,3})(?:0[ ./()-]{0,3})?[6-9](?:[ ./()-]{0,3}\d){9}(?![ ./()-]{0,3}\d)/g,
+    /(?<!\d[ ,./()_-]{0,3})(?:0[ ,./()_-]{0,3})?[6-9](?:[ ,./()_-]{0,3}\d){9}(?![ ,./()_-]{0,3}\d)/g,
     TOKENS.phone,
   ],
   // Bank accounts, cards and other long numbers: 9 or more digits, taken whole. A letter
   // before is allowed (an `AC` prefix); a letter after means a hex token, which is kept.
-  [/(?<!\d[ ./()-]{0,3})\d(?:[ ./()-]{0,3}\d){8,}(?![ ./()-]{0,3}\d)(?![A-Za-z])/g, TOKENS.number],
+  [
+    /(?<!\d[ ./()_-]{0,3})\d(?:[ ./()_-]{0,3}\d){8,}(?![ ./()_-]{0,3}\d)(?![A-Za-z])/g,
+    TOKENS.number,
+  ],
 ];
 
 /** Record ids are not personal data and must stay readable; they are kept as they are. */
@@ -147,7 +163,8 @@ export function redactString(text: string): string {
 }
 
 function redactSegment(text: string): string {
-  let out = normalise(text);
+  // NFKC can lengthen text many times over (one ligature becomes 18 letters); match no more.
+  let out = normalise(text).slice(0, LIMITS.string + MATCH_WINDOW);
   for (const [pattern, token] of PATTERNS) out = out.replace(pattern, token);
   return out;
 }
@@ -205,10 +222,27 @@ const SECRET_PAIRS: ReadonlySet<string> = new Set([
   'client secret',
 ]);
 
-/** Keys whose values are never logged, whatever they hold. Matched by whole words. */
+/** A key with every separator removed, for names written as one word (`newpassword`). */
+function compactKey(key: string): string {
+  return key
+    .slice(0, 128)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Distinctive stems found anywhere in a one-word key. Short words (`pin`, `otp`, `pass`,
+ * `auth`) only count as whole words or in the listed compounds, so `footprint`, `spin` and
+ * `author` stay readable; `tokens` and `tokenizer` are not tokens.
+ */
+const SECRET_STEMS =
+  /password|passwd|passcode|secret|credential|cookie|authoriz|apikey|accesskey|privatekey|sessionid|csrf|token(?!s|iz|is)|(?:signing|encryption|hmac|webhook|master)key|otpcode|^otp|otp$|(?:^|upi|m|t)pin$/;
+
+/** Keys whose values are never logged, whatever they hold. */
 export function isSecretKey(key: string): boolean {
   const words = keyWords(key);
-  return words.some((word) => SECRET_WORDS.has(word)) || hasPair(words, SECRET_PAIRS);
+  if (words.some((word) => SECRET_WORDS.has(word)) || hasPair(words, SECRET_PAIRS)) return true;
+  return SECRET_STEMS.test(compactKey(key));
 }
 
 const PERSONAL_WORDS: ReadonlySet<string> = new Set([
@@ -236,6 +270,13 @@ const PERSONAL_WORDS: ReadonlySet<string> = new Set([
   'longitude',
   'lat',
   'lng',
+  'username',
+  'displayname',
+  'nickname',
+  'fathername',
+  'mothername',
+  'passport',
+  'gender',
 ]);
 const PERSONAL_PAIRS: ReadonlySet<string> = new Set([
   'account number',
@@ -243,8 +284,12 @@ const PERSONAL_PAIRS: ReadonlySet<string> = new Set([
   'acct no',
   'bank account',
   'date birth',
+  'contact person',
 ]);
-/** A word that makes a key technical, so `file_name` or `email_template` is not personal. */
+/**
+ * A word that makes the personal word next to it technical, so `file_name` and
+ * `email_template` are not personal, while `field_engineer_name` still is.
+ */
 const TECHNICAL_WORDS: ReadonlySet<string> = new Set([
   'file',
   'event',
@@ -296,14 +341,27 @@ const TECHNICAL_WORDS: ReadonlySet<string> = new Set([
   'sheet',
   'database',
   'count',
-  'verified',
 ]);
+
+/** One-word keys that name a person's data (`customername`, `phoneno`, `emailaddress`). */
+const PERSONAL_COMPACT =
+  /^(?:(?:user|display|nick|father|mother|first|last|full|sur|customer|contact|owner|person|spouse|guardian)name|(?:phone|mobile|email|whatsapp)(?:no|number|id|address)?|contactperson|passport(?:no|number)?|gender|accountno|accountnumber|panno)$/;
+
+const isTechnical = (word: string | undefined): boolean =>
+  word !== undefined && TECHNICAL_WORDS.has(word);
 
 /** Keys that name a person's data; their values are masked even without a classification. */
 export function isPersonalKey(key: string): boolean {
   const words = keyWords(key);
-  if (words.some((word) => TECHNICAL_WORDS.has(word))) return false;
-  return words.some((word) => PERSONAL_WORDS.has(word)) || hasPair(words, PERSONAL_PAIRS);
+  const personalWord = words.some(
+    (word, index) =>
+      PERSONAL_WORDS.has(word) && !isTechnical(words[index - 1]) && !isTechnical(words[index + 1]),
+  );
+  return (
+    personalWord ||
+    hasPair(words, PERSONAL_PAIRS) ||
+    (words.length === 1 && PERSONAL_COMPACT.test(compactKey(key)))
+  );
 }
 
 /** A key that ends in a unit (`amount_paise`, `started_at_millis`): its number is kept. */
@@ -408,14 +466,18 @@ function isPlainObject(value: object): boolean {
 }
 
 /**
- * A plain object shaped like a driver or PostgREST error (`code` and `message`), which is
+ * A plain object shaped like a driver or PostgREST error (a `code` with a `message`,
+ * `details`, `detail` or `hint`), which is
  * summarised like an Error. An AppError (numeric `status`, boolean `retryable`) is not: its
  * fields are meant for logs and are walked, with `detail` backstopped and `cause` summarised.
  */
 function isErrorLike(value: object): boolean {
   const code = ownValue(value, 'code');
-  const message = ownValue(value, 'message');
-  if (typeof code !== 'string' || typeof message !== 'string') return false;
+  if (typeof code !== 'string' && typeof code !== 'number') return false;
+  const hasText = ['message', 'details', 'detail', 'hint'].some(
+    (key) => typeof ownValue(value, key) === 'string',
+  );
+  if (!hasText) return false;
   const isAppError =
     typeof ownValue(value, 'status') === 'number' &&
     typeof ownValue(value, 'retryable') === 'boolean';
@@ -595,6 +657,13 @@ function walkContainer(value: object, depth: number, state: Walk): unknown {
   return walkEntries(entries, keys.length, depth, state);
 }
 
+const HEADER_NAME = /^[A-Za-z][A-Za-z0-9-]{0,63}$/;
+
+/** A header name (`Cookie`, `X-Api-Key`) that marks the next array item as a secret value. */
+function isSecretHeaderName(value: unknown): boolean {
+  return typeof value === 'string' && HEADER_NAME.test(value) && isSecretKey(value);
+}
+
 /** Array items; an item after a secret-looking name (`['Cookie', 'sid=1']`) is removed. */
 function walkItems(
   items: readonly unknown[],
@@ -610,7 +679,7 @@ function walkItems(
       return out;
     }
     if (item === GETTER) out.push('[getter]');
-    else if (typeof previous === 'string' && isSecretKey(previous)) out.push(TOKENS.redacted);
+    else if (isSecretHeaderName(previous)) out.push(TOKENS.redacted);
     else out.push(walk(item, depth + 1, state) ?? null);
     previous = item;
   }
@@ -650,16 +719,7 @@ function entryValue(
   if (field === GETTER) return '[getter]';
   if (isSecretKey(key)) return TOKENS.redacted;
   if (key === 'cause') return summariseError(field);
-  if (isUnitKey(key)) {
-    if (typeof field === 'number' || typeof field === 'bigint') {
-      spend(state, 12);
-      return typeof field === 'bigint' ? field.toString() : field;
-    }
-    if (typeof field === 'string' && UNIT_STRING.test(field)) {
-      spend(state, field.length + 2);
-      return field;
-    }
-  }
+  // Personal first: a user-chosen key such as `aadhaar_amount` must not ride the unit rule.
   if (
     !classified &&
     isPersonalKey(key) &&
@@ -669,6 +729,16 @@ function entryValue(
   ) {
     spend(state, 12);
     return TOKENS.personal;
+  }
+  if (isUnitKey(key)) {
+    if (typeof field === 'number' || typeof field === 'bigint') {
+      spend(state, 12);
+      return typeof field === 'bigint' ? field.toString() : field;
+    }
+    if (typeof field === 'string' && UNIT_STRING.test(field)) {
+      spend(state, field.length + 2);
+      return field;
+    }
   }
   return walk(field, depth + 1, state);
 }

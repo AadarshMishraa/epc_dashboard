@@ -10,12 +10,12 @@ Pull the latest main (Supabase setup and K0-T14 had landed), reconcile, and impl
 - gx-security-reviewer: first pass REQUEST CHANGES (2 High, 3 Medium, 6 Low); all fixed with tests in 5cdad64. Residuals TD-15 (Object.keys on huge objects) and TD-16 (free-text names; over-redaction of dates, IPs, decimals).
 
 ## Verified (command → result)
-- `pnpm verify` → exit 0, 859 tests, lint 0, typecheck and build clean, check:imports 0, manifests 0, api:check 0 (Node 24.22.2, cloud container).
+- `pnpm verify` → exit 0, 923 tests after the second review pass (859 after the first), lint 0, typecheck and build clean, check:imports 0, manifests 0, api:check 0 (Node 24.22.2, cloud container).
 - Mutation checks: 48 on the first version, then 41 on the review fixes and 14 replacements for rewritten code, 6 on MemoryLogSink; all killed.
 - `python3 .claude/gx/bin/privacycheck.py` → only the known false positive in tools/plangen/epc_gen.py:582. `prdtool check` → 0 errors, 8 TBD warnings.
 
 ## Not verified (and why)
-- Second security review pass: running at the time of writing; T-004 stays In review until it approves.
+- Second security review pass: APPROVE WITH FIXES; all three Medium and five Low findings fixed with tests (L6, letter-suffixed card numbers, accepted as a trade-off in TD-16). T-004 Done.
 - No real sink or vendor exists yet; the logger has run only against in-memory sinks.
 
 ## Decisions made (also in DECISIONS.md)

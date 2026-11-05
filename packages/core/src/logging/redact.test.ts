@@ -2,7 +2,14 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { coreError } from '../errors.ts';
 import { Secret } from '../ports/secret.ts';
-import { LIMITS, isSecretKey, redactString, redactValue, summariseError } from './redact.ts';
+import {
+  LIMITS,
+  isPersonalKey,
+  isSecretKey,
+  redactString,
+  redactValue,
+  summariseError,
+} from './redact.ts';
 
 // Seeded values are synthetic: test-range phone numbers, example.com addresses, made-up ids.
 const NATIONAL_ID_TOKEN = '[aadhaar]'; // privacycheck:ignore (the redaction token)
@@ -87,7 +94,10 @@ describe('redactString: credentials', () => {
 
   it('masks bearer and basic credentials and JSON web tokens', () => {
     expect(redactString('Authorization: Bearer abcdefgh.ijkl-mnop')).toBe(
-      'Authorization: Bearer [secret]',
+      'Authorization: [redacted]',
+    );
+    expect(redactString('sent Bearer abcdefgh.ijkl-mnop upstream')).toBe(
+      'sent Bearer [secret] upstream',
     );
     expect(redactString('basic dXNlcjpwYXNzd29yZA==')).toBe('basic [secret]');
     expect(redactString('jwt eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl')).toBe(
@@ -623,14 +633,14 @@ describe('review M3: personal keys and error-shaped objects', () => {
         event_name: 'lead.created',
         tenant_name: 'Suryakiran Solar',
         email_template: 'welcome',
-        phone_verified: 'yes',
+        phone_count: 3,
       }),
     ).toEqual({
       file_name: 'invoice.pdf',
       event_name: 'lead.created',
       tenant_name: 'Suryakiran Solar',
       email_template: 'welcome',
-      phone_verified: 'yes',
+      phone_count: 3,
     });
   });
 
@@ -785,5 +795,162 @@ describe('review: any cause is summarised, not only error-shaped ones', () => {
         b: { cause: { details: 'Ravi Kumar of Pune', hint: 'retry' } },
       }),
     ).toEqual({ a: { cause: { type: 'string' } }, b: { cause: { type: 'Object' } } });
+  });
+});
+
+// Second security review pass (2026-11-05).
+describe('review 2 M1: one-word and compound secret keys', () => {
+  it.each([
+    'refreshtoken',
+    'accesstoken',
+    'apitoken',
+    'csrftoken',
+    'clientsecret',
+    'secretkey',
+    'newpassword',
+    'confirmpassword',
+    'userpassword',
+    'accesskey',
+    'otpcode',
+    'upipin',
+    'tpin',
+    'signing_key',
+    'encryption_key',
+    'hmacKey',
+    'webhookKey',
+    'tokenId',
+  ])('treats %s as secret', (key) => {
+    expect(isSecretKey(key)).toBe(true);
+  });
+
+  it.each(['prompttokens', 'tokens_used', 'tokenizer', 'spin', 'mapping', 'idempotency_key'])(
+    'does not treat %s as secret',
+    (key) => {
+      expect(isSecretKey(key)).toBe(false);
+    },
+  );
+});
+
+describe('review 2 M2: the technical exemption applies only next to the personal word', () => {
+  it.each([
+    'company_owner_name',
+    'field_engineer_name',
+    'job_applicant_name',
+    'app_user_name',
+    'tenant_admin_name',
+    'branch_manager_name',
+    'device_owner_name',
+    'event_contact_name',
+    'verified_name',
+    'username',
+    'displayname',
+    'fathername',
+    'customername',
+    'phoneno',
+    'emailaddress',
+    'contact_person',
+    'passport_no',
+    'gender',
+  ])('treats %s as personal', (key) => {
+    expect(isPersonalKey(key)).toBe(true);
+  });
+
+  it.each([
+    'file_name',
+    'hostname',
+    'event_name',
+    'tenant_name',
+    'email_template',
+    'phone_count',
+    'filename',
+  ])('does not treat %s as personal', (key) => {
+    expect(isPersonalKey(key)).toBe(false);
+  });
+});
+
+describe('review 2 M3: separators normalise did not fold', () => {
+  const zwsp = String.fromCharCode(0x200b);
+  const joiner = String.fromCharCode(0x2060);
+  const softHyphen = String.fromCharCode(0xad);
+  const middleDot = String.fromCharCode(0xb7);
+
+  it.each([
+    ['zero-width spaces in a phone', `98765${zwsp}43210`, '[phone]'],
+    ['zero-width spaces in an id', `2345${zwsp}6789${zwsp}0123`, NATIONAL_ID_TOKEN],
+    ['a word joiner and a soft hyphen', `98765${joiner}432${softHyphen}10`, '[phone]'],
+    ['newlines in a phone', '98765\n43210', '[phone]'],
+    ['newlines in an id', '2345\n6789\n0123', NATIONAL_ID_TOKEN],
+    ['a comma', '98765,43210', '[phone]'],
+    ['an underscore', '98765_43210', '[phone]'],
+    ['a middle dot', `98765${middleDot}43210`, '[phone]'],
+    ['four spaces', '98765    43210', '[phone]'],
+  ])('masks %s', (_label, seed, token) => {
+    expect(redactString(`x ${seed} y`)).toBe(`x ${token} y`);
+  });
+
+  it('never lets a seeded value through these separators (property)', () => {
+    const separators = [zwsp, joiner, softHyphen, middleDot, '\n', ',', '_', '    ', '\t', ' . '];
+    fc.assert(
+      fc.property(
+        fc.constantFrom('9876543210', '234567890123'),
+        fc.array(fc.constantFrom(...separators), { minLength: 9, maxLength: 9 }),
+        fc.array(fc.boolean(), { minLength: 11, maxLength: 11 }),
+        (digits, seps, use) => {
+          let text = '';
+          Array.from(digits).forEach((digit, index) => {
+            text += digit;
+            if (index < digits.length - 1 && use[index] === true)
+              text += seps[index % seps.length] ?? '';
+          });
+          expect(redactString(`note ${text} end`)).not.toMatch(/\d{3,}/);
+        },
+      ),
+    );
+  });
+});
+
+describe('review 2 lows', () => {
+  it('takes a whole parenthesised value and treats details-and-code objects as errors (L1)', () => {
+    expect(redactString('Key (name)=(Ravi Kumar) already exists')).toBe(
+      'Key (name)=[redacted] already exists',
+    );
+    expect(redactValue({ e: { code: 23505, details: 'Key (name)=(Ravi Kumar)' } })).toEqual({
+      e: { type: 'Object' },
+    });
+  });
+
+  it('removes passwords with unencoded / or # and colon-labelled secrets (L2)', () => {
+    expect(redactString('postgres://app:pa/ss@10.0.0.5/db')).toBe(
+      'postgres://[redacted]@10.0.0.5/db',
+    );
+    expect(redactString('postgres://app:p#ss@10.0.0.5/db')).toBe(
+      'postgres://[redacted]@10.0.0.5/db',
+    );
+    expect(redactString('Password: S3cretHunter2 ok')).toBe('Password: [redacted] ok');
+    expect(redactString('authorization: abcdef0123456789abcdef')).toBe('authorization: [redacted]');
+  });
+
+  it('checks personal keys before the unit exemption (L4)', () => {
+    expect(redactValue({ aadhaar_amount: 234567890123, mobile_ts: '9876543210' })).toEqual({
+      // privacycheck:ignore
+      aadhaar_amount: '[personal]', // privacycheck:ignore
+      mobile_ts: '[personal]',
+    });
+  });
+
+  it('matches no more than the window after NFKC lengthens many strings (L5)', () => {
+    // 50 strings that NFKC expands 18 times: about 60 ms with the cap, about 350 without.
+    const ligatures = Array.from({ length: 50 }, () => String.fromCharCode(0xfdfa).repeat(2_000));
+    const started = performance.now();
+    redactValue(ligatures, { maxChars: 1e9, maxNodes: 1e9 });
+    expect(performance.now() - started).toBeLessThan(250);
+  });
+
+  it('bounds the work when NFKC lengthens a string (L5)', () => {
+    const ligature = String.fromCharCode(0xfdfa);
+    const started = performance.now();
+    const out = redactString(ligature.repeat(2_100));
+    expect(performance.now() - started).toBeLessThan(50);
+    expect(out.length).toBeLessThanOrEqual(LIMITS.string + 40);
   });
 });
