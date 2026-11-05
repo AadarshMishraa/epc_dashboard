@@ -26,12 +26,16 @@ export function deny<const R extends string>(reason: R): Deny<R> {
   return Object.freeze({ allow: false, reason });
 }
 
-/** True only for an object whose `allow` is exactly `true`. */
+/**
+ * True only for an object whose own `allow` is exactly `true`. Own properties only, so a
+ * polluted `Object.prototype.allow` can never turn a denial into an allow.
+ */
 export function isAllowed(decision: unknown): decision is Allow {
   try {
     return (
       typeof decision === 'object' &&
       decision !== null &&
+      Object.hasOwn(decision, 'allow') &&
       (decision as { allow?: unknown }).allow === true
     );
   } catch {
@@ -50,6 +54,7 @@ export function denialReason<R extends string>(
 ): R | undefined {
   try {
     if (typeof value !== 'object' || value === null) return undefined;
+    if (!Object.hasOwn(value, 'allow') || !Object.hasOwn(value, 'reason')) return undefined;
     const { allow, reason } = value as { allow?: unknown; reason?: unknown };
     return allow === false && (reasons as readonly unknown[]).includes(reason)
       ? (reason as R)

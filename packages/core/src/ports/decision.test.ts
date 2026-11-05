@@ -13,7 +13,7 @@ import {
 } from '../context.ts';
 import { parseId, type Id } from '../ids.ts';
 import { actorModeDenial, authorize, type Authorizer } from './authorizer.ts';
-import { ALLOW, deny, isAllowed } from './decision.ts';
+import { ALLOW, denialReason, deny, isAllowed, settleDecision } from './decision.ts';
 import { checkEntitlement, type EntitlementGate } from './entitlements.ts';
 import { consumeQuota, isQuotaAmount, type QuotaProvider } from './quotas.ts';
 
@@ -289,5 +289,24 @@ describe('consumeQuota', () => {
       use,
     );
     expect(!decision.allow && decision.reason).toBe('ERROR');
+  });
+});
+
+describe('prototype pollution', () => {
+  it('never reads a polluted Object.prototype as an allow or a reason', async () => {
+    const proto = Object.prototype as Record<string, unknown>;
+    proto['allow'] = true;
+    proto['reason'] = 'NO_GRANT';
+    try {
+      expect(isAllowed({ reason: 'x' })).toBe(false);
+      expect(isAllowed({})).toBe(false);
+      expect(denialReason({ allow: false }, ['NO_GRANT'])).toBeUndefined();
+      const settled = await settleDecision(['NO_GRANT'], () => Promise.resolve({}));
+      expect(settled.allow).toBe(false);
+      expect(settled.allow === false && settled.reason).toBe('ERROR');
+    } finally {
+      delete proto['allow'];
+      delete proto['reason'];
+    }
   });
 });
