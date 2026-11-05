@@ -303,7 +303,7 @@ describe('prototype pollution', () => {
       expect(denialReason({ allow: false }, ['NO_GRANT'])).toBeUndefined();
       const settled = await settleDecision(['NO_GRANT'], () => Promise.resolve({}));
       expect(settled.allow).toBe(false);
-      expect(settled.allow === false && settled.reason).toBe('ERROR');
+      expect(!settled.allow && settled.reason).toBe('ERROR');
     } finally {
       delete proto['allow'];
       delete proto['reason'];
