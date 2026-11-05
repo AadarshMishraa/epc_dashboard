@@ -19,7 +19,7 @@ Scope and progress: docs/prd/STATUS.md; work queue docs/plans/TASKS.md; current 
 | K0-T09 API gate | done | Staff review approved; CR-001 wording proposed |
 | K0-T14 core ports | done | Ports in core, fakes and 9 contract suites in testkit, v0.1.0; security APPROVE, staff APPROVE WITH FIXES (all fixed); debt TD-7 to TD-13 |
 | K0-T04, T06, T08, T10 to T13 | todo | Next: T04 redacted logging (threat model first) |
-| Supabase and Vercel | configured, not created | Postgres 17 pinned; owner creates the projects and adds keys (docs/operations/environments.md) |
+| Supabase and Vercel | Supabase project exists (ref ubktdvbgtkgqumhjodyn); Vercel not created | Keys are in the git-ignored `.env.supabase.local` (not read by app code, ADR-0006). CLI not linked: needs this project's access token and the DB password. Region (Mumbai) and Postgres 17 are unverified |
 | EPC pack | todo | Phase 0 validation not started |
 
 ## In progress right now

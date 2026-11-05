@@ -9,6 +9,7 @@ import {
   createContext,
   deny,
   err,
+  isIdempotencyKey,
   ok,
   parseCorrelationId,
   parseId,
@@ -27,6 +28,7 @@ import {
   type EventPublisher,
   type Id,
   type MessageSender,
+  type QuotaDecision,
   type QuotaProvider,
   type PlatformSecretsProvider,
   type TenantSecretsProvider,
@@ -574,6 +576,66 @@ describe('contract suites reject broken adapters', () => {
       }),
     );
     expect(failed).toEqual(['the same key in two tenants is two separate uses']);
+  });
+
+  it('QuotaProvider: a check-then-record replay race fails the concurrent replay case', async () => {
+    const failed = await failingCases(
+      quotaProviderContract((seed) => {
+        const inner = new FakeQuotaProvider(seed);
+        const first = new Map<string, { quota: string; amount: number; result: unknown }>();
+        const racyReplay: QuotaProvider = {
+          consume: async (context, use) => {
+            if (!isIdempotencyKey(use.idempotencyKey)) return inner.consume(context, use);
+            const id = `${context.tenantId}/${use.idempotencyKey}`;
+            const known = first.get(id);
+            if (known !== undefined) {
+              return known.quota === use.quota && known.amount === use.amount
+                ? (known.result as QuotaDecision)
+                : deny('KEY_REUSED');
+            }
+            await Promise.resolve(); // two retries both passed the check above
+            const result = await inner.consume(context, { ...use, idempotencyKey: nextKey() });
+            first.set(id, { quota: use.quota, amount: use.amount, result });
+            return result;
+          },
+        };
+        return racyReplay;
+      }),
+    );
+    expect(failed).toEqual(['concurrent replays of one key consume once']);
+  });
+
+  it('QuotaProvider: returning the first grant but charging every replay fails the concurrent replay case', async () => {
+    const failed = await failingCases(
+      quotaProviderContract((seed) => {
+        const inner = new FakeQuotaProvider(seed);
+        const first = new Map<
+          string,
+          { quota: string; amount: number; result: Promise<QuotaDecision> }
+        >();
+        const overcharging: QuotaProvider = {
+          consume: (context, use) => {
+            if (!isIdempotencyKey(use.idempotencyKey)) return inner.consume(context, use);
+            const id = `${context.tenantId}/${use.idempotencyKey}`;
+            const charge = (): Promise<QuotaDecision> =>
+              inner.consume(context, { ...use, idempotencyKey: nextKey() });
+            const known = first.get(id);
+            if (known === undefined) {
+              const result = charge();
+              first.set(id, { quota: use.quota, amount: use.amount, result });
+              return result;
+            }
+            if (known.quota !== use.quota || known.amount !== use.amount) {
+              return Promise.resolve(deny('KEY_REUSED'));
+            }
+            void charge(); // the replay is answered from memory but still uses quota
+            return known.result;
+          },
+        };
+        return overcharging;
+      }),
+    );
+    expect(failed).toContain('concurrent replays of one key consume once');
   });
 
   it('QuotaProvider: ignoring idempotency keys fails the replay cases', async () => {
