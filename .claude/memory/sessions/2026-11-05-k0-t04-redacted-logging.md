@@ -11,11 +11,12 @@ Pull the latest main (Supabase setup and K0-T14 had landed), reconcile, and impl
 
 ## Verified (command → result)
 - `pnpm verify` → exit 0, 923 tests after the second review pass (859 after the first), lint 0, typecheck and build clean, check:imports 0, manifests 0, api:check 0 (Node 24.22.2, cloud container).
-- Mutation checks: 48 on the first version, then 41 on the review fixes and 14 replacements for rewritten code, 6 on MemoryLogSink; all killed.
+- Mutation checks: 48 on the first version, then 41 on the review fixes and 14 replacements for rewritten code, 6 on MemoryLogSink, 20 on the second-pass fixes; all killed.
+- Second security review pass: APPROVE WITH FIXES; all three Medium and five Low findings fixed with tests (L6, letter-suffixed card numbers, accepted as a trade-off in TD-16). T-004 Done.
 - `python3 .claude/gx/bin/privacycheck.py` → only the known false positive in tools/plangen/epc_gen.py:582. `prdtool check` → 0 errors, 8 TBD warnings.
 
 ## Not verified (and why)
-- Second security review pass: APPROVE WITH FIXES; all three Medium and five Low findings fixed with tests (L6, letter-suffixed card numbers, accepted as a trade-off in TD-16). T-004 Done.
+- The gx-qa-engineer pass named in docs/plans/TASKS.md for T-004 was not run as a separate agent; the gx-test-feature angle matrix and mutation checks stand in for it. No staff review (not required by the brief).
 - No real sink or vendor exists yet; the logger has run only against in-memory sinks.
 
 ## Decisions made (also in DECISIONS.md)
@@ -23,7 +24,7 @@ Pull the latest main (Supabase setup and K0-T14 had landed), reconcile, and impl
 - Error messages kept only for TypeError, RangeError and ReferenceError; no stack frames, because Node 24's `stack` accessor can run a user-set `prepareStackTrace`.
 
 ## Traps found (also in LEARNINGS.md)
-- The Write tool and heredocs turn ` ` into the literal character; build such characters from code points.
+- The Write tool and heredocs turn `U+2028` into the literal character; build such characters from code points.
 - A `verify; commit` chain committed a lint failure; gate commits on the exit code. Do not edit by line number after Prettier ran.
 - NFKC already folds no-break spaces, so a test for space folding needs a tab or U+1680.
 
