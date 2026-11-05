@@ -155,7 +155,8 @@ export function requireTenant(
     : ok(context as TenantContext);
 }
 
-function freezeActor(actor: Actor): Actor {
+/** A frozen copy of an actor; records keep this, never the caller's object. */
+export function freezeActor(actor: Actor): Actor {
   if (actor.kind === 'user' && actor.via !== undefined) {
     const via: AiClient = Object.freeze({
       kind: 'ai_client',

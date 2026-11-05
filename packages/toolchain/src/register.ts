@@ -26,6 +26,9 @@ const registerSchema = z.strictObject({
 });
 
 export type RegisterEntry = z.infer<typeof registerEntrySchema>;
+
+/** Packages that hold in-memory fakes and contract suites: never a runtime dependency. */
+const TEST_ONLY_PACKAGES: ReadonlySet<string> = new Set(['testkit']);
 export interface Register {
   readonly packages: readonly RegisterEntry[];
 }
@@ -73,10 +76,24 @@ function namingProblems(packages: readonly RegisterEntry[]): string[] {
 function dependencyProblems(packages: readonly RegisterEntry[]): string[] {
   const problems: string[] = [];
   const ids = new Set<string>(packages.map((entry) => entry.id));
+  const support = new Set(packages.filter((p) => p.kind === 'support').map((p) => p.id));
   for (const entry of packages) {
     for (const dep of allDepends(entry)) {
       if (dep === entry.id) problems.push(`${entry.id}: depends on itself`);
       else if (!ids.has(dep)) problems.push(`${entry.id}: depends on unknown id ${dep}`);
+    }
+    // Support packages hold test fakes and build tools; a module shipping them fails open.
+    if (entry.kind === 'module') {
+      for (const dep of entry.depends.filter((d) => support.has(d))) {
+        problems.push(
+          `${entry.id}: module may not depend on support package ${dep} at runtime; list it in devDepends`,
+        );
+      }
+    } else {
+      // Support packages such as migrate also run in production, so fakes stay out of them too.
+      for (const dep of entry.depends.filter((d) => TEST_ONLY_PACKAGES.has(d))) {
+        problems.push(`${entry.id}: ${dep} is test-only; list it in devDepends, never depends`);
+      }
     }
   }
   const cycle = findCycle(packages);

@@ -4,6 +4,10 @@ Notable changes to `@gx/toolchain`. Versions follow semver over the public API i
 
 ## Unreleased
 
+### Changed
+
+- The register check rejects a `kind: module` package that lists a `support` package (test fakes, tooling) in its runtime `depends`. Support packages belong in `devDepends`. `testkit` is refused in any package's runtime `depends`, support packages included (K0-T14 security review).
+
 ### Added
 
 - Package skeleton: public-API file, register entry, README and changelog (K0-T02).

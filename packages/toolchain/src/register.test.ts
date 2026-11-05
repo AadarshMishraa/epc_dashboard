@@ -78,6 +78,45 @@ describe('parseRegister', () => {
     expect(problems).toEqual(['dependency cycle: core -> k2-identity -> k1-tenancy -> core']);
   });
 
+  it('rejects a support package (test fakes, tooling) as a runtime dependency of a module', () => {
+    const problems = problemsOf({
+      packages: [
+        entry('core'),
+        entry('testkit', ['core'], { kind: 'support' }),
+        entry('k1-tenancy', ['core', 'testkit']),
+      ],
+    });
+    expect(problems).toEqual([
+      'k1-tenancy: module may not depend on support package testkit at runtime; list it in devDepends',
+    ]);
+  });
+
+  it('rejects testkit as a runtime dependency of any package, support packages included', () => {
+    const problems = problemsOf({
+      packages: [
+        entry('core'),
+        entry('testkit', ['core'], { kind: 'support' }),
+        entry('migrate', ['core', 'testkit'], { kind: 'support' }),
+      ],
+    });
+    expect(problems).toEqual([
+      'migrate: testkit is test-only; list it in devDepends, never depends',
+    ]);
+  });
+
+  it('allows a support package in a module’s devDepends and in another support package', () => {
+    const parsed = parseRegister({
+      packages: [
+        entry('core'),
+        entry('testkit', ['core'], { kind: 'support' }),
+        entry('toolchain', ['core'], { kind: 'support', devDepends: ['testkit'] }),
+        entry('migrate', ['core', 'toolchain'], { kind: 'support' }),
+        entry('k1-tenancy', ['core'], { devDepends: ['testkit'] }),
+      ],
+    });
+    expect(parsed.ok).toBe(true);
+  });
+
   it('treats a test-only dependency as part of the cycle check', () => {
     const problems = problemsOf({
       packages: [entry('core', [], { devDepends: ['testkit'] }), entry('testkit', ['core'])],

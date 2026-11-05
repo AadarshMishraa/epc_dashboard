@@ -135,3 +135,22 @@ Format per entry:
 - Human gates in the pack plan (E2-T02, E3-T01, E7-T02, E5-T04, E9-T03) now carry build defaults; E9-T06 still needs Q-09 and is outside the common must-haves.
 - Refinement changes data, thresholds or scope only, through change requests (CR-xxx). Rules read definitions and state stage lists from configuration, so refinement must not need code changes.
 - Risk accepted: no owner has committed to a paid pilot. Revisit scope at gate G2.
+
+## 2026-11-05 — K0-T14 core port shapes
+- Policy ports return tagged decisions (`{ allow: true }` or `{ allow: false, reason }`). Callers use the guards `authorize`, `checkEntitlement`, `consumeQuota` and `classifyField`, which turn a throw or a malformed answer into `{ reason: 'ERROR', cause }` (or `secret`), so the cause is kept, not swallowed.
+- AI-client scope is exact: a `write` scope does not imply `read`. Operators never write through the Authorizer; support-session consent (F-13) may widen this later, additively.
+- `ClassificationLookup.classify` is synchronous and takes `Context` (not `TenantContext`), because log redaction cannot await. K4 must serve tenant custom fields from a cache.
+- Adapters build records with the core helpers `prepareEvent`/`createEventEnvelope`, `prepareAuditEntry`/`createAuditRecord` and `prepareMessage`/`maskRecipient`, so the tenant always comes from the context, whatever the adapter.
+- Contract suites are plain `{ name, run }` data in `@gx/testkit`, so the package needs no runtime dependency on a test runner. Each suite is also run against deliberately broken adapters, to prove it can fail.
+- `MessageSender.consentRef` is always required. A message that needs no consent (a sign-in code) carries a documented legal-basis reference instead.
+- Evidence: OBSERVED. `pnpm verify` is green with 614 tests. Two mutations (an allow-all fake Authorizer, a non-frozen JSON copy) turned 8 and 3 tests red.
+- Revisit if: K6 or K7a need a transaction handle on `publish` or `append`. They would add it through the adapter's construction, not the port signature.
+
+## 2026-11-05: K0-T14 changes after the security and staff reviews
+- Secrets are two ports, `TenantSecretsProvider` and `PlatformSecretsProvider`, so holding tenant secret access never reaches signing keys.
+- `QuotaProvider.consume(context, { quota, amount, idempotencyKey })`. A replay returns the first grant; a key reused for a different use is `KEY_REUSED`. Only grants are remembered. Units are returned by consuming inside the action's transaction (no `release`).
+- An erasure handler returns `erased` or `retained` with a basis (for example GST invoice retention). A retention without a basis is a failure. Handlers must be idempotent. Core owns `runEraser` and `isErasureComplete`, so K7b and the fake classify outcomes the same way.
+- A module may not list a support package in its runtime `depends` (register check), so test fakes cannot ship.
+- Versions stay at 0.1.0. These are pre-release changes to an unpublished 0.1.0: bump the minor once per task while before 1.0, never per edit.
+- Deferred to debt TD-7 to TD-13: transaction binding (decide at K6-T01), message idempotency and locale, platform and batch Authorizer, closed reason lists, `initiatedBy`, classification `ready`, and the privacy checks K7b owns.
+- Evidence: OBSERVED. All 9 reviewer probes are now contract cases with matching broken adapters; 4 mutations of the fixes turned tests red.

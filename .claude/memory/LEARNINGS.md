@@ -11,3 +11,6 @@ One bullet each, newest last. Format: `- YYYY-MM-DD [area] what is true — why 
 - 2026-11-04 [migrations] A keyword deny-list misses security changes (DISABLE RLS, ALTER POLICY, DO blocks, END). Judge statements by an allow-list of heads, and gate security statements separately from destructive ones.
 - 2026-11-04 [env] The sandbox refuses to run downloaded database binaries; use the system Postgres 16 locally and pin 17 in CI.
 - 2026-11-04 [postgres] COMMIT on a failed transaction performs a rollback, so 'replace ROLLBACK with COMMIT' is an equivalent mutation; prove atomicity with fault injection instead.
+- 2026-11-05 [env] The Mac has no Node 24, only Node 26 from Homebrew. A checksum-verified official Node 24 tarball in the session scratchpad, plus `corepack enable --install-directory <that bin>`, gives pnpm 10.34.9. node_modules was not installed before this session.
+- 2026-11-05 [tooling] macOS sed has no `\b`. A rename with `\bName<` silently matched nothing, and `pnpm api:update` still reported 0 problems (TD-5). Run `pnpm typecheck` after any scripted rename.
+- 2026-11-05 [tooling] zsh does not word-split unquoted $var, so a helper that passes "--project core" as one variable gives vitest one bad argument and prints nothing. Pass flags as separate quoted arguments.

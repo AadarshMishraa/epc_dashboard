@@ -1,8 +1,208 @@
 {
   "format": 2,
   "package": "@gx/testkit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "exports": [
+    {
+      "name": "AdapterFactory",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type AdapterFactory<Seed, Port> = (seed: Seed) => Port | Promise<Port>;"
+      ]
+    },
+    {
+      "name": "AuditSinkUnderTest",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuditSinkUnderTest {\n    readonly sink: AuditSink;\n    readonly read: TenantReader<AuditRecord>;\n}"
+      ]
+    },
+    {
+      "name": "AuthorizerSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface AuthorizerSeed {\n    readonly permissions: readonly {\n        readonly name: string;\n        readonly mode: PermissionMode;\n    }[];\n    readonly grants: readonly {\n        readonly tenantId: TenantId;\n        readonly actor: Actor;\n        readonly permission: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "CONTRACT_TENANTS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const CONTRACT_TENANTS: readonly TenantId[];"
+      ]
+    },
+    {
+      "name": "CONTRACT_USERS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const CONTRACT_USERS: readonly Id[];"
+      ]
+    },
+    {
+      "name": "ClassificationSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ClassificationSeed {\n    readonly fields: readonly {\n        readonly entity: string;\n        readonly field: string;\n        readonly classification: Classification;\n        readonly tenantId?: TenantId;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "ContractCase",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ContractCase {\n    readonly name: string;\n    readonly run: () => Promise<void>;\n}"
+      ]
+    },
+    {
+      "name": "ContractSuite",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ContractSuite {\n    readonly port: string;\n    readonly cases: readonly ContractCase[];\n}"
+      ]
+    },
+    {
+      "name": "ContractViolation",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class ContractViolation extends Error {\n    readonly name = \"ContractViolation\";\n}"
+      ]
+    },
+    {
+      "name": "EntitlementSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EntitlementSeed {\n    readonly keys: readonly string[];\n    readonly enabled: readonly {\n        readonly tenantId: TenantId;\n        readonly key: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "EventPublisherUnderTest",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface EventPublisherUnderTest {\n    readonly publisher: EventPublisher;\n    readonly read: TenantReader<EventEnvelope>;\n}"
+      ]
+    },
+    {
+      "name": "FakeAuditSink",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeAuditSink implements AuditSink {\n    #private;\n    constructor(options?: RecordingFakeOptions);\n    failNext(error: AppError): void;\n    records(tenantId: TenantId): readonly AuditRecord[];\n    append(context: TenantContext, entry: AuditEntry): Promise<Result<AuditRecord, AppError>>;\n}"
+      ]
+    },
+    {
+      "name": "FakeAuthorizer",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeAuthorizer implements Authorizer {\n    #private;\n    constructor(seed?: Partial<AuthorizerSeed>);\n    definePermission(name: string, mode: PermissionMode): void;\n    grant(tenantId: TenantId, actor: Actor, permission: string): void;\n    failWith(error: Error | undefined): void;\n    check(context: TenantContext, request: AuthorizationRequest): Promise<Decision<AuthorizationDenial>>;\n}"
+      ]
+    },
+    {
+      "name": "FakeClassificationLookup",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeClassificationLookup implements ClassificationLookup {\n    #private;\n    constructor(seed?: Partial<ClassificationSeed>);\n    define(field: FieldRef, classification: Classification, tenantId?: TenantId): void;\n    failWith(error: Error | undefined): void;\n    classify(context: Context, field: FieldRef): Classification;\n}"
+      ]
+    },
+    {
+      "name": "FakeEntitlementGate",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeEntitlementGate implements EntitlementGate {\n    #private;\n    constructor(seed?: Partial<EntitlementSeed>);\n    defineKey(entitlement: string): void;\n    enable(tenantId: TenantId, entitlement: string): void;\n    failWith(error: Error | undefined): void;\n    check(context: TenantContext, entitlement: string): Promise<Decision<EntitlementDenial>>;\n}"
+      ]
+    },
+    {
+      "name": "FakeEraserRegistry",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeEraserRegistry implements EraserRegistry {\n    #private;\n    register(handler: EraserHandler): Result<void, AppError<'CONFLICT' | 'VALIDATION_FAILED'>>;\n    erase(context: TenantContext, subject: ErasureSubject): Promise<ErasureReport>;\n}"
+      ]
+    },
+    {
+      "name": "FakeEventPublisher",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeEventPublisher implements EventPublisher {\n    #private;\n    constructor(options?: RecordingFakeOptions);\n    failNext(error: AppError): void;\n    published(tenantId: TenantId): readonly EventEnvelope[];\n    publish(context: TenantContext, event: EventInput): Promise<Result<EventEnvelope, AppError>>;\n}"
+      ]
+    },
+    {
+      "name": "FakeMessageSender",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeMessageSender implements MessageSender {\n    #private;\n    constructor(options?: RecordingFakeOptions);\n    failNext(error: AppError): void;\n    sent(tenantId: TenantId): readonly SentMessage[];\n    send(context: TenantContext, message: OutboundMessage): Promise<Result<SentMessage, AppError>>;\n}"
+      ]
+    },
+    {
+      "name": "FakePlatformSecretsProvider",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakePlatformSecretsProvider implements PlatformSecretsProvider {\n    #private;\n    constructor(seed?: Partial<Pick<SecretsSeed, 'platformSecrets'>>);\n    set(name: string, value: string): void;\n    get(name: string): Promise<Result<Secret, SecretError>>;\n}"
+      ]
+    },
+    {
+      "name": "FakeQuotaProvider",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeQuotaProvider implements QuotaProvider {\n    #private;\n    constructor(seed?: Partial<QuotaSeed>);\n    setLimit(tenantId: TenantId, quota: string, limit: number): void;\n    used(tenantId: TenantId, quota: string): number;\n    failWith(error: Error | undefined): void;\n    consume(context: TenantContext, use: QuotaUse): Promise<QuotaDecision>;\n}"
+      ]
+    },
+    {
+      "name": "FakeTenantSecretsProvider",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FakeTenantSecretsProvider implements TenantSecretsProvider {\n    #private;\n    constructor(seed?: Partial<Pick<SecretsSeed, 'tenantSecrets'>>);\n    set(tenantId: TenantId, name: string, value: string): void;\n    get(context: TenantContext, name: string): Promise<Result<Secret, SecretError>>;\n}"
+      ]
+    },
     {
       "name": "MODULE_ID",
       "meanings": [
@@ -10,6 +210,141 @@
       ],
       "declarations": [
         "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MessageSenderUnderTest",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface MessageSenderUnderTest {\n    readonly sender: MessageSender;\n    readonly read: TenantReader<SentMessage>;\n}"
+      ]
+    },
+    {
+      "name": "QuotaSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface QuotaSeed {\n    readonly limits: readonly {\n        readonly tenantId: TenantId;\n        readonly quota: string;\n        readonly limit: number;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "RecordingFakeOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface RecordingFakeOptions {\n    readonly ids?: IdGenerator;\n}"
+      ]
+    },
+    {
+      "name": "SecretsSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SecretsSeed {\n    readonly tenantSecrets: readonly {\n        readonly tenantId: TenantId;\n        readonly name: string;\n        readonly value: string;\n    }[];\n    readonly platformSecrets: readonly {\n        readonly name: string;\n        readonly value: string;\n    }[];\n}"
+      ]
+    },
+    {
+      "name": "SecretsUnderTest",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SecretsUnderTest {\n    readonly tenant: TenantSecretsProvider;\n    readonly platform: PlatformSecretsProvider;\n}"
+      ]
+    },
+    {
+      "name": "TenantReader",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type TenantReader<R> = (tenantId: TenantId) => readonly R[] | Promise<readonly R[]>;"
+      ]
+    },
+    {
+      "name": "auditSinkContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function auditSinkContract(create: () => AuditSinkUnderTest | Promise<AuditSinkUnderTest>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "authorizerContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function authorizerContract(create: AdapterFactory<AuthorizerSeed, Authorizer>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "classificationLookupContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function classificationLookupContract(create: AdapterFactory<ClassificationSeed, ClassificationLookup>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "entitlementGateContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function entitlementGateContract(create: AdapterFactory<EntitlementSeed, EntitlementGate>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "eraserRegistryContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function eraserRegistryContract(create: () => EraserRegistry | Promise<EraserRegistry>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "eventPublisherContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function eventPublisherContract(create: () => EventPublisherUnderTest | Promise<EventPublisherUnderTest>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "messageSenderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function messageSenderContract(create: () => MessageSenderUnderTest | Promise<MessageSenderUnderTest>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "quotaProviderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function quotaProviderContract(create: AdapterFactory<QuotaSeed, QuotaProvider>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "secretsProviderContract",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function secretsProviderContract(create: AdapterFactory<SecretsSeed, SecretsUnderTest>): ContractSuite;"
       ]
     }
   ]

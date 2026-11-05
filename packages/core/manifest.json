@@ -1,7 +1,7 @@
 {
   "id": "core",
   "layer": "L0",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "depends": [],
   "entities": [],
   "events_emitted": [],

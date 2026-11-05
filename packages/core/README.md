@@ -4,7 +4,7 @@ Shared contracts: context, ids, errors, Result, Clock and the core ports with in
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Layer L0 module.
 - Register id: `core` in [packages/register.json](../register.json).
-- Status: core types from K0-T03. Ports with in-memory fakes (K0-T14) and redacted logging (K0-T04) are next.
+- Status: core types from K0-T03; core ports from K0-T14 (their fakes and contract suites are in `@gx/testkit`). Redacted logging (K0-T04) is next.
 
 ## Public API
 
@@ -23,6 +23,24 @@ One file, `src/index.ts`, exported as `@gx/core`. Other packages import only tha
 | `toErrorResponse`, `ErrorResponseBody` | The API error body `{ error: { code, message, fields, correlation_id, retry_after_seconds?, current_version? } }`; nothing else leaves the server |
 | `moduleId`, `isModuleId`, `ModuleId`, `MODULE_ID_MAX_LENGTH` | Validated, branded register and manifest ids |
 | `MODULE_ID` | This package's register id, `core` |
+
+### Ports (K0-T14)
+
+Each port is an interface that a later module implements. The in-memory fake and the contract suite for each one are in `@gx/testkit`. Every port fails closed (threat model `docs/security/threat-models/K0-T14-core-ports.md`). Tenant-scoped methods take a `TenantContext`, so a plain `Context` does not compile.
+
+| Port | Implemented by | Fails closed how |
+|---|---|---|
+| `Authorizer`, through `authorize` | K2 | An unknown permission, no grant, an anonymous caller, an operator writing or an AI client beyond its scope is denied with a reason. `actorModeDenial` is the shared actor check |
+| `EntitlementGate`, through `checkEntitlement` | K3 | An unknown key is `UNKNOWN_KEY`, never included |
+| `QuotaProvider`, through `consumeQuota` | K3 | An unknown quota is exhausted. An amount must be a safe integer of at least 1. A use over the limit consumes nothing. Each use has an idempotency key, so a replay consumes nothing more. Units are returned by consuming inside the action's transaction |
+| `ClassificationLookup`, through `classifyField` | K4 | An unknown field is `secret`. It is synchronous, for log redaction |
+| `TenantSecretsProvider`, `PlatformSecretsProvider`, `Secret` | adapter per host | Another tenant's secret is `NOT_FOUND`, the same answer as a missing one. Platform secrets are a separate port, wired only where needed. `Secret` prints `[secret]` and only `reveal()` returns the value |
+| `AuditSink`, `prepareAuditEntry`, `createAuditRecord` | K7a | A failure is returned, never swallowed. Records are frozen, and tenant, actor and correlation id come from the context |
+| `EventPublisher`, `prepareEvent`, `createEventEnvelope`, `toFrozenJson` | K6 | The tenant comes from the context, never the payload. The payload is plain JSON, copied and frozen |
+| `MessageSender`, `prepareMessage`, `maskRecipient` | K2 and a provider adapter | Purpose and consent reference (or legal basis) are required. The send record keeps a masked recipient only |
+| `EraserRegistry`, `runEraser`, `isErasureComplete`, `isEraserHandlerId` | K7b | A duplicate id is refused. An erase with no handlers is not complete. Every handler's outcome is reported. Data kept under a law is `retained` with its basis, never silent. Handlers must be idempotent |
+
+Decisions are tagged unions (`Decision`, `Allow`, `Deny`, `ALLOW`, `deny`), never booleans. `isAllowed` accepts only `allow === true`. The guards turn a throw or a malformed answer into `DenyOnError`, which keeps the `cause` for logs.
 
 ### Core error codes
 

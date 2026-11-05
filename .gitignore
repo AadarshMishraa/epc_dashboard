@@ -19,3 +19,6 @@ coverage/
 .vercel/
 supabase/.temp/
 supabase/.branches/
+
+# macOS
+.DS_Store

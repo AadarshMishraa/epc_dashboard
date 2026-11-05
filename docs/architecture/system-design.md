@@ -83,7 +83,7 @@ One monorepo (ADR-0006). `packages/register.json` is the module register: every 
 ```mermaid
 flowchart BT
   core["@gx/core<br/>contracts and ports, no I/O"]
-  testkit["@gx/testkit (support)"] --> core
+  testkit["@gx/testkit (support)<br/>port fakes, contract suites"] --> core
   toolchain["@gx/toolchain (support)<br/>import graph; later manifest, boundary, API diff"] --> core
   migrate["@gx/migrate (support)<br/>migration runner, ledger"] --> core
   k1["@gx/k1-tenancy"] --> core
@@ -105,9 +105,22 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 | No cross-package internals | The `exports` map blocks deep imports at resolution; the import-graph check reports them with file and line |
 | Core has no I/O | Core builds without Node.js type definitions, so `process`, `fs` or `net` fail its build |
 | Build order | Turborepo `build` depends on `^build`; typecheck uses the transit-node pattern so a change in core invalidates dependants' cache |
+| Ports fail closed | Core defines the nine ports (K0-T14). Modules call the policy ports through `authorize`, `checkEntitlement`, `consumeQuota` and `classifyField`, which turn a throw or a malformed answer into a denial (or `secret`). Each port's fake and contract suite are in `@gx/testkit`, and every real adapter must pass the same suite |
+
+| Port | Real adapter |
+|---|---|
+| `Authorizer` | K2 |
+| `EntitlementGate`, `QuotaProvider` | K3 |
+| `ClassificationLookup` | K4 (custom fields) |
+| `EventPublisher` | K6 outbox |
+| `AuditSink` | K7a |
+| `EraserRegistry` | K7b |
+| `TenantSecretsProvider`, `PlatformSecretsProvider`, `MessageSender` | host adapters (ADR-0006) |
 
 ## 8. Change log
 - 2026-11-04: initial design from ADR-0001 to ADR-0005
 - 2026-11-04: stack from ADR-0006; workspace and packages section for the K0-T02 skeleton
 - 2026-11-04: Supabase (Postgres 17, Mumbai) and Vercel (bom1) configured with placeholders
 - 2026-11-04: @gx/migrate added (K0-T05): per-package SQL migrations, ledger gx_migrations.ledger, advisory lock
+- 2026-11-05: core ports added (K0-T14), with fail-closed guards; fakes and contract suites added to @gx/testkit
+- 2026-11-05: after the K0-T14 reviews: secrets split into tenant and platform ports, idempotent quota use, erasure `retained` with basis; a module may not depend on a support package at runtime

@@ -170,7 +170,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Metrics scrape works locally; every request has a correlation id
   - Tests: integration test
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T14** (T-014) Core ports with in-memory fakes: EventPublisher, AuditSink, Authorizer, EntitlementGate, QuotaProvider, ClassificationLookup, SecretsProvider, MessageSender, EraserRegistry (M)
+- [x] **K0-T14** (T-014) Core ports with in-memory fakes: EventPublisher, AuditSink, Authorizer, EntitlementGate, QuotaProvider, ClassificationLookup, SecretsProvider, MessageSender, EraserRegistry (M)
   - Feature: F-02 | Milestone: M-01 | Level: 3 | Lane: core
   - Needs: K0-T03 (T-003)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
