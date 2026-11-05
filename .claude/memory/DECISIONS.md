@@ -154,3 +154,12 @@ Format per entry:
 - Versions stay at 0.1.0. These are pre-release changes to an unpublished 0.1.0: bump the minor once per task while before 1.0, never per edit.
 - Deferred to debt TD-7 to TD-13: transaction binding (decide at K6-T01), message idempotency and locale, platform and batch Authorizer, closed reason lists, `initiatedBy`, classification `ready`, and the privacy checks K7b owns.
 - Evidence: OBSERVED. All 9 reviewer probes are now contract cases with matching broken adapters; 4 mutations of the fixes turned tests red.
+
+## 2026-11-05: K0-T04 redacted logging
+- Two layers: classification through `classifyField` when a call names an entity (unknown or no lookup is secret), then a backstop on every value. Callers cannot set the ids; fields nest under `fields`.
+- Numbers of 9 or more digits are masked unless the key's last word is a unit (`amount_paise`, `_millis`, `total`), so money and times stay readable; name such fields with a unit.
+- Personal and secret keys are matched by whole words, with technical exemptions (`file_name`, `email_template`). A classified top-level key skips the personal-key check; the secret-key check always applies.
+- Errors keep `{ type, code }`; TypeError, RangeError and ReferenceError also keep a redacted message. No stack frames: Node 24's `stack` accessor can run a user-set `prepareStackTrace`.
+- `parseCorrelationId` rejects an id the backstop would change, so ids stay unique in logs.
+- One version bump for the task: core and testkit 0.1.1 (addition before 1.0 is a patch, development guidelines §API). Residual risks TD-15 and TD-16.
+- Evidence: OBSERVED. First security pass REQUEST CHANGES; all findings fixed with tests in 5cdad64; mutation checks all killed.
