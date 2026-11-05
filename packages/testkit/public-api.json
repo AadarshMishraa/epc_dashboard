@@ -1,7 +1,7 @@
 {
   "format": 2,
   "package": "@gx/testkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": [
     {
       "name": "AdapterFactory",
@@ -204,12 +204,31 @@
       ]
     },
     {
+      "name": "LogRecord",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogRecord = Readonly<Record<string, unknown>> & {\n    readonly level: string;\n    readonly event: string;\n    readonly correlation_id: string;\n};"
+      ]
+    },
+    {
       "name": "MODULE_ID",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare const MODULE_ID: ModuleId;"
+      ]
+    },
+    {
+      "name": "MemoryLogSink",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class MemoryLogSink implements LogSink {\n    #private;\n    write(line: string): void;\n    get lines(): readonly string[];\n    records(): readonly LogRecord[];\n    ofEvent(event: string): readonly LogRecord[];\n    clear(): void;\n    failWith(error: Error | undefined): void;\n}"
       ]
     },
     {

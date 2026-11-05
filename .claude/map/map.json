@@ -153,7 +153,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "d1384898393c",
+   "hash": "2d637ddb3e49",
    "imports": [
     "./clock.ts",
     "./errors.ts",
@@ -163,7 +163,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 169,
+   "loc": 170,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -183,7 +183,8 @@
     "ContextInput",
     "createContext",
     "deriveContext",
-    "requireTenant"
+    "requireTenant",
+    "freezeActor"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -319,7 +320,7 @@
     "packages/core/src/index.ts"
    ],
    "env": [],
-   "hash": "d5b2fcf710f9",
+   "hash": "ffbc62158339",
    "imports": [
     "node:fs",
     "vitest",
@@ -328,7 +329,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 82,
+   "loc": 85,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -345,6 +346,8 @@
     "packages/core/src/context.ts",
     "packages/core/src/errors.ts",
     "packages/core/src/ids.ts",
+    "packages/core/src/logging/logger.ts",
+    "packages/core/src/logging/redact.ts",
     "packages/core/src/module-id.ts",
     "packages/core/src/ports/audit.ts",
     "packages/core/src/ports/authorizer.ts",
@@ -361,7 +364,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "e3ea8a1dd75c",
+   "hash": "02877fe725c5",
    "imports": [
     "./module-id.ts",
     "./module-id.ts",
@@ -381,17 +384,149 @@
     "./ports/events.ts",
     "./ports/audit.ts",
     "./ports/messages.ts",
-    "./ports/erasure.ts"
+    "./ports/erasure.ts",
+    "./logging/logger.ts",
+    "./logging/redact.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 141,
+   "loc": 168,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/logger.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/logging/logger.ts",
+    "packages/core/src/ports/classification.ts",
+    "packages/core/src/ports/secret.ts"
+   ],
+   "env": [],
+   "hash": "a37f5f0c897a",
+   "imports": [
+    "vitest",
+    "../clock.ts",
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../ports/classification.ts",
+    "../ports/secret.ts",
+    "./logger.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 479,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/logger.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/logging/redact.ts",
+    "packages/core/src/ports/classification.ts"
+   ],
+   "env": [],
+   "hash": "a0a1601c4e3f",
+   "imports": [
+    "../context.ts",
+    "../ports/classification.ts",
+    "./redact.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 217,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "LOG_LEVELS",
+    "LogLevel",
+    "LogSink",
+    "LogCallOptions",
+    "LogFields",
+    "Logger",
+    "LoggerOptions",
+    "createLogger"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/redact.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/errors.ts",
+    "packages/core/src/logging/redact.ts",
+    "packages/core/src/ports/secret.ts"
+   ],
+   "env": [],
+   "hash": "f1e17db354d6",
+   "imports": [
+    "fast-check",
+    "vitest",
+    "../errors.ts",
+    "../ports/secret.ts",
+    "./redact.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 405,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/redact.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/ports/secret.ts"
+   ],
+   "env": [],
+   "hash": "35cfe3d3f697",
+   "imports": [
+    "../ports/secret.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 290,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "LIMITS",
+    "redactString",
+    "isSecretKey",
+    "summariseError",
+    "redactValue"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -457,7 +592,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "4c23853cc4c7",
+   "hash": "deb20794a924",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -469,7 +604,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 91,
+   "loc": 102,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -496,7 +631,7 @@
     "packages/core/src/ports/decision.ts"
    ],
    "env": [],
-   "hash": "c23270b1d720",
+   "hash": "cbcd7f888d8f",
    "imports": [
     "../context.ts",
     "../ids.ts",
@@ -505,7 +640,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 84,
+   "loc": 88,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -597,7 +732,7 @@
     "packages/core/src/ports/quotas.ts"
    ],
    "env": [],
-   "hash": "471bc2579295",
+   "hash": "d4ad520190fe",
    "imports": [
     "fast-check",
     "vitest",
@@ -612,7 +747,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 292,
+   "loc": 313,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -626,12 +761,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "fd60928efd62",
+   "hash": "82a8d3beec70",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 83,
+   "loc": 88,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -694,7 +829,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "21095aba0d2e",
+   "hash": "d86b68442dc2",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -705,7 +840,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 103,
+   "loc": 104,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -736,7 +871,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "7a2e71229655",
+   "hash": "b789e37cb417",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -748,7 +883,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 96,
+   "loc": 102,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -782,7 +917,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "8a0ca6513a5d",
+   "hash": "e2e0f1f2cf1c",
    "imports": [
     "vitest",
     "../clock.ts",
@@ -801,7 +936,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 260,
+   "loc": 270,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -818,7 +953,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "6d65d97ecc37",
+   "hash": "638e5c7b1cb9",
    "imports": [
     "../errors.ts",
     "../result.ts"
@@ -826,7 +961,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 79,
+   "loc": 100,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -849,7 +984,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "7325888ed877",
+   "hash": "c200abe1c88a",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -860,7 +995,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 106,
+   "loc": 115,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -953,7 +1088,7 @@
     "packages/core/src/ports/messages.ts"
    ],
    "env": [],
-   "hash": "123579099371",
+   "hash": "9810587635b0",
    "imports": [
     "vitest",
     "../clock.ts",
@@ -1072,7 +1207,7 @@
     "packages/core/src/ports/secrets.ts"
    ],
    "env": [],
-   "hash": "81054b59744d",
+   "hash": "087486a2af96",
    "imports": [
     "vitest",
     "../context.ts",
@@ -1875,14 +2010,14 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "144bca4d96d9",
+   "hash": "86ddfd5ef0be",
    "imports": [
     "@gx/core"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 106,
+   "loc": 114,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1903,6 +2038,8 @@
     "USER_2",
     "RECORD_1",
     "EVENT_1",
+    "CONTRACT_TENANTS",
+    "CONTRACT_USERS",
     "user1",
     "user2",
     "contextFor",
@@ -1919,7 +2056,7 @@
     "packages/testkit/src/contract.ts"
    ],
    "env": [],
-   "hash": "2c953bb6a4e7",
+   "hash": "c87f506b556a",
    "imports": [
     "@gx/core",
     "../contract.ts"
@@ -1927,7 +2064,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 635,
+   "loc": 645,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -1952,7 +2089,7 @@
     "packages/testkit/src/contract.ts"
    ],
    "env": [],
-   "hash": "3861cf790fe9",
+   "hash": "8c926779ac0b",
    "imports": [
     "@gx/core",
     "../contract.ts"
@@ -1960,12 +2097,13 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 575,
+   "loc": 632,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "SecretsSeed",
+    "SecretsUnderTest",
     "secretsProviderContract",
     "AuditSinkUnderTest",
     "auditSinkContract",
@@ -1986,7 +2124,7 @@
     "packages/testkit/src/index.ts"
    ],
    "env": [],
-   "hash": "b9046f713730",
+   "hash": "3d61ed59de2a",
    "imports": [
     "fast-check",
     "@gx/core",
@@ -1996,11 +2134,35 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 549,
+   "loc": 848,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
    "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/fakes/logging.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "6b51b550ca3c",
+   "imports": [
+    "@gx/core"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 56,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "LogRecord",
+    "MemoryLogSink"
+   ],
    "table_refs": {},
    "tables_read": [],
    "tables_write": []
@@ -2012,7 +2174,7 @@
     "packages/testkit/src/contracts/policy.ts"
    ],
    "env": [],
-   "hash": "64c4872a163b",
+   "hash": "5a6414e476cd",
    "imports": [
     "@gx/core",
     "../contracts/policy.ts"
@@ -2020,7 +2182,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 199,
+   "loc": 215,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -2041,7 +2203,7 @@
     "packages/testkit/src/contracts/records.ts"
    ],
    "env": [],
-   "hash": "288a9b38e1b4",
+   "hash": "297f24f4ea16",
    "imports": [
     "@gx/core",
     "../contracts/records.ts"
@@ -2049,13 +2211,14 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 251,
+   "loc": 248,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "RecordingFakeOptions",
-    "FakeSecretsProvider",
+    "FakeTenantSecretsProvider",
+    "FakePlatformSecretsProvider",
     "FakeAuditSink",
     "FakeEventPublisher",
     "FakeMessageSender",
@@ -2101,7 +2264,7 @@
     "packages/testkit/src/fakes/records.ts"
    ],
    "env": [],
-   "hash": "4e1edf0278e4",
+   "hash": "862dc8ce7d52",
    "imports": [
     "@gx/core",
     "./contract.ts",
@@ -2113,7 +2276,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 53,
+   "loc": 57,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
@@ -2643,7 +2806,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "75a1597ebdfb",
+   "hash": "66ce9ed9b195",
    "imports": [
     "vitest",
     "./register.ts"
@@ -2651,7 +2814,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 113,
+   "loc": 127,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -2665,7 +2828,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "1983de23ef16",
+   "hash": "7dde1bf8bdcc",
    "imports": [
     "@gx/core",
     "zod"
@@ -2673,7 +2836,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 128,
+   "loc": 136,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -2942,8 +3105,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-05 09:06",
- "head": "e71d1d6",
+ "generated": "2026-11-05 04:05",
+ "head": "8a14b53",
  "root": "epc_dashboard",
  "version": 1
 }

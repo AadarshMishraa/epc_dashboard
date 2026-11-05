@@ -4,7 +4,7 @@ Shared contracts: context, ids, errors, Result, Clock and the core ports with in
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Layer L0 module.
 - Register id: `core` in [packages/register.json](../register.json).
-- Status: core types from K0-T03; core ports from K0-T14 (their fakes and contract suites are in `@gx/testkit`). Redacted logging (K0-T04) is next.
+- Status: core types from K0-T03; core ports from K0-T14 (their fakes and contract suites are in `@gx/testkit`); redacted logging from K0-T04.
 
 ## Public API
 
@@ -41,6 +41,23 @@ Each port is an interface that a later module implements. The in-memory fake and
 | `EraserRegistry`, `runEraser`, `isErasureComplete`, `isEraserHandlerId` | K7b | A duplicate id is refused. An erase with no handlers is not complete. Every handler's outcome is reported. Data kept under a law is `retained` with its basis, never silent. Handlers must be idempotent |
 
 Decisions are tagged unions (`Decision`, `Allow`, `Deny`, `ALLOW`, `deny`), never booleans. `isAllowed` accepts only `allow === true`. The guards turn a throw or a malformed answer into `DenyOnError`, which keeps the `cause` for logs.
+
+### Logging (K0-T04)
+
+Threat model: `docs/security/threat-models/K0-T04-logging.md`. Core writes only to a `LogSink` port; the host wires the sink (stdout, a vendor) and `@gx/testkit` has `MemoryLogSink` for tests.
+
+```ts
+const log = createLogger(context, { sink, classification, onFailure: report });
+log.info('lead.updated', { lead: lead.id, status: 'contacted', phone }, { entity: 'lead' });
+```
+
+- One JSON line per call: `ts`, `level`, `event`, `tenant_id`, `correlation_id`, `causation_id`, `actor` (ids only), `initiated_by`, then the caller's `fields`. Callers cannot override the ids, and there is no global logger, so every line is traceable to its tenant and request.
+- Event keys are dotted snake_case (`invoice.issue_failed`). Messages are not pre-formatted: put values in fields.
+- Name the `entity` when fields come from a record. Each field is then classified (`classifyField`): `personal` becomes `[personal]`; `sensitive_personal` and `secret` become `[redacted]`; an unknown field, or a call with no lookup configured, is secret.
+- Every value then goes through the backstop (`redactValue`, `redactString`). It masks phone numbers, emails, UPI ids, PAN, GSTIN, long numbers (bank accounts, cards), bearer and basic credentials, JSON web tokens, and URL query and fragment values, and it removes national id numbers entirely. UUIDs, short numbers and ISO timestamps stay readable. A date written as `2026-11-05 12:30` loses its digits; log a `Date` or an ISO string instead. Values under secret-looking keys (`isSecretKey`: password, token, authorization, cookie, otp, signature, body and others) are removed.
+- Errors and `cause` values are summarised as `{ type, code }` (`summariseError`). Log an `AppError` as a field; its `detail` is backstopped and its `cause` summarised. Do not copy a driver message into a field.
+- Getters, `toJSON` and `toString` are never called. Depth, breadth, string length and cause chains are capped (`REDACTION_LIMITS`), and an over-long line keeps its header and drops its fields.
+- The logger never throws. If a line cannot be built, it writes `{ level, event, tenant_id, correlation_id, redaction_failed: true }` and passes the cause to `onFailure`.
 
 ### Core error codes
 

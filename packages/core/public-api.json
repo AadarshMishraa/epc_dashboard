@@ -1,7 +1,7 @@
 {
   "format": 2,
   "package": "@gx/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": [
     {
       "name": "ALLOW",
@@ -490,6 +490,69 @@
       ]
     },
     {
+      "name": "LOG_LEVELS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LOG_LEVELS: readonly [\n    \"debug\",\n    \"info\",\n    \"warn\",\n    \"error\"\n];"
+      ]
+    },
+    {
+      "name": "LogCallOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LogCallOptions {\n    readonly entity?: string;\n}"
+      ]
+    },
+    {
+      "name": "LogFields",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogFields = Readonly<Record<string, unknown>>;"
+      ]
+    },
+    {
+      "name": "LogLevel",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogLevel = (typeof LOG_LEVELS)[number];"
+      ]
+    },
+    {
+      "name": "LogSink",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LogSink {\n    write(line: string): void;\n}"
+      ]
+    },
+    {
+      "name": "Logger",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Logger {\n    debug(event: string, fields?: LogFields, options?: LogCallOptions): void;\n    info(event: string, fields?: LogFields, options?: LogCallOptions): void;\n    warn(event: string, fields?: LogFields, options?: LogCallOptions): void;\n    error(event: string, fields?: LogFields, options?: LogCallOptions): void;\n}"
+      ]
+    },
+    {
+      "name": "LoggerOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LoggerOptions {\n    readonly sink: LogSink;\n    readonly classification?: ClassificationLookup;\n    readonly minLevel?: LogLevel;\n    readonly maxLineChars?: number;\n    readonly onFailure?: (cause: unknown) => void;\n}"
+      ]
+    },
+    {
       "name": "MESSAGE_CHANNELS",
       "meanings": [
         "value"
@@ -658,6 +721,15 @@
       ],
       "declarations": [
         "interface QuotaUse {\n    readonly quota: string;\n    readonly amount: number;\n    readonly idempotencyKey: string;\n}"
+      ]
+    },
+    {
+      "name": "REDACTION_LIMITS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LIMITS: Readonly<{\n    string: 2048;\n    depth: 6;\n    breadth: 50;\n    causes: 3;\n}>;"
       ]
     },
     {
@@ -851,6 +923,15 @@
       ]
     },
     {
+      "name": "createLogger",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function createLogger(context: Context, options: LoggerOptions): Logger;"
+      ]
+    },
+    {
       "name": "defineErrorCatalogue",
       "meanings": [
         "value"
@@ -968,6 +1049,15 @@
       ]
     },
     {
+      "name": "isSecretKey",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function isSecretKey(key: string): boolean;"
+      ]
+    },
+    {
       "name": "maskRecipient",
       "meanings": [
         "value"
@@ -1067,6 +1157,24 @@
       ]
     },
     {
+      "name": "redactString",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function redactString(text: string): string;"
+      ]
+    },
+    {
+      "name": "redactValue",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function redactValue(value: unknown, depth?: number, seen?: WeakSet<object>): unknown;"
+      ]
+    },
+    {
       "name": "requireTenant",
       "meanings": [
         "value"
@@ -1082,6 +1190,15 @@
       ],
       "declarations": [
         "declare function runEraser(handlerId: string, erase: EraserHandler['erase'], context: TenantContext, subject: ErasureSubject): Promise<ErasureOutcome>;"
+      ]
+    },
+    {
+      "name": "summariseError",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function summariseError(error: unknown, depth?: number): Record<string, unknown>;"
       ]
     },
     {

@@ -106,6 +106,7 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 | Core has no I/O | Core builds without Node.js type definitions, so `process`, `fs` or `net` fail its build |
 | Build order | Turborepo `build` depends on `^build`; typecheck uses the transit-node pattern so a change in core invalidates dependants' cache |
 | Ports fail closed | Core defines the nine ports (K0-T14). Modules call the policy ports through `authorize`, `checkEntitlement`, `consumeQuota` and `classifyField`, which turn a throw or a malformed answer into a denial (or `secret`). Each port's fake and contract suite are in `@gx/testkit`, and every real adapter must pass the same suite |
+| Logs are redacted in-process | `createLogger(context, { sink })` binds every line to the context's tenant, actor and correlation id. Fields are classified through `classifyField` when the call names an entity, then backstopped by patterns. Core writes only to the `LogSink` port, so the sink never sees raw values (K0-T04) |
 
 | Port | Real adapter |
 |---|---|
@@ -124,3 +125,4 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 - 2026-11-04: @gx/migrate added (K0-T05): per-package SQL migrations, ledger gx_migrations.ledger, advisory lock
 - 2026-11-05: core ports added (K0-T14), with fail-closed guards; fakes and contract suites added to @gx/testkit
 - 2026-11-05: after the K0-T14 reviews: secrets split into tenant and platform ports, idempotent quota use, erasure `retained` with basis; a module may not depend on a support package at runtime
+- 2026-11-05: redacted structured logging in core (K0-T04): `createLogger` writes to a `LogSink` port; classification first, pattern backstop second; `MemoryLogSink` in @gx/testkit

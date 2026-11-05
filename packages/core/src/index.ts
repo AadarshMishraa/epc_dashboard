@@ -145,5 +145,23 @@ export {
   type ErasureSubject,
 } from './ports/erasure.ts';
 
+export {
+  LOG_LEVELS,
+  createLogger,
+  type LogCallOptions,
+  type LogFields,
+  type LogLevel,
+  type LogSink,
+  type Logger,
+  type LoggerOptions,
+} from './logging/logger.ts';
+export {
+  LIMITS as REDACTION_LIMITS,
+  isSecretKey,
+  redactString,
+  redactValue,
+  summariseError,
+} from './logging/redact.ts';
+
 /** This package's id in packages/register.json. */
 export const MODULE_ID: ModuleId = moduleId('core');

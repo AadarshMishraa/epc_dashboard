@@ -4,6 +4,12 @@ Notable changes to `@gx/testkit`. Versions follow semver over the public API in 
 
 ## Unreleased
 
+## 0.1.1 (2026-11-05)
+
+### Added
+
+- `MemoryLogSink` and `LogRecord` (K0-T04): an in-memory `LogSink` that keeps raw lines for leak assertions and parses them into records. It rejects multi-line writes, and `failWith` makes writes throw.
+
 ## 0.1.0 (2026-11-05)
 
 ### Added

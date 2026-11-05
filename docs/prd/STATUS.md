@@ -23,7 +23,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
 |----|------|----------|-----------|-------|-----------|-------|----|
 | F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 2 of 3 pass (AC2 local, AC3; AC1 needs K0-T11) | toolchain import-graph suite, `pnpm verify` | - |
-| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 1 of 3 pass (AC2 local; AC1 and AC3 need K0-T04) | core unit and property tests; testkit contract suites on the fakes | - |
+| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 3 of 3 pass locally (AC1 and AC3 in core logger tests; AC2 contract suites); K0-T04 security review pending | core unit and property tests; testkit contract suites on the fakes | - |
 | F-03 | Migration framework and test kit | Must | M-01 | In progress | 1 of 4 pass (AC1 on local Postgres 16; Postgres 17 in CI pending K0-T10) | migrate unit and db suites | - |
 | F-04 | Manifest, boundary and API gates | Must | M-01 | In progress | 2 of 4 pass (AC1; AC4 from 1.0.0, wording CR-001 proposed) | toolchain manifest and API suites | - |
 | F-05 | CI pipeline with security gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
@@ -96,7 +96,7 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-001 | F-01 | K0-T01 Decide stack and repo layout (ADR-0006) | Done | - |
 | T-002 | F-01 | K0-T02 Workspace skeleton | Done | - |
 | T-003 | F-02 | K0-T03 Core types | Done | - |
-| T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
+| T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | In review | T-003 |
 | T-005 | F-03 | K0-T05 Migration framework | Done | - |
 | T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
 | T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | Done | - |

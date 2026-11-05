@@ -42,6 +42,7 @@ export {
   FakeEntitlementGate,
   FakeQuotaProvider,
 } from './fakes/policy.ts';
+export { MemoryLogSink, type LogRecord } from './fakes/logging.ts';
 export {
   FakeAuditSink,
   FakeEraserRegistry,
