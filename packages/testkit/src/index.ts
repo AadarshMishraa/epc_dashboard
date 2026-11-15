@@ -1,12 +1,40 @@
 /**
  * Public API of @gx/testkit. This is the only file other packages may import.
  * A test-only package: depend on it from devDependencies, never from runtime code.
- * Capabilities arrive with the K0 tasks in docs/plans/001-foundation/K0-core.md.
  */
 import { moduleId, type ModuleId } from '@gx/core';
 
+export { FrozenClock } from './clock.ts';
+export {
+  assertIsolation,
+  IsolationFailure,
+  type IsolationReport,
+  type IsolationViolation,
+  type SqlExecutor,
+  type SqlResult,
+} from './isolation.ts';
+export {
+  checkPoolLeak,
+  type PoolLeakOptions,
+  type PoolLeakReport,
+  type PoolLeakTarget,
+} from './pool-leak.ts';
+export {
+  runTenantMatrix,
+  type SeedContext,
+  type TableSeed,
+  type TenantMatrixOptions,
+  type TenantMatrixReport,
+} from './tenant-matrix.ts';
 export {
   CONTRACT_TENANTS,
+  contextFor,
+  contextWithoutTenant,
+  FIXTURE_MILLIS,
+  TENANT_A,
+  TENANT_B,
+  USER_1,
+  USER_2,
   CONTRACT_USERS,
   ContractViolation,
   type AdapterFactory,

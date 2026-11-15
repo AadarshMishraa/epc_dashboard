@@ -1,7 +1,7 @@
 {
   "format": 2,
   "package": "@gx/testkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "exports": [
     {
       "name": "AdapterFactory",
@@ -101,6 +101,15 @@
       ],
       "declarations": [
         "interface EventPublisherUnderTest {\n    readonly publisher: EventPublisher;\n    readonly read: TenantReader<EventEnvelope>;\n}"
+      ]
+    },
+    {
+      "name": "FIXTURE_MILLIS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const FIXTURE_MILLIS = 1767225600000;"
       ]
     },
     {
@@ -204,6 +213,44 @@
       ]
     },
     {
+      "name": "FrozenClock",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class FrozenClock implements Clock {\n    #private;\n    constructor(startMillis?: number, monotonicStartMillis?: number);\n    nowMillis(): number;\n    monotonicMillis(): number;\n    advance(millis: number): void;\n    setWallTime(millis: number): void;\n}"
+      ]
+    },
+    {
+      "name": "IsolationFailure",
+      "meanings": [
+        "value",
+        "type"
+      ],
+      "declarations": [
+        "declare class IsolationFailure extends Error {\n    readonly name = \"IsolationFailure\";\n    readonly violations: readonly IsolationViolation[];\n    constructor(violations: readonly IsolationViolation[]);\n}"
+      ]
+    },
+    {
+      "name": "IsolationReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface IsolationReport {\n    readonly violations: readonly IsolationViolation[];\n}"
+      ]
+    },
+    {
+      "name": "IsolationViolation",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface IsolationViolation {\n    readonly subject: string;\n    readonly check: string;\n    readonly detail: string;\n}"
+      ]
+    },
+    {
       "name": "MODULE_ID",
       "meanings": [
         "value"
@@ -219,6 +266,33 @@
       ],
       "declarations": [
         "interface MessageSenderUnderTest {\n    readonly sender: MessageSender;\n    readonly read: TenantReader<SentMessage>;\n}"
+      ]
+    },
+    {
+      "name": "PoolLeakOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface PoolLeakOptions {\n    readonly tenants?: readonly [\n        TenantId,\n        TenantId\n    ];\n    readonly tenantSetting?: string;\n    readonly rounds?: number;\n}"
+      ]
+    },
+    {
+      "name": "PoolLeakReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface PoolLeakReport extends IsolationReport {\n    readonly sharedConnections: number;\n}"
+      ]
+    },
+    {
+      "name": "PoolLeakTarget",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface PoolLeakTarget {\n    runAs(tenantId: TenantId, work: (sql: SqlExecutor) => Promise<void>): Promise<void>;\n    runWithoutTenant(work: (sql: SqlExecutor) => Promise<void>): Promise<void>;\n}"
       ]
     },
     {
@@ -258,12 +332,111 @@
       ]
     },
     {
+      "name": "SeedContext",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SeedContext {\n    readonly tenantId: TenantId;\n    readonly nonce: string;\n}"
+      ]
+    },
+    {
+      "name": "SqlExecutor",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SqlExecutor {\n    query(text: string, values?: readonly unknown[]): Promise<SqlResult>;\n}"
+      ]
+    },
+    {
+      "name": "SqlResult",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface SqlResult {\n    readonly rows: readonly Record<string, unknown>[];\n    readonly rowCount: number | null;\n}"
+      ]
+    },
+    {
+      "name": "TENANT_A",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const TENANT_A: TenantId;"
+      ]
+    },
+    {
+      "name": "TENANT_B",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const TENANT_B: TenantId;"
+      ]
+    },
+    {
+      "name": "TableSeed",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface TableSeed<Parents = unknown> {\n    parents?(sql: SqlExecutor, context: SeedContext): Promise<Parents>;\n    row(sql: SqlExecutor, context: SeedContext & {\n        readonly parents: Parents;\n    }): Promise<void>;\n    touch?(sql: SqlExecutor): Promise<SqlResult>;\n}"
+      ]
+    },
+    {
+      "name": "TenantMatrixOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface TenantMatrixOptions {\n    readonly sql: SqlExecutor;\n    readonly seeds: Readonly<Record<string, TableSeed>>;\n    readonly exempt?: Readonly<Record<string, string>>;\n    readonly schemas?: readonly string[];\n    readonly ignoreSchemas?: readonly string[];\n    readonly tenants?: readonly [\n        TenantId,\n        TenantId\n    ];\n    readonly tenantSetting?: string;\n    readonly allowNoTables?: boolean;\n}"
+      ]
+    },
+    {
+      "name": "TenantMatrixReport",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface TenantMatrixReport extends IsolationReport {\n    readonly tables: readonly string[];\n    readonly exempted: readonly string[];\n}"
+      ]
+    },
+    {
       "name": "TenantReader",
       "meanings": [
         "type"
       ],
       "declarations": [
         "type TenantReader<R> = (tenantId: TenantId) => readonly R[] | Promise<readonly R[]>;"
+      ]
+    },
+    {
+      "name": "USER_1",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const USER_1: Id;"
+      ]
+    },
+    {
+      "name": "USER_2",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const USER_2: Id;"
+      ]
+    },
+    {
+      "name": "assertIsolation",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function assertIsolation(report: IsolationReport): void;"
       ]
     },
     {
@@ -285,12 +458,39 @@
       ]
     },
     {
+      "name": "checkPoolLeak",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function checkPoolLeak(target: PoolLeakTarget, options?: PoolLeakOptions): Promise<PoolLeakReport>;"
+      ]
+    },
+    {
       "name": "classificationLookupContract",
       "meanings": [
         "value"
       ],
       "declarations": [
         "declare function classificationLookupContract(create: AdapterFactory<ClassificationSeed, ClassificationLookup>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "contextFor",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function contextFor(tenantId: TenantId, actor?: Actor): TenantContext;"
+      ]
+    },
+    {
+      "name": "contextWithoutTenant",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function contextWithoutTenant(actor?: Actor): Context;"
       ]
     },
     {
@@ -336,6 +536,15 @@
       ],
       "declarations": [
         "declare function quotaProviderContract(create: AdapterFactory<QuotaSeed, QuotaProvider>): ContractSuite;"
+      ]
+    },
+    {
+      "name": "runTenantMatrix",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function runTenantMatrix(options: TenantMatrixOptions): Promise<TenantMatrixReport>;"
       ]
     },
     {

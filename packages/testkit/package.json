@@ -1,6 +1,6 @@
 {
   "name": "@gx/testkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Test kit: tenant matrix runner, adapter contract harness, frozen clock, fixtures and pool-leak helper.",
   "type": "module",
@@ -21,5 +21,9 @@
   },
   "dependencies": {
     "@gx/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "pg": "8.23.1"
   }
 }
