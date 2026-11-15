@@ -116,7 +116,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Valid sample passes; undeclared event, tool without mode or missing permission fails; an error code that collides with core or another module fails
   - Tests: validator tests with good and bad manifests
   - Rollback: Revert the commit; the migration is expand-only, so a schema fault is fixed forward, never edited in place.
-- [ ] **K0-T08** (T-008) Boundary lint: no upward imports, no cross-package internals, table ownership, no industry words (M)
+- [x] **K0-T08** (T-008) Boundary lint: no upward imports, no cross-package internals, table ownership, no industry words (M)
   - Feature: F-04 | Milestone: M-01 | Level: 3 | Lane: core
   - Needs: K0-T02 (T-002), K0-T07 (T-007)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer

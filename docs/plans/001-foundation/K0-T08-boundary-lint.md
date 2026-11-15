@@ -16,9 +16,10 @@ met for them by pointing at the existing fixtures, and by a CLI-level seeded-vio
 
 ## Scope
 New rules (the brief), in a new `boundaries.ts` in `@gx/toolchain`, run by `pnpm check:boundaries`:
-1. `table-ownership`: a `CREATE TABLE` in `<package>/migrations/*.sql` must start with that package's manifest `table_prefix`
-   (and a package without a prefix creates no tables). Uses a new additive export from `@gx/migrate`
-   (`findCreatedTables`, built on `sql-scan`), not a second SQL parser. `RECOMMENDED`: register change `toolchain.depends += migrate`
+1. `table-ownership`: every relation a `<package>/migrations/*.sql` statement creates or changes (create, alter, drop, index, trigger,
+   policy, comment, truncate; tables, views, sequences) must start with that package's manifest `table_prefix` (a package without a
+   prefix owns none), and a statement the scan cannot read is a violation. Uses a new additive export from `@gx/migrate`
+   (`scanRelations`, built on `sql-scan`), not a second SQL parser. `RECOMMENDED`: register change `toolchain.depends += migrate`
    (support to support, no cycle; migrate depends on core only). Additive; flagged for the owner.
 2. `industry-word`: no industry noun in `packages/*/src` non-test code, `migrations/` or `manifest.json`. Applies to `packages/` only,
    never `packs/`. Word list in one file, matched as whole words, case-insensitive. Allow marker on the line or the line above:
@@ -53,3 +54,11 @@ There is no CI until K0-T10. `OBSERVED` will mean: `pnpm check:boundaries` exits
 
 ## Rollback
 Revert the commit; no schema or data change.
+
+## Review outcome (gx-staff-reviewer, 2026-11-15): APPROVE WITH FIXES, fixes applied
+Fixed: H1 (`CREATE SCHEMA ... CREATE`), H2 (rule now covers every statement that changes a relation, not only `CREATE TABLE`), M1 (names the
+scan cannot read are violations), M2 (quoted versus bare `q...q` decided from the original text), M3 (views, sequences, foreign tables,
+`SELECT INTO`, renames both ways), M4 and M5 (`net_metering`, plurals), M6 (data files, file and folder names, package.json), M7 (block
+comment marker), L1 (manifest read with the schema's own rule; unreadable manifest is its own message), L2 and L3 (marker matched by comment
+token, outside strings; a trailing marker covers only its own line). Filed: L4, L5 and L6 as TD-17 and TD-18, and the remaining gaps as TD-19.
+Decision: package READMEs are not scanned for industry words (TD-19); prose there is for people and is reviewed with the code.

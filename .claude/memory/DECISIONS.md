@@ -173,3 +173,9 @@ Format per entry:
 - The matrix scans all non-system schemas except `gx_migrations`, and fails if the application role has any privilege there. Why: a default of `public` let a table in an unlisted schema pass unnoticed (staff review finding 7).
 - Seeds are `{ parents?, row }`, where `row` is one INSERT. Why: a parent's refusal must not stand in for the child's own policy (staff review finding 3).
 
+
+## 2026-11-15 — K0-T08 boundary lint: one gate, table ownership means every change to a relation
+- Context: the import-graph check already enforced no upward imports and no cross-package internals; the brief added table ownership and industry words.
+- Chosen: `pnpm check:boundaries` (in `verify`) runs the import graph plus `table-ownership` (every relation a migration creates or changes carries the module's `table_prefix`; a statement the scan cannot read is a violation) and `industry-word` (reasoned `boundary:allow industry-word` marker, comment-only). `@gx/toolchain` now depends on `@gx/migrate` (register change, additive) for `scanRelations`. READMEs are not scanned (TD-19).
+- Rejected: a second import checker; renaming the rule to `table-naming` (the review showed ownership of a name is not enough, so the rule was widened instead).
+- Consequences: K0-T10 wires `check:boundaries` into CI; packs must keep table-ownership when they register (TD-18); T08-h is an owner decision.

@@ -16,7 +16,8 @@ pnpm format:check       # Prettier on code and config
 pnpm lint               # ESLint with typescript-eslint strict type-checked rules, 0 warnings
 pnpm typecheck          # every package and its tests, against source
 pnpm build              # every package to dist/, in dependency order
-pnpm check:imports      # register, public-API and import-graph rules (packages/toolchain)
+pnpm check:boundaries   # import graph, table ownership and industry words (packages/toolchain)
+pnpm check:imports      # the import-graph rules alone
 pnpm test               # Vitest, one project per registered package
 pnpm vitest run --project k1-tenancy   # one package
 ```

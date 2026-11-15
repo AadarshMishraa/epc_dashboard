@@ -402,6 +402,210 @@ describe('industry-word', () => {
   });
 });
 
+// ---------------------------------------------------------------- review fixes (K0-T08 staff review)
+
+describe('table-ownership: relations a module does not own', () => {
+  const migration = (sql: string): Files => ({
+    'packages/k1-tenancy/migrations/0002_extra.sql': sql,
+  });
+  const rules = (sql: string): string[] => violations(migration(sql)).map((v) => v.rule);
+
+  it('fails a prefix that is not at the start of the name', () => {
+    expect(rules('CREATE TABLE x_k1_y (id int);')).toEqual(['table-ownership']);
+  });
+
+  it.each([
+    ['a column added to another module table', 'ALTER TABLE k2_user ADD COLUMN x int;'],
+    [
+      'a trigger on another module table',
+      'CREATE TRIGGER k1_t AFTER INSERT ON k2_user FOR EACH ROW EXECUTE FUNCTION k1_f();',
+    ],
+    ['an index on another module table', 'CREATE INDEX CONCURRENTLY k1_i ON k2_user (id);'],
+    ['a policy on another module table', 'CREATE POLICY k1_p ON k2_user USING (true);'],
+    ['a comment on another module table', "COMMENT ON TABLE k2_user IS 'x';"],
+    ['a drop of another module table', 'DROP TABLE k2_user;'],
+    ['a truncate of another module table', 'TRUNCATE k2_user;'],
+    ['taking another module table by rename', 'ALTER TABLE k2_user RENAME TO k1_user;'],
+    ['a view outside the prefix', 'CREATE VIEW tenant AS SELECT 1;'],
+    ['a sequence outside the prefix', 'CREATE SEQUENCE stray_seq;'],
+    ['a table made by SELECT INTO', 'SELECT * INTO stray FROM k1_tenant;'],
+  ])('fails %s', (_what, sql) => {
+    expect(rules(sql)).toEqual(['table-ownership']);
+  });
+
+  it('allows the module to change its own relations in every way', () => {
+    expect(
+      rules(`
+        ALTER TABLE k1_tenant ADD COLUMN x int;
+        CREATE INDEX k1_i ON k1_tenant (id);
+        CREATE POLICY k1_p ON k1_tenant USING (true);
+        COMMENT ON COLUMN k1_tenant.id IS 'x';
+        CREATE TABLE k1_child (tenant_id uuid REFERENCES k2_user (id));
+        DROP TABLE k1_child;
+      `),
+    ).toEqual([]);
+  });
+
+  it('fails CREATE SCHEMA with a table inside, which the scan cannot attribute', () => {
+    const found = only(violations(migration('CREATE SCHEMA s CREATE TABLE stray (id int);')));
+    expect(found.message).toContain('CREATE SCHEMA with objects inside it');
+  });
+
+  it('fails a name it cannot read instead of skipping it', () => {
+    const found = only(violations(migration('\nCREATE TABLE (id int);')));
+    expect(found).toMatchObject({ rule: 'table-ownership', line: 2 });
+    expect(found.message).toContain('cannot be read');
+  });
+
+  it('reads a name that starts with a non-ASCII letter, and a bare q...q name', () => {
+    expect(rules('CREATE TABLE ñandu (id int);')).toEqual(['table-ownership']);
+    expect(rules('CREATE TABLE qk1_evilq (id int);')).toEqual(['table-ownership']);
+  });
+
+  it('applies to a package that sees a CRLF file the same way', () => {
+    expect(rules('CREATE TABLE k1_a (id int);\r\nCREATE TABLE stray (id int);\r\n')).toEqual([
+      'table-ownership',
+    ]);
+  });
+
+  it('fails closed when the manifest is not valid JSON, and says so', () => {
+    const found = only(
+      violations({
+        'packages/k1-tenancy/manifest.json': '{ "table_prefix": "k1_", }',
+      }),
+    );
+    expect(found.rule).toBe('table-ownership');
+    expect(found.message).toContain('is unreadable');
+  });
+
+  it('rejects an empty or malformed table_prefix instead of accepting every name', () => {
+    const found = violations({
+      'packages/k1-tenancy/manifest.json': { id: 'k1-tenancy', table_prefix: '' },
+      ...migration('CREATE TABLE stray (id int);'),
+    });
+    expect(found).toHaveLength(2); // the base migration and the new one
+    for (const violation of found) {
+      expect(violation.message).toContain('is unreadable');
+      expect(violation.message).toContain('table_prefix');
+    }
+  });
+
+  it('does not check a TEMP relation or later statements on it', () => {
+    expect(
+      rules(
+        'CREATE TEMP TABLE scratch (id int); ALTER TABLE scratch ADD COLUMN x int; DROP TABLE scratch;',
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('industry-word: forms and places', () => {
+  const source = (text: string): Files => ({ 'packages/k1-tenancy/src/index.ts': text });
+
+  it.each([
+    ['snake_case with a space-free form', 'export const net_metering = 1;\n'],
+    ['upper snake case', 'export const NET_METERING = 1;\n'],
+    ['one word', 'export const netmetering = 1;\n'],
+    ['a plural', 'export const inverters = 1;\n'],
+    ['a plural in a comment', '// all discoms\n'],
+    ['a plural acronym', '// for EPCs\n'],
+    ['a trailing number', 'export const gst18 = 1;\n'],
+  ])('finds %s', (_what, text) => {
+    expect(only(violations(source(text))).rule).toBe('industry-word');
+  });
+
+  it('finds the word in a data file under src, not only in code', () => {
+    const found = violations({
+      'packages/k1-tenancy/src/rates.json': { gst: 18 },
+      'packages/k1-tenancy/src/seed.sql': "INSERT INTO k1_tenant VALUES ('solar');\n",
+      'packages/k1-tenancy/src/notes.md': 'Used for EPC projects.\n',
+    });
+    expect(found.map((v) => v.file)).toEqual([
+      'packages/k1-tenancy/src/notes.md',
+      'packages/k1-tenancy/src/rates.json',
+      'packages/k1-tenancy/src/seed.sql',
+    ]);
+  });
+
+  it('finds the word in a folder or file name, and in package.json', () => {
+    const found = violations({
+      'packages/k1-tenancy/src/gst/index.ts': 'export const a = 1;\n',
+      'packages/k1-tenancy/package.json': {
+        ...packageJson('k1-tenancy'),
+        description: 'Solar tenancy',
+      },
+    });
+    expect(found.map((v) => [v.file, v.message.includes('path') ? 'path' : 'text'])).toEqual([
+      ['packages/k1-tenancy/package.json', 'text'],
+      ['packages/k1-tenancy/src/gst/index.ts', 'path'],
+    ]);
+  });
+
+  it('reads CRLF files line by line', () => {
+    const found = only(violations(source('export const a = 1;\r\nexport const gst = 2;\r\n')));
+    expect(found.line).toBe(2);
+  });
+
+  it('does not flag a longer word that merely starts with an industry word', () => {
+    expect(violations(source('export const solarium = 1; export const gstreamer = 2;\n'))).toEqual(
+      [],
+    );
+  });
+
+  describe('the marker is a real comment', () => {
+    it('fails a block-comment marker with no reason', () => {
+      const found = violations(
+        source('export const x = "solar"; /* boundary:allow industry-word */\n'),
+      );
+      expect(found.map((v) => v.rule).sort()).toEqual(['allow-marker', 'industry-word']);
+    });
+
+    it('accepts a block-comment marker with a reason', () => {
+      expect(
+        violations(
+          source('export const x = "solar"; /* boundary:allow industry-word a label */\n'),
+        ),
+      ).toEqual([]);
+    });
+
+    it('does not honour comment characters inside a string', () => {
+      const found = violations(
+        source(`export const x = 'solar // boundary:allow industry-word reason';\n`),
+      );
+      expect(found.map((v) => v.rule)).toEqual(['industry-word']);
+    });
+
+    it('does not honour the other language comment token', () => {
+      expect(
+        violations(
+          source('export const x = "solar"; -- boundary:allow industry-word reason\n'),
+        ).map((v) => v.rule),
+      ).toEqual(['industry-word']);
+      expect(
+        violations({
+          'packages/k1-tenancy/migrations/0002_x.sql':
+            "SELECT 'solar'; // boundary:allow industry-word reason\n",
+        }).map((v) => v.rule),
+      ).toEqual(['industry-word']);
+    });
+
+    it('lets a marker after code cover only its own line, not the next', () => {
+      const found = violations(
+        source(
+          [
+            'export const a = 1; // boundary:allow industry-word legacy',
+            'export const gst = 2;',
+          ].join('\n'),
+        ),
+      );
+      expect(found.map((v) => [v.rule, v.line]).sort()).toEqual([
+        ['allow-marker', 1],
+        ['industry-word', 2],
+      ]);
+    });
+  });
+});
+
 // ---------------------------------------------------------------- the command
 
 describe('gx-check-boundaries command', () => {

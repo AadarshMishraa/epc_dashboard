@@ -16,7 +16,7 @@ Runs the import-graph rules below, then two more that apply to `packages/` only 
 
 | Rule | Fails when |
 |---|---|
-| `table-ownership` | A `migrations/*.sql` file creates a table (or renames one to a name) that does not start with the module's `table_prefix` from its `manifest.json`, or the module declares none. `TEMP` tables are exempt. Tables made inside `DO` blocks or `EXECUTE` strings are not seen |
+| `table-ownership` | A `migrations/*.sql` statement creates or changes a relation (create, alter, drop, index, trigger, policy, comment, truncate; tables, views, sequences; a rename counts both names) that does not start with the module's `table_prefix` from its `manifest.json`, or the module declares none. `TEMP` tables are exempt. Tables made inside `DO` blocks or `EXECUTE` strings are not seen |
 | `industry-word` | Non-test source, a migration or a manifest contains an industry word (list in `src/boundaries.ts`), as a whole word in any case; `fooBar`, `foo_bar` and `foo-bar` count. Comments are checked too |
 | `allow-marker` | A `// boundary:allow industry-word <reason>` marker has no reason or allows nothing |
 

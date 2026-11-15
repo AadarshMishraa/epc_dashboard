@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   blankCommentsAndStrings,
   countStatements,
-  findCreatedTables,
+  scanRelations,
   findRiskyStatements,
   splitStatements,
 } from './sql-scan.ts';
@@ -259,69 +259,153 @@ describe('splitStatements and countStatements', () => {
   });
 });
 
-describe('findCreatedTables', () => {
-  const names = (sql: string): string[] =>
-    findCreatedTables(sql).map((t) => (t.schema === undefined ? t.name : `${t.schema}.${t.name}`));
+describe('scanRelations', () => {
+  const label = (c: { action: string; name: string; schema?: string | undefined }): string =>
+    `${c.action} ${c.schema === undefined ? '' : `${c.schema}.`}${c.name}`;
+  const seen = (sql: string): string[] => scanRelations(sql).changes.map(label);
 
-  it('finds every form of CREATE TABLE', () => {
+  it('finds every form of CREATE for tables, views, sequences and foreign tables', () => {
     expect(
-      names(`
+      seen(`
         CREATE TABLE k1_a (id uuid);
         create table if not exists K1_B (id uuid);
-        CREATE TEMPORARY TABLE k1_c (id uuid);
-        CREATE GLOBAL TEMP TABLE k1_d (id uuid);
         CREATE UNLOGGED TABLE public.k1_e (id uuid);
         CREATE TABLE k1_f PARTITION OF k1_a FOR VALUES IN (1);
         CREATE TABLE k1_g AS SELECT 1;
+        CREATE OR REPLACE VIEW k1_v AS SELECT 1;
+        CREATE RECURSIVE VIEW k1_rv (n) AS SELECT 1;
+        CREATE MATERIALIZED VIEW IF NOT EXISTS k1_mv AS SELECT 1;
+        CREATE SEQUENCE k1_seq;
+        CREATE FOREIGN TABLE k1_ft (id int) SERVER s;
+        SELECT * INTO k1_into FROM k1_a;
       `),
-    ).toEqual(['k1_a', 'k1_b', 'k1_c', 'k1_d', 'public.k1_e', 'k1_f', 'k1_g']);
-  });
-
-  it('keeps the case of a quoted name and folds a bare one', () => {
-    expect(names('CREATE TABLE "K1_Mixed" (id uuid); CREATE TABLE Plain (id uuid);')).toEqual([
-      'K1_Mixed',
-      'plain',
+    ).toEqual([
+      'create k1_a',
+      'create k1_b',
+      'create public.k1_e',
+      'create k1_f',
+      'create k1_g',
+      'create k1_v',
+      'create k1_rv',
+      'create k1_mv',
+      'create k1_seq',
+      'create k1_ft',
+      'create k1_into',
     ]);
   });
 
-  it('reads the new name of a rename', () => {
+  it('reads what a statement does to a relation that already exists', () => {
     expect(
-      names('ALTER TABLE k1_a RENAME TO other_a; ALTER TABLE IF EXISTS ONLY s.t RENAME TO u;'),
-    ).toEqual(['other_a', 's.u']);
+      seen(`
+        ALTER TABLE k2_user ADD COLUMN x int;
+        ALTER TABLE IF EXISTS ONLY s.k2_user DROP COLUMN x;
+        ALTER VIEW k2_v OWNER TO gx_app;
+        DROP TABLE IF EXISTS k2_a, public.k2_b CASCADE;
+        TRUNCATE TABLE k2_user;
+        CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS k1_i ON ONLY k2_user (id);
+        CREATE INDEX ON k2_user (id);
+        CREATE TRIGGER k1_t AFTER INSERT OR UPDATE ON k2_user FOR EACH ROW EXECUTE FUNCTION k1_f();
+        CREATE POLICY k1_p ON k2_user USING (true);
+        DROP POLICY IF EXISTS k1_p ON k2_user;
+        COMMENT ON TABLE k2_user IS 'x';
+        COMMENT ON COLUMN s.k2_user.id IS 'x';
+      `),
+    ).toEqual([
+      'alter k2_user',
+      'alter s.k2_user',
+      'alter k2_v',
+      'drop k2_a',
+      'drop public.k2_b',
+      'truncate k2_user',
+      'index k2_user',
+      'index k2_user',
+      'trigger k2_user',
+      'policy k2_user',
+      'policy k2_user',
+      'comment k2_user',
+      'comment s.k2_user',
+    ]);
   });
 
-  it('ignores a table named only in a comment or a string', () => {
+  it('reads a rename both ways: the old name is altered, the new one is created', () => {
+    expect(seen('ALTER TABLE k1_a RENAME TO other_a; ALTER TABLE s.t RENAME TO u;')).toEqual([
+      'alter k1_a',
+      'create other_a',
+      'alter s.t',
+      'create s.u',
+    ]);
+  });
+
+  it('keeps the case of a quoted name and folds a bare one', () => {
+    expect(seen('CREATE TABLE "K1_Mixed" (id uuid); CREATE TABLE Plain (id uuid);')).toEqual([
+      'create K1_Mixed',
+      'create plain',
+    ]);
+  });
+
+  it('keeps the true characters of a quoted name, including a doubled quote', () => {
+    expect(seen('CREATE TABLE "k1 a-b""c" (id int);')).toEqual(['create k1 a-b"c']);
+  });
+
+  it('does not mistake a bare name that starts and ends with q for a quoted one', () => {
+    expect(seen('CREATE TABLE Qk1_Evilq (id int); CREATE TABLE "QaQ" (id int);')).toEqual([
+      'create qk1_evilq',
+      'create QaQ',
+    ]);
+  });
+
+  it('reads a bare name that starts with a non-ASCII letter', () => {
+    expect(seen('CREATE TABLE ñandu (id int);')).toEqual(['create ñandu']);
+  });
+
+  it('marks temporary relations, and later statements on them', () => {
+    const scan = scanRelations(
+      'CREATE TEMP TABLE scratch (id int); ALTER TABLE scratch ADD COLUMN x int; DROP TABLE scratch; CREATE TABLE k1_a (id int);',
+    );
+    expect(scan.changes.map((c) => [c.name, c.temporary])).toEqual([
+      ['scratch', true],
+      ['scratch', true],
+      ['scratch', true],
+      ['k1_a', false],
+    ]);
+  });
+
+  it('ignores a relation named only in a comment, a string or a dollar-quoted body', () => {
     expect(
-      names(`
+      scanRelations(`
         -- CREATE TABLE evil (id uuid);
         /* CREATE TABLE evil2 (id uuid); */
         SELECT 'CREATE TABLE evil3 (id uuid)';
         INSERT INTO k1_a VALUES ($$CREATE TABLE evil4 (x int)$$);
       `),
-    ).toEqual([]);
+    ).toEqual({ changes: [], unreadable: [] });
   });
 
-  it('ignores statements that only mention a table', () => {
+  it('ignores statements that are not about a relation, and plain DML', () => {
     expect(
-      names(
-        'CREATE INDEX k1_idx ON k1_a (id); ALTER TABLE k1_a ADD COLUMN x int; DROP TABLE k1_a;',
+      scanRelations(
+        'INSERT INTO k1_a SELECT * FROM k2_b; UPDATE k1_a SET x = 1; CREATE FUNCTION f() RETURNS TABLE (id int) LANGUAGE sql AS $$ SELECT 1 $$;',
       ),
-    ).toEqual([]);
+    ).toEqual({ changes: [], unreadable: [] });
   });
 
-  it('marks temporary tables', () => {
-    expect(
-      findCreatedTables('CREATE TEMP TABLE scratch (id int); CREATE TABLE k1_a (id int);').map(
-        (t) => t.temporary,
-      ),
-    ).toEqual([true, false]);
+  it('reports CREATE SCHEMA with objects inside it as unreadable', () => {
+    const scan = scanRelations('CREATE SCHEMA s CREATE TABLE stray (id int);');
+    expect(scan.changes).toEqual([]);
+    expect(scan.unreadable).toEqual([{ line: 1, reason: 'CREATE SCHEMA with objects inside it' }]);
+    expect(scanRelations('CREATE SCHEMA s;').unreadable).toEqual([]);
+  });
+
+  it('reports a relation statement it cannot read, never skips it', () => {
+    const scan = scanRelations('SELECT 1;\n\nCREATE TABLE (id int);\nCOMMENT ON TABLE;');
+    expect(scan.unreadable.map((u) => u.line)).toEqual([3, 4]);
   });
 
   it('reports the line of each statement', () => {
     expect(
-      findCreatedTables(
+      scanRelations(
         'SELECT 1;\n\n  CREATE TABLE k1_a (id int);\nCREATE TABLE k1_b (id int);',
-      ).map((t) => t.line),
+      ).changes.map((c) => c.line),
     ).toEqual([3, 4]);
   });
 });

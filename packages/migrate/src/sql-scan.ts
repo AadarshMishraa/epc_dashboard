@@ -339,37 +339,115 @@ function describeUnlisted(code: string): string {
   return 'this statement is not on the expand allow-list';
 }
 
-export interface CreatedTable {
+/** What a statement does to a relation (table, view, materialised view, sequence or foreign table). */
+export type RelationAction =
+  'create' | 'alter' | 'drop' | 'truncate' | 'index' | 'trigger' | 'policy' | 'comment';
+
+export interface RelationChange {
+  readonly action: RelationAction;
   /** Lower-cased when unquoted (Postgres folds it); as written when quoted. */
   readonly name: string;
-  /** The schema it is created in, when the statement names one. */
+  /** The schema it is named in, when the statement names one. */
   readonly schema?: string;
   readonly line: number;
-  /** A `TEMP` table lives only for the session, so it belongs to no module. */
+  /** A `TEMP` relation lives only for the session, so it belongs to no module. */
   readonly temporary: boolean;
 }
 
-const IDENT = String.raw`q[A-Za-z0-9_]*q|[A-Za-z_][A-Za-z0-9_$]*`;
-const QUALIFIED = String.raw`(${IDENT})(?:\s*\.\s*(${IDENT}))?`;
-const CREATE_TABLE = new RegExp(
-  String.raw`^\s*CREATE\s+(?:(?:GLOBAL\s+|LOCAL\s+)?(TEMPORARY|TEMP)\s+|UNLOGGED\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?${QUALIFIED}`,
+/** A statement that changes relations but whose target this scan could not read. */
+export interface UnreadableRelation {
+  readonly line: number;
+  readonly reason: string;
+}
+
+export interface RelationScan {
+  readonly changes: readonly RelationChange[];
+  readonly unreadable: readonly UnreadableRelation[];
+}
+
+const BARE = String.raw`(?:[A-Za-z_]|[^\x00-\x7F])(?:[A-Za-z0-9_$]|[^\x00-\x7F])*`;
+/** `q...q` is how the blanker leaves a quoted name; the original text decides which it was. */
+const NAME = String.raw`(?:q[A-Za-z0-9_]*q|${BARE})`;
+const DOTTED = String.raw`${NAME}(?:\s*\.\s*${NAME})*`;
+const DOTTED_LIST = String.raw`${DOTTED}(?:\s*,\s*${DOTTED})*`;
+const KIND = String.raw`(?:TABLE|VIEW|MATERIALIZED\s+VIEW|SEQUENCE|FOREIGN\s+TABLE)`;
+const IF_NOT_EXISTS = String.raw`(?:IF\s+NOT\s+EXISTS\s+)?`;
+const IF_EXISTS = String.raw`(?:IF\s+EXISTS\s+)?`;
+
+interface Rule {
+  readonly action: RelationAction;
+  readonly pattern: RegExp;
+  /** The named group holds a comma-separated list rather than one name. */
+  readonly list?: true;
+  /** The named group ends with a column: drop it to get the relation. */
+  readonly column?: true;
+}
+
+const rule = (action: RelationAction, source: string, extra: Partial<Rule> = {}): Rule => ({
+  action,
+  pattern: new RegExp(source, 'id'),
+  ...extra,
+});
+
+const RULES: readonly Rule[] = [
+  rule(
+    'create',
+    String.raw`^\s*CREATE\s+(?:OR\s+REPLACE\s+)?(?:(?:GLOBAL\s+|LOCAL\s+)?(?<temp>TEMPORARY|TEMP)\s+|UNLOGGED\s+)?(?:RECURSIVE\s+)?${KIND}\s+${IF_NOT_EXISTS}(?<name>${DOTTED})`,
+  ),
+  rule(
+    'create',
+    String.raw`^\s*SELECT\b[\s\S]*?\bINTO\s+(?:(?<temp>TEMPORARY|TEMP)\s+|UNLOGGED\s+)?(?:TABLE\s+)?(?<name>${DOTTED})`,
+  ),
+  rule(
+    'alter',
+    String.raw`^\s*ALTER\s+${KIND}\s+${IF_EXISTS}(?:ONLY\s+)?(?<name>${DOTTED})(?:\s+RENAME\s+TO\s+(?<to>${NAME}))?`,
+  ),
+  rule('drop', String.raw`^\s*DROP\s+${KIND}\s+${IF_EXISTS}(?<name>${DOTTED_LIST})`, {
+    list: true,
+  }),
+  rule('truncate', String.raw`^\s*TRUNCATE\s+(?:TABLE\s+)?(?:ONLY\s+)?(?<name>${DOTTED_LIST})`, {
+    list: true,
+  }),
+  rule(
+    'index',
+    String.raw`^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:CONCURRENTLY\s+)?${IF_NOT_EXISTS}(?:${NAME}\s+)?ON\s+(?:ONLY\s+)?(?<name>${DOTTED})`,
+  ),
+  rule(
+    'trigger',
+    String.raw`^\s*CREATE\s+(?:OR\s+REPLACE\s+)?(?:CONSTRAINT\s+)?TRIGGER\s+${NAME}[\s\S]*?\sON\s+(?<name>${DOTTED})`,
+  ),
+  rule('policy', String.raw`^\s*(?:CREATE|ALTER)\s+POLICY\s+${NAME}\s+ON\s+(?<name>${DOTTED})`),
+  rule('policy', String.raw`^\s*DROP\s+POLICY\s+${IF_EXISTS}${NAME}\s+ON\s+(?<name>${DOTTED})`),
+  rule('comment', String.raw`^\s*COMMENT\s+ON\s+${KIND}\s+(?<name>${DOTTED})`),
+  rule('comment', String.raw`^\s*COMMENT\s+ON\s+COLUMN\s+(?<name>${DOTTED})`, { column: true }),
+];
+
+/** A statement that starts like a relation statement; if no rule read it, it is unreadable. */
+const RELATION_HEAD = new RegExp(
+  String.raw`^\s*(?:(?:CREATE|ALTER|DROP)\s+(?:OR\s+REPLACE\s+)?(?:(?:GLOBAL|LOCAL|TEMPORARY|TEMP|UNLOGGED|RECURSIVE|UNIQUE|CONSTRAINT|FOREIGN|MATERIALIZED)\s+)*(?:TABLE|VIEW|SEQUENCE|INDEX|TRIGGER|POLICY)\b|COMMENT\s+ON\s+(?:TABLE|VIEW|MATERIALIZED|SEQUENCE|FOREIGN|COLUMN)\b|TRUNCATE\b)`,
   'i',
 );
-const RENAME_TABLE = new RegExp(
-  String.raw`^\s*ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?${QUALIFIED}\s+RENAME\s+TO\s+(${IDENT})`,
-  'i',
-);
+/** `CREATE SCHEMA x CREATE TABLE ...` declares relations inside one statement. */
+const SCHEMA_WITH_ELEMENTS = /^\s*CREATE\s+SCHEMA\b[\s\S]*?\sCREATE\s/i;
 
 /**
- * Tables a migration brings into existence: `CREATE TABLE` in every form (temporary,
- * unlogged, `IF NOT EXISTS`, `PARTITION OF`, `AS`) and the new name in
- * `ALTER TABLE ... RENAME TO`. Comments and literals are blanked first, so a table named
- * only in a comment or string does not count. Not seen: tables made inside `DO` blocks or
- * `EXECUTE` strings, which the allow-list scan sends to review as non-additive.
+ * Every relation a migration creates, alters, drops, indexes, triggers, polices or
+ * comments on: tables, views, materialised views, sequences and foreign tables, in every
+ * form of those statements, with `RENAME TO` read both ways (the old name is altered, the
+ * new one is created) and `SELECT ... INTO`. Comments and literals are blanked first, so a
+ * name that appears only in a comment or string does not count. A relation `TEMP`-created
+ * earlier in the same file is temporary for its later statements too.
+ *
+ * A statement that starts like one of these but whose target cannot be read (including
+ * `CREATE SCHEMA ... CREATE ...`) is returned as unreadable, never skipped. Not seen:
+ * relations made inside `DO` blocks or `EXECUTE` strings, which the allow-list scan sends
+ * to review as non-additive; `GRANT` and `REVOKE`, which are security-reviewed anyway.
  */
-export function findCreatedTables(sql: string): CreatedTable[] {
+export function scanRelations(sql: string): RelationScan {
   const code = blankCommentsAndStrings(sql);
-  const tables: CreatedTable[] = [];
+  const changes: RelationChange[] = [];
+  const unreadable: UnreadableRelation[] = [];
+  const temporaries = new Set<string>();
   let start = 0;
   for (let i = 0; i <= code.length; i += 1) {
     if (i !== code.length && code[i] !== ';') continue;
@@ -377,39 +455,104 @@ export function findCreatedTables(sql: string): CreatedTable[] {
     const offset = raw.search(/\S/);
     if (offset !== -1) {
       const line = code.slice(0, start + offset).split('\n').length;
-      const created = CREATE_TABLE.exec(raw);
-      const renamed = created === null ? RENAME_TABLE.exec(raw) : null;
-      if (created !== null) {
-        // With a schema the groups are [temp, schema, name]; without, [temp, name].
-        const [, temp, first, second] = created;
-        tables.push(tableOf(second ?? first, second === undefined ? undefined : first, line, temp));
-      } else if (renamed !== null) {
-        const [, first, second, name] = renamed;
-        tables.push(tableOf(name, second === undefined ? undefined : first, line, undefined));
+      const read = readStatement(sql, raw, start, line, temporaries);
+      changes.push(...read);
+      if (read.length === 0) {
+        if (SCHEMA_WITH_ELEMENTS.test(raw)) {
+          unreadable.push({ line, reason: 'CREATE SCHEMA with objects inside it' });
+        } else if (RELATION_HEAD.test(raw)) {
+          unreadable.push({ line, reason: 'the relation this statement changes cannot be read' });
+        }
       }
     }
     start = i + 1;
   }
-  return tables;
+  return { changes, unreadable };
 }
 
-function tableOf(
-  name: string | undefined,
-  schema: string | undefined,
+function readStatement(
+  sql: string,
+  raw: string,
+  base: number,
   line: number,
-  temp: string | undefined,
-): CreatedTable {
-  const base = { name: identifier(name ?? ''), line, temporary: temp !== undefined };
-  return schema === undefined ? base : { ...base, schema: identifier(schema) };
+  temporaries: Set<string>,
+): RelationChange[] {
+  const found: RelationChange[] = [];
+  for (const { action, pattern, list, column } of RULES) {
+    const match = pattern.exec(raw);
+    const span = match?.indices?.groups?.['name'];
+    if (match === null || span === undefined) continue;
+    const temp = match.groups?.['temp'] !== undefined;
+    const spans = list === true ? splitList(raw, span) : [span];
+    for (const [from, to] of spans) {
+      const parts = nameParts(sql, raw, base, from, to);
+      if (column === true) parts.pop();
+      const name = parts.pop();
+      if (name === undefined) continue;
+      const schema = parts.pop();
+      const isTemp = temp || (action !== 'create' && schema === undefined && temporaries.has(name));
+      if (action === 'create' && temp) temporaries.add(name);
+      found.push({
+        action,
+        name,
+        ...(schema === undefined ? {} : { schema }),
+        line,
+        temporary: isTemp,
+      });
+    }
+    const renamedTo = match.indices?.groups?.['to'];
+    if (renamedTo !== undefined) {
+      const [renamed] = nameParts(sql, raw, base, renamedTo[0], renamedTo[1]);
+      const old = found[found.length - 1];
+      if (renamed !== undefined && old !== undefined) {
+        found.push({
+          action: 'create',
+          name: renamed,
+          ...(old.schema === undefined ? {} : { schema: old.schema }),
+          line,
+          temporary: old.temporary,
+        });
+      }
+    }
+    return found; // the first rule that reads the statement owns it
+  }
+  return found;
+}
+
+/** Splits a span at top-level commas (quoted names hold none: the blanker removed them). */
+function splitList(raw: string, [from, to]: readonly [number, number]): [number, number][] {
+  const spans: [number, number][] = [];
+  let begin = from;
+  for (let k = from; k <= to; k += 1) {
+    if (k === to || raw[k] === ',') {
+      spans.push([begin, k]);
+      begin = k + 1;
+    }
+  }
+  return spans;
 }
 
 /**
- * `qNameq` is a quoted identifier as the blanker leaves it, and keeps its case; a bare one
- * folds to lower case. A bare name that happens to start and end with `q` reads as quoted:
- * the blanker's encoding cannot tell them apart, and the prefix check is the only reader.
+ * The parts of a dotted name, in order. A part was quoted if the original text has a double
+ * quote there: it keeps its case and its `""`; otherwise it folds to lower case.
  */
-function identifier(raw: string): string {
-  return raw.length >= 2 && raw.startsWith('q') && raw.endsWith('q')
-    ? raw.slice(1, -1)
-    : raw.toLowerCase();
+function nameParts(sql: string, raw: string, base: number, from: number, to: number): string[] {
+  const parts: string[] = [];
+  let begin = from;
+  for (let k = from; k <= to; k += 1) {
+    if (k !== to && raw[k] !== '.') continue;
+    const text = raw.slice(begin, k);
+    const lead = text.length - text.trimStart().length;
+    const trimmed = text.trim();
+    const at = base + begin + lead;
+    if (trimmed.length > 0) {
+      parts.push(
+        sql[at] === '"'
+          ? sql.slice(at + 1, at + trimmed.length - 1).replace(/""/g, '"')
+          : trimmed.toLowerCase(),
+      );
+    }
+    begin = k + 1;
+  }
+  return parts;
 }

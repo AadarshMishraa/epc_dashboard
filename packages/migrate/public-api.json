@@ -13,15 +13,6 @@
       ]
     },
     {
-      "name": "CreatedTable",
-      "meanings": [
-        "type"
-      ],
-      "declarations": [
-        "interface CreatedTable {\n    readonly name: string;\n    readonly schema?: string;\n    readonly line: number;\n    readonly temporary: boolean;\n}"
-      ]
-    },
-    {
       "name": "Finding",
       "meanings": [
         "type"
@@ -157,6 +148,33 @@
       ]
     },
     {
+      "name": "RelationAction",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type RelationAction = 'create' | 'alter' | 'drop' | 'truncate' | 'index' | 'trigger' | 'policy' | 'comment';"
+      ]
+    },
+    {
+      "name": "RelationChange",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface RelationChange {\n    readonly action: RelationAction;\n    readonly name: string;\n    readonly schema?: string;\n    readonly line: number;\n    readonly temporary: boolean;\n}"
+      ]
+    },
+    {
+      "name": "RelationScan",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface RelationScan {\n    readonly changes: readonly RelationChange[];\n    readonly unreadable: readonly UnreadableRelation[];\n}"
+      ]
+    },
+    {
       "name": "Severity",
       "meanings": [
         "type"
@@ -175,6 +193,15 @@
       ]
     },
     {
+      "name": "UnreadableRelation",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface UnreadableRelation {\n    readonly line: number;\n    readonly reason: string;\n}"
+      ]
+    },
+    {
       "name": "blankCommentsAndStrings",
       "meanings": [
         "value"
@@ -190,15 +217,6 @@
       ],
       "declarations": [
         "declare function countStatements(sql: string): number;"
-      ]
-    },
-    {
-      "name": "findCreatedTables",
-      "meanings": [
-        "value"
-      ],
-      "declarations": [
-        "declare function findCreatedTables(sql: string): CreatedTable[];"
       ]
     },
     {
@@ -235,6 +253,15 @@
       ],
       "declarations": [
         "declare function migrate(options: MigrateOptions): Promise<Result<MigrateReport, MigrateFailure>>;"
+      ]
+    },
+    {
+      "name": "scanRelations",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function scanRelations(sql: string): RelationScan;"
       ]
     },
     {
