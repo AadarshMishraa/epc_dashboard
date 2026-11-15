@@ -223,14 +223,14 @@
     "packages/core/src/context.ts"
    ],
    "env": [],
-   "hash": "67e7da9be47a",
+   "hash": "6719f05a911f",
    "imports": [
     "./context.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 193,
+   "loc": 202,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -238,6 +238,8 @@
     "ERROR_STATUSES",
     "ErrorStatus",
     "ErrorDefinition",
+    "isErrorCode",
+    "isErrorStatus",
     "defineErrorCatalogue",
     "CORE_ERRORS",
     "CoreErrorCode",
@@ -320,7 +322,7 @@
     "packages/core/src/index.ts"
    ],
    "env": [],
-   "hash": "ffbc62158339",
+   "hash": "4b4da9d7449b",
    "imports": [
     "node:fs",
     "vitest",
@@ -329,7 +331,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 85,
+   "loc": 91,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -346,6 +348,8 @@
     "packages/core/src/context.ts",
     "packages/core/src/errors.ts",
     "packages/core/src/ids.ts",
+    "packages/core/src/logging/error-summary.ts",
+    "packages/core/src/logging/logger.ts",
     "packages/core/src/module-id.ts",
     "packages/core/src/ports/audit.ts",
     "packages/core/src/ports/authorizer.ts",
@@ -362,7 +366,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "2ac14df96844",
+   "hash": "5a08e9bddb24",
    "imports": [
     "./module-id.ts",
     "./module-id.ts",
@@ -382,17 +386,204 @@
     "./ports/events.ts",
     "./ports/audit.ts",
     "./ports/messages.ts",
-    "./ports/erasure.ts"
+    "./ports/erasure.ts",
+    "./logging/logger.ts",
+    "./logging/error-summary.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 150,
+   "loc": 167,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/error-summary.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/errors.ts",
+    "packages/core/src/logging/scrub.ts"
+   ],
+   "env": [],
+   "hash": "7a39b4c0f193",
+   "imports": [
+    "../errors.ts",
+    "./scrub.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 187,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "ErrorSummary",
+    "compactErrorSummary",
+    "summariseError"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/logger.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/context.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/logging/error-summary.ts",
+    "packages/core/src/logging/scrub.ts",
+    "packages/core/src/module-id.ts",
+    "packages/core/src/ports/classification.ts",
+    "packages/core/src/ports/secret.ts"
+   ],
+   "env": [],
+   "hash": "1c15fd7c6e55",
+   "imports": [
+    "../context.ts",
+    "../ids.ts",
+    "../module-id.ts",
+    "../ports/classification.ts",
+    "../ports/secret.ts",
+    "./error-summary.ts",
+    "./scrub.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 595,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "LOG_LEVELS",
+    "LogLevel",
+    "LOG_MAX_LINE_BYTES",
+    "LOG_MAX_FIELDS",
+    "LogScalar",
+    "ClassifiedValue",
+    "classified",
+    "LogFieldValue",
+    "LogFields",
+    "LogData",
+    "LogSink",
+    "LoggerOptions",
+    "Logger",
+    "createLogger"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/logging.boundaries.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/logging/error-summary.ts",
+    "packages/core/src/logging/logger.ts",
+    "packages/core/src/logging/scrub.ts",
+    "packages/core/src/ports/classification.ts"
+   ],
+   "env": [],
+   "hash": "76e50a18a89d",
+   "imports": [
+    "fast-check",
+    "vitest",
+    "../clock.ts",
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../ports/classification.ts",
+    "./error-summary.ts",
+    "./logger.ts",
+    "./scrub.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 317,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/logging.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/core/src/clock.ts",
+    "packages/core/src/context.ts",
+    "packages/core/src/errors.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/logging/error-summary.ts",
+    "packages/core/src/logging/logger.ts",
+    "packages/core/src/logging/scrub.ts",
+    "packages/core/src/module-id.ts",
+    "packages/core/src/ports/classification.ts",
+    "packages/core/src/ports/secret.ts"
+   ],
+   "env": [],
+   "hash": "e046f0a6c85a",
+   "imports": [
+    "vitest",
+    "../clock.ts",
+    "../context.ts",
+    "../errors.ts",
+    "../ids.ts",
+    "../module-id.ts",
+    "../ports/classification.ts",
+    "../ports/secret.ts",
+    "./error-summary.ts",
+    "./logger.ts",
+    "./scrub.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 1184,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/core/src/logging/scrub.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "21328f7d9f56",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 105,
+   "module": "packages/core",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "SCRUB_MAX_INPUT_LENGTH",
+    "SCRUB_MAX_OUTPUT_LENGTH",
+    "TOO_LONG_MARKER",
+    "scrubText",
+    "isUnchangedByScrub"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -562,14 +753,14 @@
     "packages/core/src/context.ts"
    ],
    "env": [],
-   "hash": "bac79053fd31",
+   "hash": "711700d8d40c",
    "imports": [
     "../context.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 52,
+   "loc": 56,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -954,7 +1145,7 @@
     "packages/core/src/ports/messages.ts"
    ],
    "env": [],
-   "hash": "9810587635b0",
+   "hash": "f2d97446979c",
    "imports": [
     "vitest",
     "../clock.ts",
@@ -970,7 +1161,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 306,
+   "loc": 331,
    "module": "packages/core",
    "routes": [],
    "rpcs": [],
@@ -1871,6 +2062,60 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/testkit/src/clock.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/contract.ts",
+    "packages/testkit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "c20c4c1d253a",
+   "imports": [
+    "@gx/core",
+    "fast-check",
+    "vitest",
+    "./contract.ts",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 86,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/clock.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/contract.ts"
+   ],
+   "env": [],
+   "hash": "681cc05d97fe",
+   "imports": [
+    "@gx/core",
+    "./contract.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 54,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "FrozenClock"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/testkit/src/contract.ts": {
    "calls": [],
    "defines_tables": [],
@@ -2099,16 +2344,24 @@
    "calls": [],
    "defines_tables": [],
    "deps": [
+    "packages/testkit/src/clock.ts",
     "packages/testkit/src/contract.ts",
     "packages/testkit/src/contracts/policy.ts",
     "packages/testkit/src/contracts/records.ts",
     "packages/testkit/src/fakes/policy.ts",
-    "packages/testkit/src/fakes/records.ts"
+    "packages/testkit/src/fakes/records.ts",
+    "packages/testkit/src/isolation.ts",
+    "packages/testkit/src/pool-leak.ts",
+    "packages/testkit/src/tenant-matrix.ts"
    ],
    "env": [],
-   "hash": "862dc8ce7d52",
+   "hash": "ed8a8fa8b7f1",
    "imports": [
     "@gx/core",
+    "./clock.ts",
+    "./isolation.ts",
+    "./pool-leak.ts",
+    "./tenant-matrix.ts",
     "./contract.ts",
     "./contracts/policy.ts",
     "./contracts/records.ts",
@@ -2118,12 +2371,158 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 57,
+   "loc": 85,
    "module": "packages/testkit",
    "routes": [],
    "rpcs": [],
    "symbols": [
     "MODULE_ID"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/isolation.db.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "7cc327f81447",
+   "imports": [
+    "node:crypto",
+    "pg",
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 873,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/isolation.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [],
+   "env": [],
+   "hash": "4fc9de835cac",
+   "imports": [],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 79,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "SqlResult",
+    "SqlExecutor",
+    "IsolationViolation",
+    "IsolationReport",
+    "IsolationFailure",
+    "assertIsolation",
+    "DEFAULT_TENANT_SETTING",
+    "requireTenantSetting",
+    "sqlState",
+    "BLOCKED_STATE",
+    "quoteIdent",
+    "describeError"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/pool-leak.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/index.ts"
+   ],
+   "env": [],
+   "hash": "d642a4643ca6",
+   "imports": [
+    "vitest",
+    "./index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 128,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/pool-leak.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/contract.ts",
+    "packages/testkit/src/isolation.ts"
+   ],
+   "env": [],
+   "hash": "024a165bcb80",
+   "imports": [
+    "@gx/core",
+    "./contract.ts",
+    "./isolation.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 171,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "PoolLeakTarget",
+    "PoolLeakOptions",
+    "PoolLeakReport",
+    "checkPoolLeak"
+   ],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/testkit/src/tenant-matrix.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/testkit/src/contract.ts",
+    "packages/testkit/src/isolation.ts"
+   ],
+   "env": [],
+   "hash": "fece380a0b00",
+   "imports": [
+    "node:crypto",
+    "@gx/core",
+    "./contract.ts",
+    "./isolation.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 685,
+   "module": "packages/testkit",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "SeedContext",
+    "TableSeed",
+    "TenantMatrixOptions",
+    "TenantMatrixReport",
+    "runTenantMatrix"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -2726,12 +3125,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "e96dcca138fd",
+   "hash": "7f0b70c319b1",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "py",
-   "loc": 364,
+   "loc": 404,
    "module": "tools/plangen",
    "routes": [],
    "rpcs": [],
@@ -2747,7 +3146,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "99118abbd735",
+   "hash": "205aaeadea84",
    "imports": [
     "os",
     "re",
@@ -2759,7 +3158,7 @@
    "invokes": [],
    "kind": [],
    "lang": "py",
-   "loc": 618,
+   "loc": 626,
    "module": "tools/plangen",
    "routes": [],
    "rpcs": [],
@@ -2789,12 +3188,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "cd5a67bb031d",
+   "hash": "4e50b97b5df5",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "py",
-   "loc": 152,
+   "loc": 160,
    "module": "tools/plangen",
    "routes": [],
    "rpcs": [],
@@ -2947,8 +3346,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-09 23:44",
- "head": "868a422",
+ "generated": "2026-11-15 15:17",
+ "head": "3210d3b",
  "root": "epc_dashboard",
  "version": 1
 }
