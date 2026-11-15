@@ -126,6 +126,9 @@ importers:
       '@gx/core':
         specifier: workspace:*
         version: link:../core
+      '@gx/migrate':
+        specifier: workspace:*
+        version: link:../migrate
       typescript:
         specifier: 6.0.3
         version: 6.0.3

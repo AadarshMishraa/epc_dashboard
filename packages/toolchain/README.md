@@ -6,7 +6,25 @@ Checks that keep the foundation honest and extractable: import graph, manifest v
 - Register id: `toolchain` in [packages/register.json](../register.json).
 - Status: import-graph check (K0-T02), manifest validator (K0-T07) and public-API gate (K0-T09). The boundary lint (K0-T08) joins them.
 
+## Boundary lint
+
+```
+pnpm check:boundaries         # from the repository root; part of pnpm verify
+```
+
+Runs the import-graph rules below, then two more that apply to `packages/` only (never `packs/`):
+
+| Rule | Fails when |
+|---|---|
+| `table-ownership` | A `migrations/*.sql` file creates a table (or renames one to a name) that does not start with the module's `table_prefix` from its `manifest.json`, or the module declares none. `TEMP` tables are exempt. Tables made inside `DO` blocks or `EXECUTE` strings are not seen |
+| `industry-word` | Non-test source, a migration or a manifest contains an industry word (list in `src/boundaries.ts`), as a whole word in any case; `fooBar`, `foo_bar` and `foo-bar` count. Comments are checked too |
+| `allow-marker` | A `// boundary:allow industry-word <reason>` marker has no reason or allows nothing |
+
+To keep an industry word on one line, put `// boundary:allow industry-word <reason>` on that line or the line above (`--` in SQL). JSON has no comments, so a manifest cannot carry one. Prefer moving the word to a pack or to configuration.
+
 ## Import-graph check
+
+`pnpm check:imports` runs only this part.
 
 ```
 pnpm check:imports            # from the repository root

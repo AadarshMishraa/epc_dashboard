@@ -41,6 +41,7 @@ export {
   type Meaning,
   type Version,
 } from './api-report.ts';
+export { checkBoundaries, type BoundaryOptions, type BoundaryResult } from './boundaries.ts';
 export {
   API_REPORT_FILE,
   checkApi,

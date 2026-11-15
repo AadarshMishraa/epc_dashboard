@@ -85,6 +85,24 @@
       ]
     },
     {
+      "name": "BoundaryOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface BoundaryOptions {\n    readonly root: string;\n}"
+      ]
+    },
+    {
+      "name": "BoundaryResult",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface BoundaryResult {\n    readonly violations: readonly Violation[];\n    readonly packagesChecked: number;\n    readonly filesChecked: number;\n}"
+      ]
+    },
+    {
       "name": "Bump",
       "meanings": [
         "type"
@@ -243,7 +261,7 @@
         "type"
       ],
       "declarations": [
-        "type RuleId = 'register-invalid' | 'register-mismatch' | 'public-api' | 'workspace-dependency' | 'import-not-allowed' | 'deep-import' | 'self-import' | 'relative-escape' | 'undeclared-import' | 'isolation';"
+        "type RuleId = 'register-invalid' | 'register-mismatch' | 'public-api' | 'workspace-dependency' | 'import-not-allowed' | 'deep-import' | 'self-import' | 'relative-escape' | 'undeclared-import' | 'isolation' | 'table-ownership' | 'industry-word' | 'allow-marker';"
       ]
     },
     {
@@ -289,6 +307,15 @@
       ],
       "declarations": [
         "declare function checkApi(options: ApiCheckOptions): ApiCheckResult;"
+      ]
+    },
+    {
+      "name": "checkBoundaries",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function checkBoundaries(options: BoundaryOptions): BoundaryResult;"
       ]
     },
     {

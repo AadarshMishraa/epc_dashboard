@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   blankCommentsAndStrings,
   countStatements,
+  findCreatedTables,
   findRiskyStatements,
   splitStatements,
 } from './sql-scan.ts';
@@ -255,5 +256,72 @@ describe('splitStatements and countStatements', () => {
     expect(splitStatements("SELECT ';';\n-- ;\nSELECT 2").map((s) => s.line)).toEqual([1, 3]);
     expect(countStatements('CREATE INDEX CONCURRENTLY k1_i ON k1_t (c)')).toBe(1);
     expect(countStatements('-- only a comment\n')).toBe(0);
+  });
+});
+
+describe('findCreatedTables', () => {
+  const names = (sql: string): string[] =>
+    findCreatedTables(sql).map((t) => (t.schema === undefined ? t.name : `${t.schema}.${t.name}`));
+
+  it('finds every form of CREATE TABLE', () => {
+    expect(
+      names(`
+        CREATE TABLE k1_a (id uuid);
+        create table if not exists K1_B (id uuid);
+        CREATE TEMPORARY TABLE k1_c (id uuid);
+        CREATE GLOBAL TEMP TABLE k1_d (id uuid);
+        CREATE UNLOGGED TABLE public.k1_e (id uuid);
+        CREATE TABLE k1_f PARTITION OF k1_a FOR VALUES IN (1);
+        CREATE TABLE k1_g AS SELECT 1;
+      `),
+    ).toEqual(['k1_a', 'k1_b', 'k1_c', 'k1_d', 'public.k1_e', 'k1_f', 'k1_g']);
+  });
+
+  it('keeps the case of a quoted name and folds a bare one', () => {
+    expect(names('CREATE TABLE "K1_Mixed" (id uuid); CREATE TABLE Plain (id uuid);')).toEqual([
+      'K1_Mixed',
+      'plain',
+    ]);
+  });
+
+  it('reads the new name of a rename', () => {
+    expect(
+      names('ALTER TABLE k1_a RENAME TO other_a; ALTER TABLE IF EXISTS ONLY s.t RENAME TO u;'),
+    ).toEqual(['other_a', 's.u']);
+  });
+
+  it('ignores a table named only in a comment or a string', () => {
+    expect(
+      names(`
+        -- CREATE TABLE evil (id uuid);
+        /* CREATE TABLE evil2 (id uuid); */
+        SELECT 'CREATE TABLE evil3 (id uuid)';
+        INSERT INTO k1_a VALUES ($$CREATE TABLE evil4 (x int)$$);
+      `),
+    ).toEqual([]);
+  });
+
+  it('ignores statements that only mention a table', () => {
+    expect(
+      names(
+        'CREATE INDEX k1_idx ON k1_a (id); ALTER TABLE k1_a ADD COLUMN x int; DROP TABLE k1_a;',
+      ),
+    ).toEqual([]);
+  });
+
+  it('marks temporary tables', () => {
+    expect(
+      findCreatedTables('CREATE TEMP TABLE scratch (id int); CREATE TABLE k1_a (id int);').map(
+        (t) => t.temporary,
+      ),
+    ).toEqual([true, false]);
+  });
+
+  it('reports the line of each statement', () => {
+    expect(
+      findCreatedTables(
+        'SELECT 1;\n\n  CREATE TABLE k1_a (id int);\nCREATE TABLE k1_b (id int);',
+      ).map((t) => t.line),
+    ).toEqual([3, 4]);
   });
 });

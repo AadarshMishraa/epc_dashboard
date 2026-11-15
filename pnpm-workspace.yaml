@@ -1,5 +1,5 @@
 # Workspace manifest (shared file: change it in small, separate pull requests).
-# Package list must match packages/register.json; `pnpm check:imports` fails otherwise.
+# Package list must match packages/register.json; `pnpm check:boundaries` fails otherwise.
 packages:
   - packages/*
 

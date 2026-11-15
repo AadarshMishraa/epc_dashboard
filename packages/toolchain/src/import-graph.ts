@@ -25,7 +25,13 @@ export type RuleId =
   /** Source imports a package or builtin its package.json does not declare, or a computed specifier. */
   | 'undeclared-import'
   /** A package the register marks `isolated` (core) has a dependency or uses Node.js I/O. */
-  | 'isolation';
+  | 'isolation'
+  /** A migration creates a table outside its module's `table_prefix` (checked by boundaries.ts). */
+  | 'table-ownership'
+  /** Foundation code names an industry (checked by boundaries.ts). */
+  | 'industry-word'
+  /** A `boundary:allow` marker has no reason or allows nothing (checked by boundaries.ts). */
+  | 'allow-marker';
 
 export interface Violation {
   readonly rule: RuleId;
@@ -62,7 +68,7 @@ const PUBLIC_API_EXPORT = {
 /** Fields that would add a second entry point next to `exports`. */
 const ENTRY_POINT_FIELDS = ['main', 'module', 'browser', 'types', 'typings'] as const;
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']);
-const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
+export const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
 const SKIPPED_DIRS = new Set(['node_modules', 'dist']);
 const BUILTINS = new Set(builtinModules);
 
@@ -120,11 +126,11 @@ export function formatViolation(violation: Violation): string {
 
 // ---------------------------------------------------------------- register and disk
 
-type Loaded =
+export type Loaded =
   | { readonly ok: true; readonly register: Register }
   | { readonly ok: false; readonly violations: readonly Violation[] };
 
-function loadRegister(root: string): Loaded {
+export function loadRegister(root: string): Loaded {
   const fail = (message: string): Loaded => ({
     ok: false,
     violations: [{ rule: 'register-invalid', file: REGISTER_PATH, message }],
@@ -405,7 +411,7 @@ function checkFile(context: PackageContext, absolutePath: string): Violation[] {
 
 // ---------------------------------------------------------------- helpers
 
-function listSourceFiles(dir: string): string[] {
+export function listSourceFiles(dir: string): string[] {
   if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
   const files: string[] = [];
   for (const dirent of readdirSync(dir, { withFileTypes: true })) {
@@ -437,7 +443,7 @@ function isInside(dir: string, target: string): boolean {
   return rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !rel.startsWith(sep));
 }
 
-function toRepoPath(root: string, absolutePath: string): string {
+export function toRepoPath(root: string, absolutePath: string): string {
   return relative(root, absolutePath).split(sep).join('/');
 }
 

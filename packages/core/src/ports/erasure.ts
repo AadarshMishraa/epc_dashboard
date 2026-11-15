@@ -10,7 +10,7 @@ export interface ErasureSubject {
 }
 
 /**
- * What a handler did. `retained` is for data a law requires keeping (for example GST
+ * What a handler did. `retained` is for data a law requires keeping (for example tax
  * invoices); `basis` names that law or rule, so the retention is recorded, never silent.
  */
 export type ErasureResult =

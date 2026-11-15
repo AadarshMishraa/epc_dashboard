@@ -338,3 +338,78 @@ function describeUnlisted(code: string): string {
   if (/\bRENAME\b/.test(code)) return 'RENAME breaks the previous release';
   return 'this statement is not on the expand allow-list';
 }
+
+export interface CreatedTable {
+  /** Lower-cased when unquoted (Postgres folds it); as written when quoted. */
+  readonly name: string;
+  /** The schema it is created in, when the statement names one. */
+  readonly schema?: string;
+  readonly line: number;
+  /** A `TEMP` table lives only for the session, so it belongs to no module. */
+  readonly temporary: boolean;
+}
+
+const IDENT = String.raw`q[A-Za-z0-9_]*q|[A-Za-z_][A-Za-z0-9_$]*`;
+const QUALIFIED = String.raw`(${IDENT})(?:\s*\.\s*(${IDENT}))?`;
+const CREATE_TABLE = new RegExp(
+  String.raw`^\s*CREATE\s+(?:(?:GLOBAL\s+|LOCAL\s+)?(TEMPORARY|TEMP)\s+|UNLOGGED\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?${QUALIFIED}`,
+  'i',
+);
+const RENAME_TABLE = new RegExp(
+  String.raw`^\s*ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?${QUALIFIED}\s+RENAME\s+TO\s+(${IDENT})`,
+  'i',
+);
+
+/**
+ * Tables a migration brings into existence: `CREATE TABLE` in every form (temporary,
+ * unlogged, `IF NOT EXISTS`, `PARTITION OF`, `AS`) and the new name in
+ * `ALTER TABLE ... RENAME TO`. Comments and literals are blanked first, so a table named
+ * only in a comment or string does not count. Not seen: tables made inside `DO` blocks or
+ * `EXECUTE` strings, which the allow-list scan sends to review as non-additive.
+ */
+export function findCreatedTables(sql: string): CreatedTable[] {
+  const code = blankCommentsAndStrings(sql);
+  const tables: CreatedTable[] = [];
+  let start = 0;
+  for (let i = 0; i <= code.length; i += 1) {
+    if (i !== code.length && code[i] !== ';') continue;
+    const raw = code.slice(start, i);
+    const offset = raw.search(/\S/);
+    if (offset !== -1) {
+      const line = code.slice(0, start + offset).split('\n').length;
+      const created = CREATE_TABLE.exec(raw);
+      const renamed = created === null ? RENAME_TABLE.exec(raw) : null;
+      if (created !== null) {
+        // With a schema the groups are [temp, schema, name]; without, [temp, name].
+        const [, temp, first, second] = created;
+        tables.push(tableOf(second ?? first, second === undefined ? undefined : first, line, temp));
+      } else if (renamed !== null) {
+        const [, first, second, name] = renamed;
+        tables.push(tableOf(name, second === undefined ? undefined : first, line, undefined));
+      }
+    }
+    start = i + 1;
+  }
+  return tables;
+}
+
+function tableOf(
+  name: string | undefined,
+  schema: string | undefined,
+  line: number,
+  temp: string | undefined,
+): CreatedTable {
+  const base = { name: identifier(name ?? ''), line, temporary: temp !== undefined };
+  return schema === undefined ? base : { ...base, schema: identifier(schema) };
+}
+
+/**
+ * `qNameq` is a quoted identifier as the blanker leaves it, and keeps its case; a bare one
+ * folds to lower case. A bare name that happens to start and end with `q` reads as quoted:
+ * the blanker's encoding cannot tell them apart, and the prefix check is the only reader.
+ */
+function identifier(raw: string): string {
+  return raw.length >= 2 && raw.startsWith('q') && raw.endsWith('q')
+    ? raw.slice(1, -1)
+    : raw.toLowerCase();
+}

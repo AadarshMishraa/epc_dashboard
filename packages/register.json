@@ -27,7 +27,7 @@
       "kind": "support",
       "plan": "K0",
       "purpose": "Checks that keep the foundation honest and extractable: import graph, manifest validator, boundary lint and public-API diff.",
-      "depends": ["core"]
+      "depends": ["core", "migrate"]
     },
     {
       "id": "migrate",

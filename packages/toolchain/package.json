@@ -15,7 +15,8 @@
   "bin": {
     "gx-check-imports": "./dist/bin/check-imports.js",
     "gx-check-manifests": "./dist/bin/check-manifests.js",
-    "gx-check-api": "./dist/bin/check-api.js"
+    "gx-check-api": "./dist/bin/check-api.js",
+    "gx-check-boundaries": "./dist/bin/check-boundaries.js"
   },
   "files": [
     "dist"
@@ -26,6 +27,7 @@
   },
   "dependencies": {
     "@gx/core": "workspace:*",
+    "@gx/migrate": "workspace:*",
     "typescript": "6.0.3",
     "zod": "4.6.7"
   }

@@ -42,7 +42,7 @@ const PROTECTED =
   /(?<![\p{L}\p{Nd}])[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?![\p{L}\p{Nd}])|(?<![\p{L}\p{Nd}.-])(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,9})?)?(?:Z|[+-][01]\d:[0-5]\d)?)?(?![\p{L}\p{Nd}]|[.-]\p{Nd})/giu;
 /**
  * The Indian tax id shape (the fourth letter is the holder type), also inside a longer token:
- * a sole proprietor's GST number embeds the owner's personal one.
+ * a sole proprietor's business tax number embeds the owner's personal one.
  */
 const TAX_ID_SHAPE = /[A-Z]{3}[ABCFGHJLPT][A-Z][0-9]{4}[A-Z]/giu;
 /** Digits in any script, with up to three separators between two digits. */

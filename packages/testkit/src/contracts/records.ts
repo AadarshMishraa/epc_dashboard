@@ -569,12 +569,12 @@ export function eraserRegistryContract(
       async () => {
         const registry = await create();
         registry.register(handler('k2-identity', []));
-        registry.register(handler('epc-invoicing', [], 'retained'));
+        registry.register(handler('invoicing', [], 'retained'));
         const report = await registry.erase(contextFor(TENANT_A), SUBJECT);
         check(report.complete, 'erased plus retained-with-basis must be complete');
         check(
           sameJson(report.outcomes[1], {
-            handlerId: 'epc-invoicing',
+            handlerId: 'invoicing',
             status: 'retained',
             basis: STATUTORY_BASIS,
           }),
@@ -586,7 +586,7 @@ export function eraserRegistryContract(
       'a retention without a basis is a failure, never silent',
       async () => {
         const registry = await create();
-        registry.register(handler('epc-invoicing', [], 'retained-no-basis'));
+        registry.register(handler('invoicing', [], 'retained-no-basis'));
         const report = await registry.erase(contextFor(TENANT_A), SUBJECT);
         check(!report.complete, 'a retention without a basis must not count as complete');
         check(report.outcomes[0]?.status === 'failed', 'it must be reported as failed');

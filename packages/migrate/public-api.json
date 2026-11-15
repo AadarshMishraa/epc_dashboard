@@ -13,6 +13,15 @@
       ]
     },
     {
+      "name": "CreatedTable",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface CreatedTable {\n    readonly name: string;\n    readonly schema?: string;\n    readonly line: number;\n    readonly temporary: boolean;\n}"
+      ]
+    },
+    {
       "name": "Finding",
       "meanings": [
         "type"
@@ -181,6 +190,15 @@
       ],
       "declarations": [
         "declare function countStatements(sql: string): number;"
+      ]
+    },
+    {
+      "name": "findCreatedTables",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function findCreatedTables(sql: string): CreatedTable[];"
       ]
     },
     {
