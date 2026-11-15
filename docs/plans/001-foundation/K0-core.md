@@ -80,7 +80,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Context carries tenant, actor, correlation id; error catalogue published; no I/O in core
   - Tests: unit tests; property tests for ids
   - Rollback: Revert the commit; the change is behind the module's public API and a flag where user-visible.
-- [ ] **K0-T04** (T-004) Structured logging with redaction by classification and correlation propagation (S)
+- [x] **K0-T04** (T-004) Structured logging with redaction by classification and correlation propagation (S)
   - Feature: F-02 | Milestone: M-01 | Level: 3 | Lane: core
   - Needs: K0-T03 (T-003)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-security-reviewer (blocking)
@@ -98,7 +98,7 @@ Applies to every task below, on top of [the security guidelines](../../guideline
   - Done when: Empty database reaches head; a destructive step without a contract marker is rejected
   - Tests: migrate-from-empty; destructive-step rejection test
   - Rollback: Revert the commit; the migration is expand-only, so a schema fault is fixed forward, never edited in place.
-- [ ] **K0-T06** (T-006) Test kit: tenant matrix runner, adapter contract harness, frozen clock, fixtures, pool-leak helper (M)
+- [x] **K0-T06** (T-006) Test kit: tenant matrix runner, adapter contract harness, frozen clock, fixtures, pool-leak helper (M)
   - Feature: F-03 | Milestone: M-01 | Level: 3 | Lane: core
   - Needs: K0-T03 (T-003), K0-T05 (T-005)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer

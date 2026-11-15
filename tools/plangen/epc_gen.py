@@ -42,6 +42,9 @@ HUMAN_GATES = {
     "E9-T06": "Needs the provider and cost decision (Q-09) before code; this task is not in the common must-haves.",
     "E7-T02": "Default now: record and sync (Q-03 lean). A chartered accountant confirms at refinement; issuing invoices would be a new Later feature.",
     "E5-T04": "Default now: both warehouse and site locations (Q-04 lean); refinement trims what is shown.",
+    "E2-T10": "Default now: the same two states as E2-T02, every stage marked unverified. The design partner confirms or replaces the stage lists and limits; the change is data only.",
+    "E7-T07": "Default now: a deduction-type list with no rates, edited as data (Q-13 lean). A chartered accountant confirms the types and the certificate flow at refinement.",
+    "E8-T09": "Default now: 15 calendar days from the date received, both set as data (Q-14 lean). The scheme text confirms the day count and the start date before the first live use.",
 }
 SEC_NOTES = {
     "E1-T01": "Threat: malicious or malformed upload (macro, formula injection, zip bomb, oversize). Control: type sniffing, size and row caps, text-only cells, no macro execution, parse in a limited-memory worker.",
@@ -323,7 +326,7 @@ def write_status(tasks, feats, ms, ms_of, force):
             return
     st = ["# STATUS (updated 2026-11-04 by session 1)",
           "Release target: first paid pilot (date TBD)   Current phase: P1 Demo and import (common must-haves)   Overall: GREEN", "",
-          "GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses.", "",
+          "GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses. 2026-11-13: CR-001 approved: commercial approval track (F-69), receipt deductions (F-70), supplier advances (F-71), complaint log (F-72) and the asset register promoted to Should (F-62); no feature has started, so no date moves.", "",
           "States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.",
           'RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.',
           'Done for a feature means every acceptance criterion passes on staging ("N of N pass"). Done for a milestone needs evidence.', "",
@@ -343,7 +346,8 @@ def write_status(tasks, feats, ms, ms_of, force):
     st += ["", "## Decisions needed from the client", "| ID | Decision | Needed by | Impact if late |", "|----|----------|-----------|----------------|"]
     impact = {"Q-01": "Stage templates cannot be written", "Q-02": "Definitions cannot be agreed", "Q-03": "Invoice records design blocked",
               "Q-04": "Stock model unproven", "Q-05": "No offline site app", "Q-06": "First pilot offer unset", "Q-07": "Plan limits unset",
-              "Q-08": "Tally scope unclear", "Q-09": "WhatsApp blocked", "Q-12": "Pilot start slips"}
+              "Q-08": "Tally scope unclear", "Q-09": "WhatsApp blocked", "Q-12": "Pilot start slips",
+              "Q-13": "Ageing shows dues the customer already settled by deduction", "Q-14": "Complaint clock may count the wrong days"}
     for i, q in enumerate(PJ.DECISIONS, 1):
         if q[4].startswith(("Decided", "Deferred")):
             continue
@@ -580,6 +584,10 @@ Won deal, baseline, buy material, receive and inspect, readiness check, install 
 7. MNRE deactivated vendors for hoarding applications and advises no application pending over 60 days: the backlog widget warns before day 60.
 8. Utility and subsidy portals have no public API and the pack never stores the owner's portal passwords: people record stage, reference number and evidence.
 9. Do not store Aadhaar numbers, card numbers or a consumer's bank account (CMP-03).
+10. A business customer may deduct tax at payment, so cash received is less than the invoice. The deduction settles the invoice but is not cash and not an overdue amount; it stays a claim until its certificate arrives. Deduction types and rates are dated data that a chartered accountant confirms (Q-13, CR-001). Store a certificate reference, never the payer's tax identity number. Tax the company deducts from its own suppliers stays in Tally (X-09).
+11. Money paid to a supplier before the bill is an advance: not a commitment, not actual cost and not the settlement of a liability. A bill applies it first; if the order is cancelled it becomes a refund due from the supplier (CR-001, verify with owners that suppliers ask for advances).
+12. A commercial job follows its own approval track. The system size a utility accepts is limited by the sanctioned load, and the metering route depends on size against the state's net-metering limit. Tracks, limits and routes are data per state, marked unverified until the design partner confirms them (CR-001).
+13. A complaint under the scheme has a reply window. The 15-day figure comes from a search summary and the day count (calendar or working) and start date are unverified, so both are data (Q-14, CR-001).
 
 ## What is evidence and what is hypothesis
 

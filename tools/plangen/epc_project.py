@@ -55,6 +55,9 @@ NEEDS = [
     ("N-19", "As U-08 I need warranty and AMC tied to the serials installed at each site", "service starts from the install record", "G-06", "Later"),
     ("N-21", "As U-01 I need the pack to run on an isolated, audited foundation that keeps my company's data apart from every other company", "my data is never visible to another firm and every change has a record", "G-01, G-07", "Must"),
     ("N-20", "As U-01 I need a weekly summary of what moved, what is stuck and what to fix", "I run a review without building one by hand", "G-02", "Should"),
+    ("N-22", "As U-02 I need a commercial job to follow its own approval track and to be warned when the planned system is larger than the sanctioned load or the state's net-metering limit", "a commercial application is not filed and then rejected by the utility", "G-04", "Should"),
+    ("N-23", "As U-06 I need a receipt to record the amount a business customer deducted at payment, and a supplier advance to be held apart from cost", "dues are not chased for money the customer already settled by deduction, and no advance is counted as cost twice", "G-03, G-05", "Must"),
+    ("N-24", "As U-08 I need every installed system registered with its serials and warranty dates, and every customer complaint logged with its reply deadline", "service starts from the install record and no complaint passes its reply window unseen", "G-02", "Should"),
 ]
 
 NFS = [
@@ -79,6 +82,7 @@ OUT_OF_SCOPE = [
     ("X-06", "Native mobile apps", "An installable web app covers field use first", "after field adoption is proven"),
     ("X-07", "Utility-scale EPC (above 1 MW) project controls", "Different workflows and buyers", "not planned"),
     ("X-08", "Autonomous AI actions on records", "Suggestions need human confirmation (ADR-0005)", "not planned"),
+    ("X-09", "Tax the company deducts from its own payments to suppliers and subcontractors, and tax returns", "Tally stays the books (X-03); the pack records what customers deduct from the company, not what the company deducts from others", "after decision Q-03"),
 ]
 
 RISKS = [
@@ -120,6 +124,10 @@ DECISIONS = [
      "Deferred. EPC first; Trade features are Later and need their own interviews."),
     ("Q-12", "Which foundation order lets a pilot start earliest?", "Aadarsh", "before foundation wave 4",
      "Open. Lean: inside wave 4, build identity and workflow first and entitlements last; do files and the privacy desk right after, since a pilot with real customer data needs both."),
+    ("Q-13", "Which deduction types and certificate flows apply to pilot customers (for example tax deducted by a business customer, or by a government buyer), and who confirms the rates?", "Aadarsh with a chartered accountant", "before E7-T07",
+     "Open. Build default: a deduction-type list with no rates, edited as data; the accountant fills it at refinement. The pack stores a certificate reference, never the payer's tax identity number."),
+    ("Q-14", "Does the complaint reply window count calendar or working days, and from which date does it start?", "Aadarsh from the scheme text", "before E8-T09",
+     "Open. Build default: 15 calendar days from the date received, both set as data; the figure comes from a search summary and is unverified."),
 ]
 
 # (id, outcome, [feature ids], demo)  -- feature ids are resolved by slug in epc_features.py
@@ -131,7 +139,7 @@ MILESTONES = [
      ["company", "import", "customer", "handoff", "ptemplates", "roles"],
      "upload a sheet with 3 bad rows; read the error report; fix and re-import twice; open a project with its baseline; try an action as a user without permission and see the denial"),
     ("M-03", "Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate",
-     ["stages", "stagerec", "gates", "escal", "cashblock", "email", "tasks", "notices"],
+     ["stages", "stagerec", "gates", "escal", "cashblock", "email", "tasks", "notices", "commercial"],
      "load the state template; move a job to a query stage; watch the clock pass its limit; see the task and escalation; open the cash-blocked list grouped by blocker"),
     ("M-04", "The owner opens one exceptions list and decides from it (pilot control loop)",
      ["xrules", "xlife", "home", "widgets", "approvals", "timeline"],
@@ -140,12 +148,12 @@ MILESTONES = [
      ["suppliers", "bom", "rfq", "quotecmp", "po", "promises", "grn", "ledger", "avail", "ready", "documents"],
      "request quotes for 6 BOM lines from 3 suppliers; compare landed cost; raise and approve a PO; receive partly with one rejection; see shortfall; watch the gate change from blocked to ready"),
     ("M-06", "Forecast margin and receivables reconcile to source documents",
-     ["budget", "margin", "billplan", "receipts", "export", "erase"],
+     ["budget", "margin", "billplan", "receipts", "export", "erase", "deductions", "advances"],
      "open a job; read budget, commitments, actuals and forecast margin; record a milestone invoice and a part receipt; see ageing and the blocked-by chain; export everything and verify the checksum; run an erasure request"),
     ("M-07", "Field updates, Tally sync and collections work on live jobs",
-     ["siteapp", "sitework", "calendar", "punch", "handover", "tally", "whatsapp", "bills", "expenses", "collect", "digest", "mobile", "backlog", "dcr", "returns", "bomrev", "transfer"],
+     ["siteapp", "sitework", "calendar", "punch", "handover", "tally", "whatsapp", "bills", "expenses", "collect", "digest", "mobile", "backlog", "dcr", "returns", "bomrev", "transfer", "assets", "complaints"],
      "work a job offline on a phone and sync it; see a conflict surfaced; sync a bill to Tally and reconcile one mismatch; send a reminder; read the Monday digest"),
     ("M-08", "Later features are promoted only when paying pilots ask for them twice",
-     ["survey", "estimate", "proposal", "assets", "tickets", "tracking", "dealers", "invoicing", "api", "aiextract", "leads"],
+     ["survey", "estimate", "proposal", "tickets", "tracking", "dealers", "invoicing", "api", "aiextract", "leads"],
      "review the pilot request log; promote one Later feature through a change request; write its tasks"),
 ]

@@ -21,6 +21,10 @@ Won deal, baseline, buy material, receive and inspect, readiness check, install 
 7. MNRE deactivated vendors for hoarding applications and advises no application pending over 60 days: the backlog widget warns before day 60.
 8. Utility and subsidy portals have no public API and the pack never stores the owner's portal passwords: people record stage, reference number and evidence.
 9. Do not store Aadhaar numbers, card numbers or a consumer's bank account (CMP-03).
+10. A business customer may deduct tax at payment, so cash received is less than the invoice. The deduction settles the invoice but is not cash and not an overdue amount; it stays a claim until its certificate arrives. Deduction types and rates are dated data that a chartered accountant confirms (Q-13, CR-001). Store a certificate reference, never the payer's tax identity number. Tax the company deducts from its own suppliers stays in Tally (X-09).
+11. Money paid to a supplier before the bill is an advance: not a commitment, not actual cost and not the settlement of a liability. A bill applies it first; if the order is cancelled it becomes a refund due from the supplier (CR-001, verify with owners that suppliers ask for advances).
+12. A commercial job follows its own approval track. The system size a utility accepts is limited by the sanctioned load, and the metering route depends on size against the state's net-metering limit. Tracks, limits and routes are data per state, marked unverified until the design partner confirms them (CR-001).
+13. A complaint under the scheme has a reply window. The 15-day figure comes from a search summary and the day count (calendar or working) and start date are unverified, so both are data (Q-14, CR-001).
 
 ## What is evidence and what is hypothesis
 

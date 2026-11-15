@@ -1,7 +1,7 @@
 # STATUS (updated 2026-11-04 by session 1)
 Release target: first paid pilot (date TBD)   Current phase: P1 Demo and import (common must-haves)   Overall: GREEN
 
-GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses.
+GREEN: the build starts on the common must-haves with default assumptions (decision 2026-11-05). Refinement with owners runs in parallel and changes data or scope through change requests. The pack waits only on the foundation tasks it uses. 2026-11-13: CR-001 approved: commercial approval track (F-69), receipt deductions (F-70), supplier advances (F-71), complaint log (F-72) and the asset register promoted to Should (F-62); no feature has started, so no date moves.
 
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
@@ -12,12 +12,12 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 |----|-------------------------------|----------|------|-------|-----|----------|
 | M-01 | A pitch demo opens on the owner home with sample data and shows exceptions, utility ageing, cash blocked and margin | F-05, F-01, F-02 | TBD | Not started | GREEN | - |
 | M-02 | An owner brings a project sheet in, fixes every row error and sees baselined projects | F-04, F-08, F-09, F-10, F-11, F-03 | TBD | Not started | GREEN | - |
-| M-03 | Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate | F-12, F-13, F-14, F-15, F-16, F-54, F-23, F-25 | TBD | Not started | GREEN | - |
+| M-03 | Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate | F-12, F-13, F-14, F-15, F-16, F-54, F-23, F-25, F-69 | TBD | Not started | GREEN | - |
 | M-04 | The owner opens one exceptions list and decides from it (pilot control loop) | F-18, F-19, F-20, F-21, F-22, F-24 | TBD | Not started | GREEN | - |
 | M-05 | A pilot runs material from BOM to receipt to a readiness gate on a live job | F-29, F-30, F-31, F-32, F-33, F-34, F-37, F-38, F-39, F-40, F-07 | TBD | Not started | GREEN | - |
-| M-06 | Forecast margin and receivables reconcile to source documents | F-42, F-43, F-46, F-47, F-55, F-06 | TBD | Not started | GREEN | - |
-| M-07 | Field updates, Tally sync and collections work on live jobs | F-49, F-50, F-51, F-52, F-53, F-56, F-57, F-44, F-45, F-48, F-27, F-28, F-26, F-17, F-35, F-36, F-41 | TBD | Not started | GREEN | - |
-| M-08 | Later features are promoted only when paying pilots ask for them twice | F-58, F-59, F-60, F-62, F-63, F-64, F-65, F-66, F-67, F-68, F-61 | TBD | Not started | GREEN | - |
+| M-06 | Forecast margin and receivables reconcile to source documents | F-42, F-43, F-46, F-47, F-55, F-06, F-70, F-71 | TBD | Not started | GREEN | - |
+| M-07 | Field updates, Tally sync and collections work on live jobs | F-49, F-50, F-51, F-52, F-53, F-56, F-57, F-44, F-45, F-48, F-27, F-28, F-26, F-17, F-35, F-36, F-41, F-62, F-72 | TBD | Not started | GREEN | - |
+| M-08 | Later features are promoted only when paying pilots ask for them twice | F-58, F-59, F-60, F-63, F-64, F-65, F-66, F-67, F-68, F-61 | TBD | Not started | GREEN | - |
 
 ## Features
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
@@ -83,13 +83,17 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | F-59 | Estimate and price book | Later | M-08 | Not started | - | - | - |
 | F-60 | Proposal versions | Later | M-08 | Not started | - | - | - |
 | F-61 | Leads and channels | Later | M-08 | Not started | - | - | - |
-| F-62 | Installed asset register | Later | M-08 | Not started | - | - | - |
+| F-62 | Installed asset register | Should | M-07 | Not started | 0 of 4 pass | - | - |
 | F-63 | Service tickets and AMC | Later | M-08 | Not started | - | - | - |
 | F-64 | Customer tracking link and portal | Later | M-08 | Not started | - | - | - |
 | F-65 | Dealer accounts and credit (Trade pack) | Later | M-08 | Not started | - | - | - |
 | F-66 | GST invoice issuing and payment links | Later | M-08 | Not started | - | - | - |
 | F-67 | API and webhooks | Later | M-08 | Not started | - | - | - |
 | F-68 | AI extraction | Later | M-08 | Not started | - | - | - |
+| F-69 | Commercial approval track | Should | M-03 | Not started | 0 of 4 pass | - | - |
+| F-70 | Receipt deductions and certificate follow-up | Must | M-06 | Not started | 0 of 6 pass | - | - |
+| F-71 | Supplier advances | Must | M-06 | Not started | 0 of 6 pass | - | - |
+| F-72 | Complaint log and reply clock | Should | M-07 | Not started | 0 of 5 pass | - | - |
 
 ## Tasks (current milestone only)
 | ID | Feature | Task | State | Blocked by |
@@ -114,3 +118,5 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | D-08 | Which accounting tool beyond Tally do the first 10 targets use? | before E9-T03 | Tally scope unclear |
 | D-09 | Which WhatsApp business provider, and who bears the per-message cost? | before E9-T06 | WhatsApp blocked |
 | D-12 | Which foundation order lets a pilot start earliest? | before foundation wave 4 | Pilot start slips |
+| D-13 | Which deduction types and certificate flows apply to pilot customers (for example tax deducted by a business customer, or by a government buyer), and who confirms the rates? | before E7-T07 | Ageing shows dues the customer already settled by deduction |
+| D-14 | Does the complaint reply window count calendar or working days, and from which date does it start? | before E8-T09 | Complaint clock may count the wrong days |

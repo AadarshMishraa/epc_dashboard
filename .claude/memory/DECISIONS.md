@@ -154,3 +154,22 @@ Format per entry:
 - Versions stay at 0.1.0. These are pre-release changes to an unpublished 0.1.0: bump the minor once per task while before 1.0, never per edit.
 - Deferred to debt TD-7 to TD-13: transaction binding (decide at K6-T01), message idempotency and locale, platform and batch Authorizer, closed reason lists, `initiatedBy`, classification `ready`, and the privacy checks K7b owns.
 - Evidence: OBSERVED. All 9 reviewer probes are now contract cases with matching broken adapters; 4 mutations of the fixes turned tests red.
+
+## 2026-11-12: K0-T04 logging design (threat model docs/security/threat-models/K0-T04-logging.md)
+- The logger takes the `Context` on every call; there is no global logger and no AsyncLocalStorage in core. The host supplies the sink.
+- Events are dotted lower_snake names, not messages. Fields are flat scalars; objects and arrays are never written. Personal data goes through `classified(field, value)` and is fully masked by class (no partial digits, no hashes).
+- Backstops: an internal text scrubber (8 or more digits in any script, addresses, tax id shape, URL query and user parts, named secrets) and a key-name deny list. Defaults cannot be turned off; host-supplied patterns are not built until a pack needs one.
+- Errors are written through `summariseError`: a foreign error gives type, short code and stack frames only.
+- A correlation id that looks like a phone number or an id is written as `[invalid]`. K0-T13 must create its own id at the public entry point (TD-15).
+- `LogSink` returns `unknown`; a rejecting promise is reported to `onSinkError`.
+
+## 2026-11-13: EPC pack CR-001 (packs/epc/docs/prd/changes/CR-001-commercial-money-and-service-gaps.md)
+- Approved by Aadarsh by instruction in the session. Adds F-69 commercial approval track (Should), F-70 receipt deductions (Must), F-71 supplier advances (Must), F-72 complaint log (Should); promotes F-62 asset register to Should. Tickets and AMC (F-63) stay Later.
+- A customer's deduction at payment settles the invoice but is not cash and not overdue; money paid to a supplier before the bill is an advance, not cost. Types, rates, limits and windows are data; the build default carries no tax rates and the stricter complaint day count (calendar).
+- Out of scope (X-09): tax the company deducts from its own suppliers stays in Tally.
+
+## 2026-11-15 K0-T06: the tenant matrix demands a RESTRICTIVE policy and scans every schema
+- Every tenant table needs at least one RESTRICTIVE policy that applies to the application role, on top of a permissive allow policy (security-guidelines 4.1: "restrictive policy"), so a permissive policy added later cannot open the table. K1 migrations must follow that shape.
+- The matrix scans all non-system schemas except `gx_migrations`, and fails if the application role has any privilege there. Why: a default of `public` let a table in an unlisted schema pass unnoticed (staff review finding 7).
+- Seeds are `{ parents?, row }`, where `row` is one INSERT. Why: a parent's refusal must not stand in for the child's own policy (staff review finding 3).
+

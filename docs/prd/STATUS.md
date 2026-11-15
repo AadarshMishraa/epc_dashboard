@@ -1,7 +1,7 @@
-# STATUS (updated 2026-11-05 by session 3)
+# STATUS (updated 2026-11-12 by session 4)
 Release target: foundation v1.0 (date TBD)   Current phase: P1 Foundation   Overall: GREEN
 
-GREEN: 2026-11-05: K0-T14 done. gx-security-reviewer approved and gx-staff-reviewer approved with fixes; all findings fixed and the deferred items logged as TD-7 to TD-13. F-02-AC2: 9 of 9 suites pass locally. TD-7 (transaction binding for writing ports) must be decided at K6-T01. ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. K0-T02 done 2026-11-04 (gx-staff-reviewer approved after fixes; 4 Low and Medium findings deferred to K0-T08, see .claude/memory/DECISIONS.md). F-01-AC2 counts the 10 `kind: module` packages; testkit and toolchain are support packages in the same lane. 2026-11-04: Postgres 17 pinned; Supabase and Vercel configured with placeholders (docs/operations/environments.md). Owner steps: create both projects in Mumbai and add keys before the first hosted deploy or migration (owner Aadarsh). Local Docker is unavailable in the cloud container, so the local stack (K0-T11) is verified on a developer machine or in CI. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
+GREEN: 2026-11-12: K0-T04 (redacted logging) done on branch feat/K0-T04, not yet committed. gx-security-reviewer wrote the threat model and reviewed the diff: APPROVE WITH FIXES (3 Medium, 7 Low, no Critical or High); all 3 Medium and 6 Low fixed, the rest logged as TD-14 and TD-15. F-02 passes 3 of 3 locally; there is no staging yet, so the feature stays In review until K0-T10 and K0-T12 give it somewhere to run. 2026-11-05: K0-T14 done. gx-security-reviewer approved and gx-staff-reviewer approved with fixes; all findings fixed and the deferred items logged as TD-7 to TD-13. F-02-AC2: 9 of 9 suites pass locally. TD-7 (transaction binding for writing ports) must be decided at K6-T01. ADR-0006 accepted 2026-11-04 (stack, hosting, monorepo); wave 0 is unblocked. K0-T02 done 2026-11-04 (gx-staff-reviewer approved after fixes; 4 Low and Medium findings deferred to K0-T08, see .claude/memory/DECISIONS.md). F-01-AC2 counts the 10 `kind: module` packages; testkit and toolchain are support packages in the same lane. 2026-11-04: Postgres 17 pinned; Supabase and Vercel configured with placeholders (docs/operations/environments.md). Owner steps: create both projects in Mumbai and add keys before the first hosted deploy or migration (owner Aadarsh). Local Docker is unavailable in the cloud container, so the local stack (K0-T11) is verified on a developer machine or in CI. Open decisions D-04, D-05, D-06 and D-07 block later waves only.
 
 States are a closed set: Not started, In progress, In review, Blocked, Done, Deferred. No percentages.
 RAG: GREEN on date and unblocked; AMBER slip of 3 working days or less, or a blocker with an owner and a fix date; RED slip over 3 working days or blocked with no fix date.
@@ -23,8 +23,8 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | ID | Name | Priority | Milestone | State | Acceptance | Tests | PR |
 |----|------|----------|-----------|-------|-----------|-------|----|
 | F-01 | Stack decision, workspace and local environment | Must | M-01 | In progress | 2 of 3 pass (AC2 local, AC3; AC1 needs K0-T11) | toolchain import-graph suite, `pnpm verify` | - |
-| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In progress | 1 of 3 pass (AC2 local; AC1 and AC3 need K0-T04) | core unit and property tests; testkit contract suites on the fakes | - |
-| F-03 | Migration framework and test kit | Must | M-01 | In progress | 1 of 4 pass (AC1 on local Postgres 16; Postgres 17 in CI pending K0-T10) | migrate unit and db suites | - |
+| F-02 | Core contracts, ports and redacted logging | Must | M-01 | In review | 3 of 3 pass locally (no staging yet) | core unit and property tests (logging: 2 files, 408 tests, mutation checks); testkit contract suites on the fakes | - |
+| F-03 | Migration framework and test kit | Must | M-01 | In progress | 3 of 4 pass (AC1, AC3, AC4 on local Postgres 16; AC2 needs the migrate-from-previous check; Postgres 17 in CI pending K0-T10) | migrate unit and db suites; testkit clock, pool-leak and isolation db suites | - |
 | F-04 | Manifest, boundary and API gates | Must | M-01 | In progress | 2 of 4 pass (AC1; AC4 from 1.0.0, wording CR-001 proposed) | toolchain manifest and API suites | - |
 | F-05 | CI pipeline with security gates | Must | M-01 | Not started | 0 of 4 pass | - | - |
 | F-06 | Sandbox host and observability baseline | Must | M-01 | Not started | 0 of 4 pass | - | - |
@@ -96,9 +96,9 @@ Done for a feature means every acceptance criterion passes on staging ("N of N p
 | T-001 | F-01 | K0-T01 Decide stack and repo layout (ADR-0006) | Done | - |
 | T-002 | F-01 | K0-T02 Workspace skeleton | Done | - |
 | T-003 | F-02 | K0-T03 Core types | Done | - |
-| T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Not started | T-003 |
+| T-004 | F-02 | K0-T04 Structured logging with redaction by classification and correlation propagation | Done | - |
 | T-005 | F-03 | K0-T05 Migration framework | Done | - |
-| T-006 | F-03 | K0-T06 Test kit | Not started | T-003, T-005 |
+| T-006 | F-03 | K0-T06 Test kit | Done | - |
 | T-007 | F-04 | K0-T07 Manifest schema and validator CLI per docs/architecture/module-manifest.md | Done | - |
 | T-008 | F-04 | K0-T08 Boundary lint | Not started | T-002, T-007 |
 | T-009 | F-04 | K0-T09 Public-API diff and semver gate | Done | - |

@@ -83,7 +83,7 @@ One monorepo (ADR-0006). `packages/register.json` is the module register: every 
 ```mermaid
 flowchart BT
   core["@gx/core<br/>contracts and ports, no I/O"]
-  testkit["@gx/testkit (support)<br/>port fakes, contract suites"] --> core
+  testkit["@gx/testkit (support)<br/>port fakes, contract suites,<br/>tenant matrix, pool-leak, frozen clock"] --> core
   toolchain["@gx/toolchain (support)<br/>import graph; later manifest, boundary, API diff"] --> core
   migrate["@gx/migrate (support)<br/>migration runner, ledger"] --> core
   k1["@gx/k1-tenancy"] --> core
@@ -106,6 +106,7 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 | Core has no I/O | Core builds without Node.js type definitions, so `process`, `fs` or `net` fail its build |
 | Build order | Turborepo `build` depends on `^build`; typecheck uses the transit-node pattern so a change in core invalidates dependants' cache |
 | Ports fail closed | Core defines the nine ports (K0-T14). Modules call the policy ports through `authorize`, `checkEntitlement`, `consumeQuota` and `classifyField`, which turn a throw or a malformed answer into a denial (or `secret`). Each port's fake and contract suite are in `@gx/testkit`, and every real adapter must pass the same suite |
+| Logs are redacted before the sink | `createLogger` in core (K0-T04) builds one JSON line per event from the `Context` (tenant, actor, correlation id) and redacts it by field classification, key name and text patterns before the host's sink sees it. Errors are written through `summariseError`, never raw. The host owns the sink, the log store, its retention and access |
 
 | Port | Real adapter |
 |---|---|
@@ -123,4 +124,6 @@ Skeleton stage: every package depends on core only. A module gains a dependency 
 - 2026-11-04: Supabase (Postgres 17, Mumbai) and Vercel (bom1) configured with placeholders
 - 2026-11-04: @gx/migrate added (K0-T05): per-package SQL migrations, ledger gx_migrations.ledger, advisory lock
 - 2026-11-05: core ports added (K0-T14), with fail-closed guards; fakes and contract suites added to @gx/testkit
+- 2026-11-15: @gx/testkit 0.2.0 adds the frozen clock, tenant matrix runner and pool-leak check (K0-T06); no runtime dependency on a database driver
 - 2026-11-05: after the K0-T14 reviews: secrets split into tenant and platform ports, idempotent quota use, erasure `retained` with basis; a module may not depend on a support package at runtime
+- 2026-11-12: redacted structured logging added to core (K0-T04): context envelope, classification and pattern redaction, error summaries; the sink stays with the host

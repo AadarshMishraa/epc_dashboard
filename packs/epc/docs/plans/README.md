@@ -4,9 +4,9 @@ The pack plan for the solar EPC owner control tower. Scope and acceptance criter
 
 ## Numbers
 
-- 68 features: 38 Must, 19 Should, 11 Later (no tasks until promoted); 145 acceptance criteria
-- 96 tasks in 10 lanes; 13 are security-critical (S3: threat model first, blocking security review)
-- Pack waves: A 48 tasks, B 9, C 23, D 16
+- 72 features: 40 Must, 22 Should, 10 Later (no tasks until promoted); 170 acceptance criteria
+- 104 tasks in 10 lanes; 13 are security-critical (S3: threat model first, blocking security review)
+- Pack waves: A 48 tasks, B 11, C 27, D 18
 - 8 milestones and 5 gates (G0 to G4)
 
 ## Sequencing with the foundation
@@ -28,11 +28,11 @@ Refinement (Phase 0) runs in parallel and does not gate the build (decision 2026
 |---|---|---|---|---|
 | M-01 | A pitch demo opens on the owner home with sample data and shows exceptions, utility ageing, cash blocked and margin | 6 | A | foundation wave 2 done |
 | M-02 | An owner brings a project sheet in, fixes every row error and sees baselined projects | 13 | ABCD | foundation wave 5 done |
-| M-03 | Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate | 12 | ACD | foundation wave 5 done |
+| M-03 | Every job carries its utility stage, owner, age, documents and evidence, and late stages escalate | 14 | ACD | foundation wave 5 done |
 | M-04 | The owner opens one exceptions list and decides from it (pilot control loop) | 11 | ABC | foundation wave 4 done |
 | M-05 | A pilot runs material from BOM to receipt to a readiness gate on a live job | 19 | ACD | foundation wave 5 done |
-| M-06 | Forecast margin and receivables reconcile to source documents | 12 | ABCD | foundation wave 5 done |
-| M-07 | Field updates, Tally sync and collections work on live jobs | 23 | ABCD | foundation wave 5 done |
+| M-06 | Forecast margin and receivables reconcile to source documents | 16 | ABCD | foundation wave 5 done |
+| M-07 | Field updates, Tally sync and collections work on live jobs | 25 | ABCD | foundation wave 5 done |
 | M-08 | Later features are promoted only when paying pilots ask for them twice | 0 | - | foundation wave 0 done |
 
 ## Honest timing

@@ -3,7 +3,7 @@
 Stage templates, stage record and clock, document gates and evidence, escalation, cash blocked and compliance flags.
 
 - **Lane:** `packs/epc/epc-utility`
-- **Tasks:** 9
+- **Tasks:** 11
 - **Foundation waves needed:** 2, 3, 4, 5
 
 Tick a task when its done-when and tests pass and the definition of done in [the playbook](README.md) holds. Scope and acceptance criteria live in [the pack PRD](../prd/01-prd.md).
@@ -16,6 +16,7 @@ Tick a task when its done-when and tests pass and the definition of done in [the
 - **F-15** Escalation rules (Must, 4 acceptance criteria)
 - **F-16** Cash-blocked value (Must, 4 acceptance criteria)
 - **F-17** DCR and ALMM flags (Should, 0 acceptance criteria)
+- **F-69** Commercial approval track (Should, 4 acceptance criteria)
 
 ## Security baseline for this module
 
@@ -92,7 +93,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
 - [ ] **E2-T07** (T-029) Escalation rules (M)
   - Feature: F-15 | Milestone: M-03 | Pack wave: C | Level: 10 | Lane: epc-utility
-  - Needs: E2-T04 (T-026), E3-T14 (T-045)
+  - Needs: E2-T04 (T-026), E3-T14 (T-047)
   - Foundation features used (public APIs only): F-16, F-17, F-48 (needs foundation wave 4)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-high-concurrency
@@ -112,11 +113,32 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
 - [ ] **E2-T09** (T-031) DCR and ALMM flags (M)
   - Feature: F-17 | Milestone: M-07 | Pack wave: B | Level: 15 | Lane: epc-utility
-  - Needs: E4-T02 (T-050), E5-T03 (T-065)
+  - Needs: E4-T02 (T-052), E5-T03 (T-067)
   - Foundation features used (public APIs only): F-23 (needs foundation wave 3)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
   - Security: S2. Module security baseline applies.
   - Done when: flags on BOM lines and serials; warning before invoicing when data is missing
   - Tests: missing-data warning; rule change by data only
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E2-T10** (T-032) Seed the commercial approval track for the first two states (M)
+  - Feature: F-69 | Milestone: M-03 | Pack wave: C | Level: 9 | Lane: epc-utility
+  - Needs: E2-T02 (T-024), E1-T08 (T-021)
+  - Foundation features used (public APIs only): F-23, F-29 (needs foundation wave 3)
+  - Agents: build Aadarsh decides, then gx-implementer | tests - | review gx-staff-reviewer
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S1. Module security baseline applies.
+  - Done when: a commercial stage template per state, as data: sanctioned-load and capacity check, electrical inspector approval where the state requires it, metering route, transformer capacity and structural certificate, each with a limit in working days, a waiting-on party and a document checklist; built from public information and marked unverified
+  - Tests: 0 code change to add the track to a state; a commercial job in a state without the track is flagged and gets no residential stages; review by the design partner recorded in the PR
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+  - Human gate: Default now: the same two states as E2-T02, every stage marked unverified. The design partner confirms or replaces the stage lists and limits; the change is data only.
+- [ ] **E2-T11** (T-033) Capacity and route checks (M)
+  - Feature: F-69 | Milestone: M-03 | Pack wave: D | Level: 10 | Lane: epc-utility
+  - Needs: E1-T07 (T-020), E2-T05 (T-027)
+  - Foundation features used (public APIs only): F-23, F-25, F-27 (needs foundation wave 3)
+  - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: sanctioned load is a custom field on the project; rules as data compare the planned system size with the sanctioned load and with the state's net-metering limit; a breach warns and gates the application stage behind an approver override with a reason
+  - Tests: 150 kW against 100 kW raises 1 warning naming both figures; override by a non-approver refused; equal values raise no warning; a limit edited in configuration applies to the next check
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.

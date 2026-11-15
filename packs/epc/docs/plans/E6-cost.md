@@ -3,8 +3,8 @@
 Budget, commitments and actuals, forecast margin and floor, supplier bills and field expenses.
 
 - **Lane:** `packs/epc/epc-cost`
-- **Tasks:** 7
-- **Foundation waves needed:** 2, 3, 5
+- **Tasks:** 9
+- **Foundation waves needed:** 2, 3, 4, 5
 
 Tick a task when its done-when and tests pass and the definition of done in [the playbook](README.md) holds. Scope and acceptance criteria live in [the pack PRD](../prd/01-prd.md).
 
@@ -14,6 +14,7 @@ Tick a task when its done-when and tests pass and the definition of done in [the
 - **F-43** Forecast margin and margin floor (Must, 4 acceptance criteria)
 - **F-44** Supplier bills and duplicate guard (Should, 0 acceptance criteria)
 - **F-45** Field expenses (Should, 0 acceptance criteria)
+- **F-71** Supplier advances (Must, 6 acceptance criteria)
 
 ## Security baseline for this module
 
@@ -27,7 +28,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
 
 ## Tasks
 
-- [ ] **E6-T01** (T-071) Baseline budget (S)
+- [ ] **E6-T01** (T-073) Baseline budget (S)
   - Feature: F-42 | Milestone: M-06 | Pack wave: A | Level: 7 | Lane: epc-cost
   - Needs: E1-T07 (T-020)
   - Foundation features used (public APIs only): F-19 (needs foundation wave 2)
@@ -37,9 +38,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: budget by category per project from the baseline
   - Tests: totals match the baseline to the paise
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T02** (T-072) Commitment, actual and payment ledger (M)
+- [ ] **E6-T02** (T-074) Commitment, actual and payment ledger (M)
   - Feature: F-42 | Milestone: M-06 | Pack wave: A | Level: 13 | Lane: epc-cost
-  - Needs: E6-T01 (T-071), E4-T07 (T-055)
+  - Needs: E6-T01 (T-073), E4-T07 (T-057)
   - Foundation features used (public APIs only): F-14, F-19 (needs foundation wave 2)
   - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design, gx-high-concurrency
@@ -47,9 +48,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: orders are commitments, bills and expenses are actual, payments settle liability; no rupee counted twice
   - Tests: property: 10,000 event sequences with 0 double counts
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T03** (T-073) Forecast margin and drivers (M)
+- [ ] **E6-T03** (T-075) Forecast margin and drivers (M)
   - Feature: F-43 | Milestone: M-06 | Pack wave: A | Level: 14 | Lane: epc-cost
-  - Needs: E6-T02 (T-072)
+  - Needs: E6-T02 (T-074)
   - Foundation features used (public APIs only): F-19 (needs foundation wave 2)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
@@ -57,9 +58,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: contract less forecast final cost with variance from baseline and named drivers
   - Tests: 500,000 case gives 50,000 and 10%; driver lines sum to the paise
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T04** (T-074) Margin floor and variance rules (S)
+- [ ] **E6-T04** (T-076) Margin floor and variance rules (S)
   - Feature: F-43 | Milestone: M-06 | Pack wave: B | Level: 15 | Lane: epc-cost
-  - Needs: E6-T03 (T-073), E3-T02 (T-033)
+  - Needs: E6-T03 (T-075), E3-T02 (T-035)
   - Foundation features used (public APIs only): F-23 (needs foundation wave 3)
   - Agents: build gx-implementer | tests - | review module gate
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
@@ -67,9 +68,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: per-company floor and variance thresholds feed exception rules; forecast stored at commissioning
   - Tests: 12% floor with 9% forecast raises 1 exception
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T05** (T-075) Supplier bills and dues (M)
+- [ ] **E6-T05** (T-077) Supplier bills and dues (M)
   - Feature: F-44 | Milestone: M-07 | Pack wave: A | Level: 14 | Lane: epc-cost
-  - Needs: E6-T02 (T-072)
+  - Needs: E6-T02 (T-074)
   - Foundation features used (public APIs only): F-19 (needs foundation wave 2)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
@@ -77,9 +78,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: bills, due dates, payment approval and outstanding by supplier
   - Tests: bill against order moves commitment to actual
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T06** (T-076) Duplicate bill guard (S)
+- [ ] **E6-T06** (T-078) Duplicate bill guard (S)
   - Feature: F-44 | Milestone: M-07 | Pack wave: A | Level: 15 | Lane: epc-cost
-  - Needs: E6-T05 (T-075)
+  - Needs: E6-T05 (T-077)
   - Foundation features used (public APIs only): F-14 (needs foundation wave 2)
   - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
@@ -87,13 +88,33 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: flags probable duplicates on supplier, number, date and amount
   - Tests: near-duplicate fixtures; threshold test
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E6-T07** (T-077) Field expenses (S)
+- [ ] **E6-T07** (T-079) Field expenses (S)
   - Feature: F-45 | Milestone: M-07 | Pack wave: D | Level: 19 | Lane: epc-cost
-  - Needs: E6-T02 (T-072), E8-T04 (T-087)
+  - Needs: E6-T02 (T-074), E8-T04 (T-093)
   - Foundation features used (public APIs only): F-58 (needs foundation wave 5)
   - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
   - Security: S2. Module security baseline applies.
   - Done when: labour, transport, crane and other costs with receipt photo and approval
   - Tests: receipt required over a limit; approval via the queue
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E6-T08** (T-080) Supplier advance ledger (M)
+  - Feature: F-71 | Milestone: M-06 | Pack wave: C | Level: 14 | Lane: epc-cost
+  - Needs: E6-T02 (T-074), E3-T10 (T-043)
+  - Foundation features used (public APIs only): F-19, F-49 (needs foundation wave 4)
+  - Agents: build gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
+  - Security: S2. Module security baseline applies.
+  - Done when: an advance paid against an order is held as advance outstanding, not as commitment and not as actual cost; a bill applies it first and the payable is the rest; a cancelled order turns the unapplied advance into a refund due; advances above the threshold go through the approval queue
+  - Tests: the 100, 40 and 10 case keeps cost at 40 before and after the bill; property: 10,000 random event sequences count 0 rupees twice and each supplier balance equals advances less applied and refunded; self-approval refused
+  - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
+- [ ] **E6-T09** (T-081) Supplier exposure and stale-advance rule (S)
+  - Feature: F-71 | Milestone: M-06 | Pack wave: C | Level: 15 | Lane: epc-cost
+  - Needs: E6-T08 (T-080), E5-T01 (T-065), E3-T03 (T-036)
+  - Foundation features used (public APIs only): F-23, F-27 (needs foundation wave 3)
+  - Agents: build gx-implementer | tests - | review gx-security-reviewer (module gate)
+  - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
+  - Security: S2. Module security baseline applies.
+  - Done when: advance outstanding and refunds due shown per supplier and per job; a rule as data raises 1 exception per supplier when an advance is older than the limit with nothing received; the limit and the approval threshold are configuration
+  - Tests: a 30-day advance with 0 received raises 1 exception; receiving goods clears it on the next run; a limit edited in configuration applies to the next run; repeat runs add 0
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.

@@ -27,7 +27,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
 
 ## Tasks
 
-- [ ] **E9-T01** (T-091) Email sender (M)
+- [ ] **E9-T01** (T-099) Email sender (M)
   - Feature: F-54 | Milestone: M-03 | Pack wave: A | Level: 0 | Lane: epc-integrations
   - Needs: none
   - Foundation features used (public APIs only): F-02 (needs foundation wave 0)
@@ -37,7 +37,7 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: provider adapter behind the message-sender port with templates, retries and a domain setup check
   - Tests: send once on retry; SPF, DKIM and DMARC check; no secrets in logs
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E9-T02** (T-092) Export everything (M)
+- [ ] **E9-T02** (T-100) Export everything (M)
   - Feature: F-55 | Milestone: M-06 | Pack wave: D | Level: 3 | Lane: epc-integrations
   - Needs: E0-T11 (T-011)
   - Foundation features used (public APIs only): F-54, F-58 (needs foundation wave 5)
@@ -47,9 +47,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: audited job exports every table, attachment and history as CSV and JSON with checksum; link valid 5 minutes
   - Tests: formula neutralised; permission denial audited; link expiry; tenant isolation of the file
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E9-T03** (T-093) Tally export (M)
+- [ ] **E9-T03** (T-101) Tally export (M)
   - Feature: F-56 | Milestone: M-07 | Pack wave: A | Level: 15 | Lane: epc-integrations
-  - Needs: E7-T02 (T-079), E6-T05 (T-075)
+  - Needs: E7-T02 (T-083), E6-T05 (T-077)
   - Foundation features used (public APIs only): F-02 (needs foundation wave 0)
   - Agents: build Aadarsh decides, then gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature
@@ -58,9 +58,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Tests: file format fixtures; secret handling test; human gate on the Tally version
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
   - Human gate: Default now: Tally Prime file exchange (Q-08 lean). The file format is confirmed at refinement before the first live sync.
-- [ ] **E9-T04** (T-094) Tally import and reconcile (M)
+- [ ] **E9-T04** (T-102) Tally import and reconcile (M)
   - Feature: F-56 | Milestone: M-07 | Pack wave: A | Level: 16 | Lane: epc-integrations
-  - Needs: E9-T03 (T-093)
+  - Needs: E9-T03 (T-101)
   - Foundation features used (public APIs only): F-14 (needs foundation wave 2)
   - Agents: build gx-implementer | tests - | review gx-staff-reviewer, gx-security-reviewer (module gate)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-database-design
@@ -68,9 +68,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: ledger and payment status imported; unmatched records queued for reconcile
   - Tests: mismatch fixture; idempotent import
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E9-T05** (T-095) Sync health (S)
+- [ ] **E9-T05** (T-103) Sync health (S)
   - Feature: F-56 | Milestone: M-07 | Pack wave: A | Level: 17 | Lane: epc-integrations
-  - Needs: E9-T04 (T-094)
+  - Needs: E9-T04 (T-102)
   - Foundation features used (public APIs only): F-65 (needs foundation wave 1)
   - Agents: build gx-implementer | tests - | review gx-ux-reviewer
   - Skills: gx-cognitive-ux, epc-design-system, gx-code-quality, gx-test-feature
@@ -78,9 +78,9 @@ Applies to every task below, on top of the repository [security guidelines](../.
   - Done when: last sync time, failures and unmatched count on the home
   - Tests: stale label after 24 hours
   - Rollback: Revert the commit; migrations are expand-only, so a schema fault is fixed forward. User-visible change ships behind a flag.
-- [ ] **E9-T06** (T-096) WhatsApp adapter (M)
+- [ ] **E9-T06** (T-104) WhatsApp adapter (M)
   - Feature: F-57 | Milestone: M-07 | Pack wave: D | Level: 1 | Lane: epc-integrations
-  - Needs: E9-T01 (T-091)
+  - Needs: E9-T01 (T-099)
   - Foundation features used (public APIs only): F-02, F-51 (needs foundation wave 5)
   - Agents: build Aadarsh decides, then gx-implementer | tests gx-qa-engineer | review gx-staff-reviewer, gx-security-reviewer (blocking)
   - Skills: gx-modular-platform, gx-code-quality, gx-test-feature, gx-compliance, epc-compliance-privacy

@@ -59,6 +59,9 @@ Buyer / payer: the EPC owner pays a monthly subscription per company (hypothesis
 | N-19 | As U-08 I need warranty and AMC tied to the serials installed at each site | service starts from the install record | G-06 | Later |
 | N-20 | As U-01 I need a weekly summary of what moved, what is stuck and what to fix | I run a review without building one by hand | G-02 | Should |
 | N-21 | As U-01 I need the pack to run on an isolated, audited foundation that keeps my company's data apart from every other company | my data is never visible to another firm and every change has a record | G-01, G-07 | Must |
+| N-22 | As U-02 I need a commercial job to follow its own approval track and to be warned when the planned system is larger than the sanctioned load or the state's net-metering limit | a commercial application is not filed and then rejected by the utility | G-04 | Should |
+| N-23 | As U-06 I need a receipt to record the amount a business customer deducted at payment, and a supplier advance to be held apart from cost | dues are not chased for money the customer already settled by deduction, and no advance is counted as cost twice | G-03, G-05 | Must |
+| N-24 | As U-08 I need every installed system registered with its serials and warranty dates, and every customer complaint logged with its reply deadline | service starts from the install record and no complaint passes its reply window unseen | G-02 | Should |
 
 # 4. Features
 | ID | Feature | One line | Serves | Priority | Depends on |
@@ -124,13 +127,17 @@ Buyer / payer: the EPC owner pays a monthly subscription per company (hypothesis
 | F-59 | Estimate and price book | Versioned price book, margin rules and subsidy slabs that block quotes below the margin floor. | N-18 | Later | - |
 | F-60 | Proposal versions | Branded proposals where acceptance records the exact revision. | N-18 | Later | - |
 | F-61 | Leads and channels | Capture, duplicate catch, response timer and pipeline for enquiries. | N-18 | Later | - |
-| F-62 | Installed asset register | Serials, commissioning data and warranty dates per site. | N-19 | Later | - |
+| F-62 | Installed asset register | Serials, commissioning data and warranty dates per site. | N-24, N-19 | Should | F-37, F-53 |
 | F-63 | Service tickets and AMC | Tickets with warranty check and SLA, visits, parts and AMC renewals. | N-19 | Later | - |
 | F-64 | Customer tracking link and portal | A private link showing project stage, documents and dues. | N-18 | Later | - |
 | F-65 | Dealer accounts and credit (Trade pack) | Partner accounts, price lists, credit checks and dispatch for selling to other installers. | N-08 | Later | - |
 | F-66 | GST invoice issuing and payment links | Issue tax invoices and collect through hosted payment links, subject to decision Q-03. | N-13 | Later | - |
 | F-67 | API and webhooks | Documented events and safe retries for projects, orders, receipts and stage changes. | N-15 | Later | - |
 | F-68 | AI extraction | Read quotes, bills and challans into suggestions that a person confirms. | N-08 | Later | - |
+| F-69 | Commercial approval track | A stage template for commercial jobs with the checks that belong to them, and a warning when the planned system is larger than the sanctioned load or the state's net-metering limit. | N-22 | Should | F-10, F-11, F-12, F-14 |
+| F-70 | Receipt deductions and certificate follow-up | Record the amount a business customer deducts at payment, settle the invoice with cash and deductions together, and follow up the certificate for each deduction. | N-23, N-13 | Must | F-01, F-18, F-23, F-47 |
+| F-71 | Supplier advances | Hold money paid to a supplier before the bill apart from cost, apply it when the bill arrives, and show the exposure per supplier and per job. | N-23, N-12 | Must | F-18, F-22, F-37, F-42 |
+| F-72 | Complaint log and reply clock | Log each customer complaint with the reply deadline the scheme sets, and raise an exception before the deadline passes. | N-24 | Should | F-01, F-09, F-18 |
 
 Acceptance criteria (at least 3 per Must feature, Given / When / Then, with a number in the result):
 F-01-AC1 Given the pack workspace When the boundary lint runs against the foundation Then 0 foundation files are edited and 0 industry words are found in foundation packages
@@ -316,6 +323,36 @@ F-55-AC2 Given a cell beginning with = in the data When it is exported to CSV Th
 F-55-AC3 Given a user without the export permission When they request an export Then the request is refused and 1 denied entry is audited
 F-55-AC4 Given a download link When it is used after 5 minutes Then it is rejected
 
+F-62-AC1 Given 40 serials received and linked to an order line for a project that has been commissioned When the register is read for its site Then 40 asset records exist with model, commissioning date and warranty end
+F-62-AC2 Given an inverter with a warranty term of 5 years and customer acceptance on 12 November 2026 When its asset record is read Then the warranty starts on 12 November 2026 and ends on 12 November 2031, 2 of 2 dates correct
+F-62-AC3 Given a module replaced under warranty When the replacement serial is recorded Then 1 new record links to the old one, the old record shows replaced and its serial is unchanged
+F-62-AC4 Given a serial number searched by a user of the company that owns it and by a user of another company When both searches run Then the first gets the job, site and warranty end in 1 step and the second gets 0 results
+
+F-69-AC1 Given the commercial template for state A When it is applied to a new commercial job Then the job carries every stage of the template with its limit in working days and its waiting-on party, 100% of the template's stages
+F-69-AC2 Given a commercial job in a state that has no commercial template When the job is created Then it is flagged as having no commercial track, 0 residential stages are applied silently and 1 setup task is created for the owner
+F-69-AC3 Given a planned system of 150 kW and a sanctioned load of 100 kW When the baseline is saved Then 1 warning names both figures and the job cannot enter the application stage without an approver override that stores a reason
+F-69-AC4 Given a net-metering limit of 500 kW set as test data and a planned system of 600 kW When the route check runs Then the job shows the route configured for sizes above the limit with the reason, and a change of the limit in configuration changes the next check with 0 code files changed
+
+F-70-AC1 Given an invoice of 100,000 rupees and a receipt of 98,000 cash with a deduction of 2,000 When the ledger is read Then the balance is 0, the invoice shows paid, cash received is 98,000 and 2,000 shows as a deduction awaiting its certificate
+F-70-AC2 Given 10,000 random combinations of invoice, cash, deduction, retention and disputed amounts When balances are computed Then cash, deductions, retention, disputed and balance add up to the invoice to the paise in 10,000 of 10,000 cases
+F-70-AC3 Given a recorded deduction When a user edits its amount Then the edit is refused and 2 linked records, a reversal and a new line, are the only correction
+F-70-AC4 Given the same deduction reference entered twice for one invoice When the second is saved Then it is refused as a duplicate and 1 deduction exists
+F-70-AC5 Given a deduction awaiting its certificate for 31 days with a follow-up limit of 30 days When the evaluator runs twice Then 1 task for finance is created and 0 duplicates follow on the second run
+F-70-AC6 Given an expected rate of 2% set as data and a taxable value of 100,000 When a deduction of 3,000 is recorded Then 1 variance of 1,000 is flagged, and with no rate configured 0 variances are flagged
+
+F-71-AC1 Given a budget of 100, an order of 40 and an advance payment of 10 When the project cost view is read Then committed is 40, actual is 0, advance outstanding is 10 and total cost stays 40
+F-71-AC2 Given the supplier bill of 40 against that order When it is recorded Then the advance of 10 is applied, 30 is payable, actual is 40 and total cost stays 40, not 50
+F-71-AC3 Given an advance of 10 on an order of 40 that is then cancelled When the cancellation is recorded Then committed falls to 0, 10 shows as a refund due from the supplier and 0 rupees are counted as cost
+F-71-AC4 Given an advance of 2,50,000 rupees against an approval threshold of 1,00,000 When it is submitted Then it goes to the approval queue and cannot be recorded as paid until approved, and its requester cannot approve it
+F-71-AC5 Given an advance older than 30 days with 0 units received against the order When the evaluator runs Then 1 exception is raised for the supplier listing the orders, and receiving goods clears it on the next run
+F-71-AC6 Given 10,000 random event sequences of orders, advances, bills, payments and cancellations When the cost ledger is checked Then 0 sequences count a rupee twice and each supplier balance equals advances less applied and refunded amounts to the paise
+
+F-72-AC1 Given a complaint received on day 0 and a reply window of 15 days set as test data When it is saved Then its due date is day 15 and the window used is stored with it, so a later change of the window leaves it as it was
+F-72-AC2 Given the same complaint on day 13 with no reply When the evaluator runs twice Then 1 exception shows 2 days left with its owner and 0 duplicates follow on the second run
+F-72-AC3 Given a recorded reply When the complaint is saved Then its status is replied, the reply date and summary are stored and 0 exceptions stay open for it
+F-72-AC4 Given a complaint note that holds a customer phone number When it appears in a log line or an audit diff Then the number is masked in 2 of 2 outputs
+F-72-AC5 Given a user scoped to branch B When they list complaints Then 0 complaints of branch A appear
+
 # 5. Non-functional requirements
 | ID | Area | Requirement | How verified |
 |----|------|-------------|--------------|
@@ -350,6 +387,7 @@ Team: Aadarsh decides and accepts; a design partner owner confirms definitions a
 | X-06 | Native mobile apps | An installable web app covers field use first | after field adoption is proven |
 | X-07 | Utility-scale EPC (above 1 MW) project controls | Different workflows and buyers | not planned |
 | X-08 | Autonomous AI actions on records | Suggestions need human confirmation (ADR-0005) | not planned |
+| X-09 | Tax the company deducts from its own payments to suppliers and subcontractors, and tax returns | Tally stays the books (X-03); the pack records what customers deduct from the company, not what the company deducts from others | after decision Q-03 |
 
 # 8. Assumptions and risks
 | ID | Assumption or risk | Likelihood | Impact | Mitigation | Owner |
@@ -390,6 +428,8 @@ References: Salesforce Lightning density and structure; one orange action per vi
 | Q-10 | Do we build lead and quote tools, or import won deals from the owner's CRM? | Aadarsh | before any Later sales feature | Decided (lean accepted for planning). Import won deals; sales features stay Later until pilots ask for them. |
 | Q-11 | When does the distributor or dealer (Trade) pack start? | Aadarsh | after gate G4 | Deferred. EPC first; Trade features are Later and need their own interviews. |
 | Q-12 | Which foundation order lets a pilot start earliest? | Aadarsh | before foundation wave 4 | Open. Lean: inside wave 4, build identity and workflow first and entitlements last; do files and the privacy desk right after, since a pilot with real customer data needs both. |
+| Q-13 | Which deduction types and certificate flows apply to pilot customers (for example tax deducted by a business customer, or by a government buyer), and who confirms the rates? | Aadarsh with a chartered accountant | before E7-T07 | Open. Build default: a deduction-type list with no rates, edited as data; the accountant fills it at refinement. The pack stores a certificate reference, never the payer's tax identity number. |
+| Q-14 | Does the complaint reply window count calendar or working days, and from which date does it start? | Aadarsh from the scheme text | before E8-T09 | Open. Build default: 15 calendar days from the date received, both set as data; the figure comes from a search summary and is unverified. |
 
 # 12. Sign-off
 Baseline v1.0 approved by: pending (Aadarsh Mishra)

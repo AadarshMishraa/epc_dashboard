@@ -354,10 +354,50 @@ feat("survey", "Site survey capture", "Configurable survey form with photos and 
 feat("estimate", "Estimate and price book", "Versioned price book, margin rules and subsidy slabs that block quotes below the margin floor.", "Later", ["N-18"], [])
 feat("proposal", "Proposal versions", "Branded proposals where acceptance records the exact revision.", "Later", ["N-18"], [])
 feat("leads", "Leads and channels", "Capture, duplicate catch, response timer and pipeline for enquiries.", "Later", ["N-18"], [])
-feat("assets", "Installed asset register", "Serials, commissioning data and warranty dates per site.", "Later", ["N-19"], [])
+feat("assets", "Installed asset register", "Serials, commissioning data and warranty dates per site.", "Should", ["N-24", "N-19"], ["E8-T08"], [
+    ("40 serials received and linked to an order line for a project that has been commissioned", "the register is read for its site", "40 asset records exist with model, commissioning date and warranty end"),
+    ("an inverter with a warranty term of 5 years and customer acceptance on 12 November 2026", "its asset record is read", "the warranty starts on 12 November 2026 and ends on 12 November 2031, 2 of 2 dates correct"),
+    ("a module replaced under warranty", "the replacement serial is recorded", "1 new record links to the old one, the old record shows replaced and its serial is unchanged"),
+    ("a serial number searched by a user of the company that owns it and by a user of another company", "both searches run", "the first gets the job, site and warranty end in 1 step and the second gets 0 results")])
 feat("tickets", "Service tickets and AMC", "Tickets with warranty check and SLA, visits, parts and AMC renewals.", "Later", ["N-19"], [])
 feat("tracking", "Customer tracking link and portal", "A private link showing project stage, documents and dues.", "Later", ["N-18"], [])
 feat("dealers", "Dealer accounts and credit (Trade pack)", "Partner accounts, price lists, credit checks and dispatch for selling to other installers.", "Later", ["N-08"], [])
 feat("invoicing", "GST invoice issuing and payment links", "Issue tax invoices and collect through hosted payment links, subject to decision Q-03.", "Later", ["N-13"], [])
 feat("api", "API and webhooks", "Documented events and safe retries for projects, orders, receipts and stage changes.", "Later", ["N-15"], [])
 feat("aiextract", "AI extraction", "Read quotes, bills and challans into suggestions that a person confirms.", "Later", ["N-08"], [])
+
+# ----------------------------------------------------------------------------- Added by CR-001 (2026-11-13): commercial track, money correctness, service duty
+feat("commercial", "Commercial approval track",
+     "A stage template for commercial jobs with the checks that belong to them, and a warning when the planned system is larger than the sanctioned load or the state's net-metering limit.",
+     "Should", ["N-22"], ["E2-T10", "E2-T11"], [
+         ("the commercial template for state A", "it is applied to a new commercial job", "the job carries every stage of the template with its limit in working days and its waiting-on party, 100% of the template's stages"),
+         ("a commercial job in a state that has no commercial template", "the job is created", "it is flagged as having no commercial track, 0 residential stages are applied silently and 1 setup task is created for the owner"),
+         ("a planned system of 150 kW and a sanctioned load of 100 kW", "the baseline is saved", "1 warning names both figures and the job cannot enter the application stage without an approver override that stores a reason"),
+         ("a net-metering limit of 500 kW set as test data and a planned system of 600 kW", "the route check runs", "the job shows the route configured for sizes above the limit with the reason, and a change of the limit in configuration changes the next check with 0 code files changed")])
+feat("deductions", "Receipt deductions and certificate follow-up",
+     "Record the amount a business customer deducts at payment, settle the invoice with cash and deductions together, and follow up the certificate for each deduction.",
+     "Must", ["N-23", "N-13"], ["E7-T07", "E7-T08"], [
+         ("an invoice of 100,000 rupees and a receipt of 98,000 cash with a deduction of 2,000", "the ledger is read", "the balance is 0, the invoice shows paid, cash received is 98,000 and 2,000 shows as a deduction awaiting its certificate"),
+         ("10,000 random combinations of invoice, cash, deduction, retention and disputed amounts", "balances are computed", "cash, deductions, retention, disputed and balance add up to the invoice to the paise in 10,000 of 10,000 cases"),
+         ("a recorded deduction", "a user edits its amount", "the edit is refused and 2 linked records, a reversal and a new line, are the only correction"),
+         ("the same deduction reference entered twice for one invoice", "the second is saved", "it is refused as a duplicate and 1 deduction exists"),
+         ("a deduction awaiting its certificate for 31 days with a follow-up limit of 30 days", "the evaluator runs twice", "1 task for finance is created and 0 duplicates follow on the second run"),
+         ("an expected rate of 2% set as data and a taxable value of 100,000", "a deduction of 3,000 is recorded", "1 variance of 1,000 is flagged, and with no rate configured 0 variances are flagged")])
+feat("advances", "Supplier advances",
+     "Hold money paid to a supplier before the bill apart from cost, apply it when the bill arrives, and show the exposure per supplier and per job.",
+     "Must", ["N-23", "N-12"], ["E6-T08", "E6-T09"], [
+         ("a budget of 100, an order of 40 and an advance payment of 10", "the project cost view is read", "committed is 40, actual is 0, advance outstanding is 10 and total cost stays 40"),
+         ("the supplier bill of 40 against that order", "it is recorded", "the advance of 10 is applied, 30 is payable, actual is 40 and total cost stays 40, not 50"),
+         ("an advance of 10 on an order of 40 that is then cancelled", "the cancellation is recorded", "committed falls to 0, 10 shows as a refund due from the supplier and 0 rupees are counted as cost"),
+         ("an advance of 2,50,000 rupees against an approval threshold of 1,00,000", "it is submitted", "it goes to the approval queue and cannot be recorded as paid until approved, and its requester cannot approve it"),
+         ("an advance older than 30 days with 0 units received against the order", "the evaluator runs", "1 exception is raised for the supplier listing the orders, and receiving goods clears it on the next run"),
+         ("10,000 random event sequences of orders, advances, bills, payments and cancellations", "the cost ledger is checked", "0 sequences count a rupee twice and each supplier balance equals advances less applied and refunded amounts to the paise")])
+feat("complaints", "Complaint log and reply clock",
+     "Log each customer complaint with the reply deadline the scheme sets, and raise an exception before the deadline passes.",
+     "Should", ["N-24"], ["E8-T09"], [
+         ("a complaint received on day 0 and a reply window of 15 days set as test data", "it is saved", "its due date is day 15 and the window used is stored with it, so a later change of the window leaves it as it was"),
+         ("the same complaint on day 13 with no reply", "the evaluator runs twice", "1 exception shows 2 days left with its owner and 0 duplicates follow on the second run"),
+         ("a recorded reply", "the complaint is saved", "its status is replied, the reply date and summary are stored and 0 exceptions stay open for it"),
+         ("a complaint note that holds a customer phone number", "it appears in a log line or an audit diff", "the number is masked in 2 of 2 outputs"),
+         ("a user scoped to branch B", "they list complaints", "0 complaints of branch A appear")])
+
