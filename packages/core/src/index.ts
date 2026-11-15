@@ -1,7 +1,7 @@
 /**
  * Public API of @gx/core. This is the only file other packages may import.
  * Core has no I/O and no dependencies: time and randomness are passed in.
- * The ports' in-memory fakes and contract suites live in @gx/testkit. Logging (K0-T04) is next.
+ * The ports' in-memory fakes and contract suites live in @gx/testkit.
  */
 import { moduleId, type ModuleId } from './module-id.ts';
 
@@ -144,6 +144,23 @@ export {
   type ErasureResult,
   type ErasureSubject,
 } from './ports/erasure.ts';
+export {
+  LOG_LEVELS,
+  LOG_MAX_FIELDS,
+  LOG_MAX_LINE_BYTES,
+  classified,
+  createLogger,
+  type ClassifiedValue,
+  type LogData,
+  type LogFieldValue,
+  type LogFields,
+  type LogLevel,
+  type LogScalar,
+  type LogSink,
+  type Logger,
+  type LoggerOptions,
+} from './logging/logger.ts';
+export { summariseError, type ErrorSummary } from './logging/error-summary.ts';
 
 /** This package's id in packages/register.json. */
 export const MODULE_ID: ModuleId = moduleId('core');

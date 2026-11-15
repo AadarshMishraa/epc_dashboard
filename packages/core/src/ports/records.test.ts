@@ -286,6 +286,31 @@ describe('classifyField', () => {
     ).toBe('secret');
   });
 
+  it('reports an unknown answer once, without the answer itself', () => {
+    const causes: unknown[] = [];
+    const result = classifyField(
+      lookup(() => 'PUBLIC' as never),
+      tenantContext(),
+      field,
+      (cause) => causes.push(cause),
+    );
+    expect(result).toBe('secret');
+    expect(causes).toHaveLength(1);
+    expect(causes[0]).toBeInstanceOf(TypeError);
+    expect(String(causes[0])).not.toContain('PUBLIC');
+  });
+
+  it('does not report a valid answer', () => {
+    const causes: unknown[] = [];
+    classifyField(
+      lookup(() => 'internal'),
+      tenantContext(),
+      field,
+      (cause) => causes.push(cause),
+    );
+    expect(causes).toEqual([]);
+  });
+
   it('knows the five classes', () => {
     for (const value of ['public', 'internal', 'personal', 'sensitive_personal', 'secret']) {
       expect(isClassification(value)).toBe(true);

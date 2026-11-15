@@ -1,10 +1,10 @@
 # @gx/core
 
-Shared contracts: context, ids, errors, Result, Clock and the core ports with in-memory fakes. No I/O and no dependencies.
+Shared contracts: context, ids, errors, Result, Clock, the core ports and redacted structured logging. No I/O and no dependencies.
 
 - Plan: [K0 brief](../../docs/plans/001-foundation/K0-core.md), wave 0. Layer L0 module.
 - Register id: `core` in [packages/register.json](../register.json).
-- Status: core types from K0-T03; core ports from K0-T14 (their fakes and contract suites are in `@gx/testkit`). Redacted logging (K0-T04) is next.
+- Status: core types from K0-T03; core ports from K0-T14 (their fakes and contract suites are in `@gx/testkit`); redacted logging from K0-T04.
 
 ## Public API
 
@@ -41,6 +41,30 @@ Each port is an interface that a later module implements. The in-memory fake and
 | `EraserRegistry`, `runEraser`, `isErasureComplete`, `isEraserHandlerId` | K7b | A duplicate id is refused. An erase with no handlers is not complete. Every handler's outcome is reported. Data kept under a law is `retained` with its basis, never silent. Handlers must be idempotent |
 
 Decisions are tagged unions (`Decision`, `Allow`, `Deny`, `ALLOW`, `deny`), never booleans. `isAllowed` accepts only `allow === true`. The guards turn a throw or a malformed answer into `DenyOnError`, which keeps the `cause` for logs.
+
+### Logging (K0-T04)
+
+```ts
+const logger = createLogger({ sink: (line) => process.stdout.write(line + '\n'), classification });
+logger.info(context, 'order.approved', {
+  fields: { order_id: order.id, contact: classified({ entity: 'supplier', field: 'phone' }, phone) },
+});
+logger.error(context, 'order.sync_failed', { error });
+```
+
+One JSON object per line: `ts`, `level`, `event`, `module`, `correlation_id`, `tenant_id`, `actor`, `initiated_by`, `causation_id`, `fields`, `error`, `problems`. The host owns the sink, the log store, its retention and who may read it. Threat model: `docs/security/threat-models/K0-T04-logging.md`.
+
+| Rule | What happens |
+|---|---|
+| Context | Tenant, actor and correlation id come from the `Context` on every call and are checked again; a bad value is written as `[invalid]`, and so is a correlation id that looks like a phone number or an id. There is no global logger |
+| Event | A dotted lower_snake_case name of at most 128 characters. No free-text messages |
+| Fields | Flat, lower_snake_case keys, scalar values. An object or array is written as `[omitted:object]` or `[omitted:array]`, so a request body cannot be dumped |
+| Classified values | `classified(field, value)`: public and internal values are written, the rest become `[personal]`, `[sensitive_personal]` or `[secret]`. An unknown field is `[secret]` |
+| Text backstop | A scrubber runs on every string: `[email]`, `[number]` (8 or more digits in any script), `[id]`, `[query]`, `[credentials]`, `[secret]`. It cannot see a name or an address, so pass personal data through `classified` or leave it out. It is internal to core |
+| Key names | `password`, `token`, `otp`, `session`, `phone`, `mobile`, `email`, `address` and similar are masked whatever the value, also inside a longer key (`accesstoken`). Short words (`pin`, `ip`, `pan`, `dob`) must stand between underscores. A key the list does not name is not covered |
+| Errors | `summariseError`: code, status, field problems and scrubbed `detail` for a catalogue error. Type name, short code and stack frames for anything else, never its message |
+| Limits | 64 fields and 8,192 bytes per line; what is dropped is counted under `problems` |
+| Failure | A log call never throws. A sink that throws, or returns a promise that rejects, is reported to `onSinkError` |
 
 ### Core error codes
 

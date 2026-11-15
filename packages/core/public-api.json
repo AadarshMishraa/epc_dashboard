@@ -1,7 +1,7 @@
 {
   "format": 2,
   "package": "@gx/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": [
     {
       "name": "ALLOW",
@@ -199,6 +199,15 @@
       ],
       "declarations": [
         "interface ClassificationLookup {\n    classify(context: Context, field: FieldRef): Classification;\n}"
+      ]
+    },
+    {
+      "name": "ClassifiedValue",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "declare class ClassifiedValue {\n    #private;\n    constructor(field: FieldRef, value: unknown);\n    static unwrap(candidate: unknown): {\n        field: FieldRef;\n        value: unknown;\n    } | undefined;\n    toString(): string;\n    toJSON(): string;\n}"
       ]
     },
     {
@@ -409,6 +418,15 @@
       ]
     },
     {
+      "name": "ErrorSummary",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface ErrorSummary {\n    readonly type: string;\n    readonly code?: string | number;\n    readonly status?: number;\n    readonly retryable?: boolean;\n    readonly detail?: string;\n    readonly fields?: readonly {\n        readonly path: string;\n        readonly code: string;\n    }[];\n    readonly retry_after_seconds?: number;\n    readonly frames?: readonly string[];\n    readonly cause?: ErrorSummary;\n}"
+      ]
+    },
+    {
       "name": "EventEnvelope",
       "meanings": [
         "type"
@@ -487,6 +505,105 @@
       ],
       "declarations": [
         "type JsonValue = null | boolean | number | string | readonly JsonValue[] | {\n    readonly [key: string]: JsonValue;\n};"
+      ]
+    },
+    {
+      "name": "LOG_LEVELS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LOG_LEVELS: readonly [\n    \"debug\",\n    \"info\",\n    \"warn\",\n    \"error\"\n];"
+      ]
+    },
+    {
+      "name": "LOG_MAX_FIELDS",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LOG_MAX_FIELDS = 64;"
+      ]
+    },
+    {
+      "name": "LOG_MAX_LINE_BYTES",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare const LOG_MAX_LINE_BYTES = 8192;"
+      ]
+    },
+    {
+      "name": "LogData",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LogData {\n    readonly fields?: LogFields;\n    readonly error?: unknown;\n}"
+      ]
+    },
+    {
+      "name": "LogFieldValue",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogFieldValue = LogScalar | ClassifiedValue | Secret;"
+      ]
+    },
+    {
+      "name": "LogFields",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogFields = Readonly<Record<string, LogFieldValue>>;"
+      ]
+    },
+    {
+      "name": "LogLevel",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogLevel = (typeof LOG_LEVELS)[number];"
+      ]
+    },
+    {
+      "name": "LogScalar",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogScalar = string | number | boolean | null;"
+      ]
+    },
+    {
+      "name": "LogSink",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "type LogSink = (line: string) => unknown;"
+      ]
+    },
+    {
+      "name": "Logger",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface Logger {\n    debug(context: Context, event: string, data?: LogData): void;\n    info(context: Context, event: string, data?: LogData): void;\n    warn(context: Context, event: string, data?: LogData): void;\n    error(context: Context, event: string, data?: LogData): void;\n}"
+      ]
+    },
+    {
+      "name": "LoggerOptions",
+      "meanings": [
+        "type"
+      ],
+      "declarations": [
+        "interface LoggerOptions {\n    readonly sink: LogSink;\n    readonly classification: ClassificationLookup;\n    readonly module?: ModuleId;\n    readonly minLevel?: LogLevel;\n    readonly onSinkError?: (cause: unknown) => void;\n}"
       ]
     },
     {
@@ -779,6 +896,15 @@
       ]
     },
     {
+      "name": "classified",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function classified(field: FieldRef, value: LogScalar): ClassifiedValue;"
+      ]
+    },
+    {
       "name": "classifyField",
       "meanings": [
         "value"
@@ -848,6 +974,15 @@
       ],
       "declarations": [
         "declare function createIdGenerator(options: IdGeneratorOptions): IdGenerator;"
+      ]
+    },
+    {
+      "name": "createLogger",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function createLogger(options: LoggerOptions): Logger;"
       ]
     },
     {
@@ -1082,6 +1217,15 @@
       ],
       "declarations": [
         "declare function runEraser(handlerId: string, erase: EraserHandler['erase'], context: TenantContext, subject: ErasureSubject): Promise<ErasureOutcome>;"
+      ]
+    },
+    {
+      "name": "summariseError",
+      "meanings": [
+        "value"
+      ],
+      "declarations": [
+        "declare function summariseError(error: unknown): ErrorSummary;"
       ]
     },
     {

@@ -4,6 +4,23 @@ Notable changes to `@gx/core`. Versions follow semver over the public API in `sr
 
 ## Unreleased
 
+## 0.1.1 (2026-11-12)
+
+### Added
+
+- Structured logging with redaction (K0-T04, threat model `docs/security/threat-models/K0-T04-logging.md`):
+  - `createLogger` writes one JSON line per event to a sink the host supplies. Every line carries the time, level, event, correlation id, tenant (null when there is none) and an actor summary, all taken from the context and checked again when written. Fields sit under `fields`, so they cannot overwrite these.
+  - `classified` ties a value to its field. A personal, sensitive or secret value is written as its class name; a field the lookup does not know is `[secret]`.
+  - A text scrubber is the backstop on every string: emails and UPI ids, runs of 8 or more digits in any script, the tax id shape, URL query strings and user parts, bearer and JWT-shaped tokens, and the value after a secret's name are masked. Record ids and ISO dates are kept. The scrubber is internal.
+  - Key names such as `password`, `token`, `otp`, `phone` and `email` are masked whatever the value, also inside a longer key.
+  - `summariseError` gives a catalogue error's code, status, field problems and scrubbed detail. For any other error and every cause it gives the type name, a short code and stack frames only, never the message.
+  - Limits: 64 fields and 8,192 bytes per line (`LOG_MAX_FIELDS`, `LOG_MAX_LINE_BYTES`); a string over 2,048 characters is not written and a written one is cut at 1,024. What is dropped is counted under `problems` on the line.
+  - A log call never throws. A sink that throws or rejects is reported to `onSinkError`. There is no option that turns redaction off.
+
+### Changed
+
+- `classifyField` now also calls `onError` when the lookup returns a value that is not a classification. The answer is still `secret`.
+
 ## 0.1.0 (2026-11-05)
 
 ### Added

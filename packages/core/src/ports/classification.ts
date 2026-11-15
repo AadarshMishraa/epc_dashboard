@@ -33,7 +33,8 @@ export function isClassification(value: unknown): value is Classification {
 
 /**
  * Asks the lookup and fails closed: a throw or an unknown answer is `secret`. `onError`
- * receives the cause, so the failure can be reported instead of lost.
+ * receives the cause (for an unknown answer, a `TypeError`), so the failure can be reported
+ * instead of lost.
  */
 export function classifyField(
   lookup: ClassificationLookup,
@@ -41,11 +42,14 @@ export function classifyField(
   field: FieldRef,
   onError?: (cause: unknown) => void,
 ): Classification {
+  let classification: unknown;
   try {
-    const classification = lookup.classify(context, field);
-    return isClassification(classification) ? classification : 'secret';
+    classification = lookup.classify(context, field);
   } catch (cause) {
     onError?.(cause);
     return 'secret';
   }
+  if (isClassification(classification)) return classification;
+  onError?.(new TypeError('The classification lookup returned an unknown class'));
+  return 'secret';
 }

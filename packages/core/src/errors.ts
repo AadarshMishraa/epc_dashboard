@@ -21,6 +21,15 @@ export interface ErrorDefinition {
 const ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
 const STATUS_SET: ReadonlySet<number> = new Set(ERROR_STATUSES);
 
+/** True for an UPPER_SNAKE_CASE code, the only shape a catalogue accepts. */
+export function isErrorCode(value: unknown): value is string {
+  return typeof value === 'string' && ERROR_CODE_PATTERN.test(value);
+}
+
+export function isErrorStatus(value: unknown): value is ErrorStatus {
+  return typeof value === 'number' && STATUS_SET.has(value);
+}
+
 /**
  * Validates and freezes a set of error definitions. Core uses it for its own catalogue;
  * modules use it for theirs, and their manifests declare the codes (K0-T07).
