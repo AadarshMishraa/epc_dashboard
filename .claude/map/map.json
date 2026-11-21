@@ -569,7 +569,7 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "21328f7d9f56",
+   "hash": "3eeb110c2084",
    "imports": [],
    "invokes": [],
    "kind": [],
@@ -886,7 +886,7 @@
     "packages/core/src/result.ts"
    ],
    "env": [],
-   "hash": "d86b68442dc2",
+   "hash": "cb2f5b600ef1",
    "imports": [
     "../context.ts",
     "../errors.ts",
@@ -1831,7 +1831,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "2064750b2098",
+   "hash": "f79f742018d7",
    "imports": [
     "@gx/core",
     "./migrations.ts",
@@ -1842,7 +1842,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 41,
+   "loc": 46,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -2017,7 +2017,7 @@
     "packages/migrate/src/sql-scan.ts"
    ],
    "env": [],
-   "hash": "701a4e6bf2b4",
+   "hash": "256c2d55a5fb",
    "imports": [
     "vitest",
     "./sql-scan.ts"
@@ -2025,7 +2025,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 260,
+   "loc": 412,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -2039,12 +2039,12 @@
    "defines_tables": [],
    "deps": [],
    "env": [],
-   "hash": "0291c13088ac",
+   "hash": "11aabfa2ff20",
    "imports": [],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 341,
+   "loc": 559,
    "module": "packages/migrate",
    "routes": [],
    "rpcs": [],
@@ -2056,7 +2056,12 @@
     "splitStatements",
     "countStatements",
     "KNOWN_ROLES",
-    "findRiskyStatements"
+    "findRiskyStatements",
+    "RelationAction",
+    "RelationChange",
+    "UnreadableRelation",
+    "RelationScan",
+    "scanRelations"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -2200,7 +2205,7 @@
     "packages/testkit/src/contract.ts"
    ],
    "env": [],
-   "hash": "8c926779ac0b",
+   "hash": "825ee2db2431",
    "imports": [
     "@gx/core",
     "../contract.ts"
@@ -2670,6 +2675,30 @@
    "tables_read": [],
    "tables_write": []
   },
+  "packages/toolchain/src/bin/check-boundaries.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/index.ts"
+   ],
+   "env": [],
+   "hash": "a2ebcffebd69",
+   "imports": [
+    "node:util",
+    "../index.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 37,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
   "packages/toolchain/src/bin/check-imports.ts": {
    "calls": [],
    "defines_tables": [],
@@ -2714,6 +2743,76 @@
    "routes": [],
    "rpcs": [],
    "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/boundaries.test.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/boundaries.ts",
+    "packages/toolchain/src/import-graph.ts"
+   ],
+   "env": [],
+   "hash": "6eca2c9fa9aa",
+   "imports": [
+    "node:child_process",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url",
+    "vitest",
+    "./boundaries.ts",
+    "./import-graph.ts",
+    "@gx/core",
+    "@gx/core",
+    "@gx/k1-tenancy",
+    "@gx/k1-tenancy/src/internal.ts",
+    "@gx/k1-tenancy"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 653,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [],
+   "table_refs": {},
+   "tables_read": [],
+   "tables_write": []
+  },
+  "packages/toolchain/src/boundaries.ts": {
+   "calls": [],
+   "defines_tables": [],
+   "deps": [
+    "packages/toolchain/src/import-graph.ts",
+    "packages/toolchain/src/manifest.ts",
+    "packages/toolchain/src/register.ts"
+   ],
+   "env": [],
+   "hash": "74dc915fec0d",
+   "imports": [
+    "node:fs",
+    "node:path",
+    "@gx/migrate",
+    "./import-graph.ts",
+    "./manifest.ts",
+    "./register.ts"
+   ],
+   "invokes": [],
+   "kind": [],
+   "lang": "ts",
+   "loc": 356,
+   "module": "packages/toolchain",
+   "routes": [],
+   "rpcs": [],
+   "symbols": [
+    "BoundaryResult",
+    "BoundaryOptions",
+    "checkBoundaries"
+   ],
    "table_refs": {},
    "tables_read": [],
    "tables_write": []
@@ -2812,7 +2911,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "54fdb8a2cdb5",
+   "hash": "320534724732",
    "imports": [
     "node:fs",
     "node:module",
@@ -2826,7 +2925,7 @@
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 461,
+   "loc": 467,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -2836,8 +2935,13 @@
     "ImportGraphResult",
     "ImportGraphOptions",
     "REGISTER_PATH",
+    "TEST_FILE",
     "checkImportGraph",
-    "formatViolation"
+    "formatViolation",
+    "Loaded",
+    "loadRegister",
+    "listSourceFiles",
+    "toRepoPath"
    ],
    "table_refs": {},
    "tables_read": [],
@@ -2915,6 +3019,7 @@
    "deps": [
     "packages/toolchain/src/api-check.ts",
     "packages/toolchain/src/api-report.ts",
+    "packages/toolchain/src/boundaries.ts",
     "packages/toolchain/src/import-graph.ts",
     "packages/toolchain/src/imports.ts",
     "packages/toolchain/src/manifest-check.ts",
@@ -2922,7 +3027,7 @@
     "packages/toolchain/src/register.ts"
    ],
    "env": [],
-   "hash": "dff16e2d0cbf",
+   "hash": "0cb2b2b487c3",
    "imports": [
     "@gx/core",
     "./import-graph.ts",
@@ -2930,13 +3035,14 @@
     "./manifest.ts",
     "./manifest-check.ts",
     "./api-report.ts",
+    "./boundaries.ts",
     "./api-check.ts",
     "./register.ts"
    ],
    "invokes": [],
    "kind": [],
    "lang": "ts",
-   "loc": 60,
+   "loc": 61,
    "module": "packages/toolchain",
    "routes": [],
    "rpcs": [],
@@ -3346,8 +3452,8 @@
    "tables_write": []
   }
  },
- "generated": "2026-11-15 15:17",
- "head": "3210d3b",
+ "generated": "2026-11-15 17:44",
+ "head": "0cfc448",
  "root": "epc_dashboard",
  "version": 1
 }
